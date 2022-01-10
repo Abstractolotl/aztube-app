@@ -1,8 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.aztube.aztube_app">
-
-    <uses-permission android:name="android.permission.INTERNET" />
-
    <application
         android:label="aztube_app"
         android:name="${applicationName}"

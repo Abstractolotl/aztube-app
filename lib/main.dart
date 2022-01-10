@@ -1,27 +1,14 @@
-import 'dart:io';
-
-import 'package:aztube_app/files/filemanager.dart';
-import 'package:aztube_app/files/settingsmodel.dart';
-import 'package:aztube_app/views/dashboard.dart';
-import 'package:aztube_app/views/linking.dart';
-import 'package:aztube_app/views/loading.dart';
+import 'package:aztube_app/dashboard.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'files/i_filemanager.dart';
 
 void main() {
-  runApp(AzTube());
-
-
+  runApp(const AzTube());
 }
 
 
 class AzTube extends StatelessWidget {
 
-  AzTube({Key? key, required this.settings}) : super(key: key);
-
-  final Future<Settings> settings;
-  IFileManager fileManager = FileManager();
+  const AzTube({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,19 +17,7 @@ class AzTube extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blueGrey
       ),
-      home: FutureBuilder(future: settings,
-        builder: (context, snapshot) {
-          if(snapshot.hasData){
-            Settings current = snapshot.data as Settings;
-            if(current.deviceHash == '0'){
-                return const LinkingScreen(title: 'AzTube');
-            }
-            return const DashboardScreen(title: 'AzTube');
-          }else if(snapshot.hasError){
-            return const LinkingScreen(title: 'AzTube');
-          }
-          return const LoadingScreen();
-        })
+      home: const DashboardScreen(title: 'AzTube'),
     );
   }
 }
