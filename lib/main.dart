@@ -1,27 +1,33 @@
 import 'dart:io';
 
 import 'package:aztube_app/files/filemanager.dart';
+import 'package:aztube_app/files/i_filemanager.dart';
 import 'package:aztube_app/files/settingsmodel.dart';
 import 'package:aztube_app/views/dashboard.dart';
 import 'package:aztube_app/views/linking.dart';
 import 'package:aztube_app/views/loading.dart';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'files/i_filemanager.dart';
 
-void main() {
-  runApp(AzTube());
+List<CameraDescription> cameras = [];
 
+Future<void> main() async{
+  WidgetsFlutterBinding.ensureInitialized();
 
+  IFileManager fileManager = FileManager();
+
+  List<CameraDescription> cameras = await availableCameras();
+  Future<Settings> settings = fileManager.getSettings();
+
+  runApp(AzTube(settings: settings, cameras: cameras));
 }
-
 
 class AzTube extends StatelessWidget {
 
-  AzTube({Key? key, required this.settings}) : super(key: key);
+  const AzTube({Key? key, required this.settings, required this.cameras}) : super(key: key);
 
   final Future<Settings> settings;
-  IFileManager fileManager = FileManager();
+  final List<CameraDescription> cameras;
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +41,11 @@ class AzTube extends StatelessWidget {
           if(snapshot.hasData){
             Settings current = snapshot.data as Settings;
             if(current.deviceHash == '0'){
-                return const LinkingScreen(title: 'AzTube');
+                return LinkingScreen(cameras: cameras);
             }
             return const DashboardScreen(title: 'AzTube');
           }else if(snapshot.hasError){
-            return const LinkingScreen(title: 'AzTube');
+            return LinkingScreen(cameras: cameras);
           }
           return const LoadingScreen();
         })
