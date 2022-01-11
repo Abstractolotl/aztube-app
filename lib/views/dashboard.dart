@@ -133,7 +133,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   void initDownloads(){
     VideoData testVideo = VideoData();
     testVideo.videoID = "dQw4w9WgXcQ";
-    testVideo.quality = "audio_only";
+    testVideo.quality = "720p";
     downloads = ListView(
       padding: const EdgeInsets.all(5.0),
       children: [

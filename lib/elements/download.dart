@@ -23,29 +23,26 @@ class DownloadState extends State<Download> {
 
   @override
   Widget build(BuildContext context) {
-    Icon icon = const Icon(Icons.download);
+    Widget trailing = IconButton(
+      onPressed: () {
+        startDownload();
+      },
+      icon: Icon(finished ? Icons.download_done : Icons.download),
+      color: Colors.black,
+    );
     if(downloading){
-      icon = const Icon(Icons.downloading);
-    }
-    if(finished && downloading){
-      return Column();
+      trailing = const CircularProgressIndicator(color: Colors.black);
     }
     return Column(children: [
       ListTile(
           title: Text(widget.name),
-          trailing: IconButton(
-            onPressed: () {
-              startDownload();
-            },
-            icon: icon,
-            color: Colors.black,
-          )),
+          trailing: trailing ),
       const Divider()
     ]);
   }
 
   void startDownload(){
-    if(!downloading){
+    if(!downloading && !finished){
       setState(() {
         downloading = true;
       });
@@ -63,6 +60,7 @@ class DownloadState extends State<Download> {
     final String result = await platform.invokeMethod("downloadVideo", args);
     if(result.length > 2){
       setState(() {
+        downloading = false;
         finished = true;
       });
     }
