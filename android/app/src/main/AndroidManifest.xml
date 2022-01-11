@@ -2,8 +2,9 @@
     package="de.aztube.aztube_app">
 
     <uses-permission android:name="android.permission.INTERNET" />
-
-   <application
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <application
         android:label="aztube_app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
