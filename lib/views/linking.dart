@@ -88,7 +88,7 @@ class LinkingScreenState extends State<LinkingScreen> {
           var deviceToken = jsonDecode(response.body)['deviceToken'];
           if(deviceToken != null){
             widget.settings.deviceHash = deviceToken;
-            FileManager().save(widget.settings);
+            FileManager().saveSettings(widget.settings);
             Navigator.pop(context);
             return;
           }else{

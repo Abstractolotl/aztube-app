@@ -33,7 +33,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               if(widget.settings.deviceHash.length >= 10){
                 APIHelper.unregisterDevice(widget.settings.deviceHash);
                 widget.settings.deviceHash = '0';
-                FileManager().save(widget.settings);
+                FileManager().saveSettings(widget.settings);
                 Navigator.pop(context);
               }
             },

@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:aztube/api/VideoData.dart';
+import 'package:aztube/api/videodata.dart';
 import 'package:aztube/elements/aztubebar.dart';
 import 'package:aztube/elements/download.dart';
 import 'package:aztube/elements/simplebutton.dart';
+import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
 import 'package:aztube/views/linking.dart';
@@ -25,6 +26,7 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
 
+  DownloadCache downloadCache = DownloadCache();
   Settings currentSettings = Settings();
   bool loading = true;
 
@@ -33,7 +35,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    reloadSettings();
+    reloadCache();
   }
 
   @override
@@ -120,27 +122,29 @@ class DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       loading = true;
     });
-    reloadSettings();
+    reloadCache();
   }
 
-  void reloadSettings() async{
+  void reloadCache() async{
     currentSettings = await FileManager().getSettings();
+    downloadCache = await FileManager().getDownloads();
     setState(() {
       loading = false;
     });
   }
 
+
   void initDownloads(){
     VideoData testVideo = VideoData();
     testVideo.videoID = "dQw4w9WgXcQ";
     testVideo.quality = "720p";
-    downloads = ListView(
+    var queue = downloadCache.getAll();
+    downloads = ListView.builder(
       padding: const EdgeInsets.all(5.0),
-      children: [
-        Download(name: "Test", video: testVideo),
-        Download(name: "Test", video: testVideo),
-      ],
-    );
+      itemCount: queue.length,
+      itemBuilder: (context, index){
+        return Download(name: 'Test', video: queue[index], cache: downloadCache);
+    });
   }
 
 }

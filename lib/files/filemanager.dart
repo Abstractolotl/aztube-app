@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/i_filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,14 +13,19 @@ class FileManager extends IFileManager{
     return directory.path;
   }
 
-  Future<File> get _localFile async {
+  Future<File> get _settingsFile async {
     final path = await _localPath;
     return File('$path/settings.json');
   }
 
+  Future<File> get _downloadsFile async {
+    final path = await _localPath;
+    return File('$path/downloads.json');
+  }
+
   @override
   Future<Settings> getSettings() async{
-    final file = await _localFile;
+    final file = await _settingsFile;
     if(file.existsSync()) {
       return Settings.fromJson(jsonDecode(file.readAsStringSync()));
     }
@@ -27,9 +33,24 @@ class FileManager extends IFileManager{
   }
 
   @override
-  void save(Settings settings) async {
-    final file = await _localFile;
+  void saveSettings(Settings settings) async {
+    final file = await _settingsFile;
     file.writeAsStringSync(jsonEncode(settings.toJson()));
   }
 
+
+  @override
+  Future<DownloadCache> getDownloads() async{
+    final file = await _downloadsFile;
+    if(file.existsSync()) {
+      return DownloadCache.fromJson(jsonDecode(file.readAsStringSync()));
+    }
+    return DownloadCache();
+  }
+
+  @override
+  void saveDownloads(DownloadCache downloads) async {
+    final file = await _downloadsFile;
+    file.writeAsStringSync(jsonEncode(downloads.toJson()));
+  }
 }
