@@ -4,6 +4,7 @@ import android.content.ContextWrapper;
 import android.os.Environment;
 
 import androidx.annotation.NonNull;
+
 import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.downloader.YoutubeProgressCallback;
 import com.github.kiulian.downloader.downloader.request.RequestVideoFileDownload;
@@ -29,68 +30,90 @@ public class MainActivity extends FlutterActivity {
 
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
                 .setMethodCallHandler((call, result) -> {
-                    if (call.method.equals("downloadVideo")) {
-                        new Async<File>().run(() -> requestVideoInfo(call.argument("videoId"), call.argument("quality")), (data) -> {
-                            if (data != null) {
-                                result.success(data.getAbsolutePath());
-                            }
+                    switch (call.method) {
+                        case "downloadVideo":
+                            new Async<File>().run(() -> {
+                                VideoInfo videoInfo = requestVideoInfo(call.argument("videoId"));
+                                Format format = getVideoFormat(videoInfo, call.argument("quality"));
 
-                            return null;
-                        });
-                    } else if (call.method.equals("getMediaDir")) {
-                        result.success(getMediaDir());
+                                return downloadVideo(format);
+                            }, (data) -> {
+                                if (data != null) {
+                                    result.success(data.getAbsolutePath());
+                                }
+
+                                return null;
+                            });
+                            break;
+                        case "getMediaDir":
+                            result.success(getMediaDir());
+                            break;
+                        case "getThumbnailUrl":
+                            new Async<String>().run(() -> {
+                                VideoInfo videoInfo = requestVideoInfo(call.argument("videoId"));
+                                return getThumbnailUrl(videoInfo);
+                            }, (String data) -> {
+                                if (data != null) {
+                                    result.success(data);
+                                }
+
+                                return null;
+                            });
+                            break;
                     }
                 });
     }
 
-
-    public File requestVideoInfo(String videoId, String quality) {
+    public VideoInfo requestVideoInfo(String videoId) {
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
 
         RequestVideoInfo request = new RequestVideoInfo(videoId);
 
-        VideoInfo data = youtubeDownloader.getVideoInfo(request).data();
+        return youtubeDownloader.getVideoInfo(request).data();
+    }
 
-        String videoTitle = data.details().title();
-        List<String> thumbnails = data.details().thumbnails();
+    public String getThumbnailUrl(VideoInfo videoInfo) {
+        List<String> thumbnails = videoInfo.details().thumbnails();
 
-        List<VideoWithAudioFormat> videoFormats = data.videoWithAudioFormats();
-        List<AudioFormat> audioFormats = data.audioFormats();
+        return thumbnails.get(thumbnails.size()-1);
+    }
 
-        System.out.println(videoTitle);
-        System.out.println(videoFormats);
-        System.out.println(audioFormats);
+    public Format getVideoFormat(VideoInfo videoInfo, String quality) {
+        String videoTitle = videoInfo.details().title();
+
+        List<VideoWithAudioFormat> videoFormats = videoInfo.videoWithAudioFormats();
+        List<AudioFormat> audioFormats = videoInfo.audioFormats();
 
         Format format = null;
 
-        if(quality.equals("audio_only")){
-            if(audioFormats.size() > 0){
+        if (quality.equals("audio_only")) {
+            if (audioFormats.size() > 0) {
                 format = audioFormats.get(0);
 
-                for(AudioFormat audioFormat : audioFormats){
-                    if(audioFormat.averageBitrate() > ((AudioFormat) format).averageBitrate()){
+                for (AudioFormat audioFormat : audioFormats) {
+                    if (audioFormat.averageBitrate() > ((AudioFormat) format).averageBitrate()) {
                         format = audioFormat;
                     }
                 }
-            }else{
+            } else {
                 System.out.println("No audio formats available!");
                 return null;
             }
-        }else{
-            for(VideoWithAudioFormat videoFormat : videoFormats){
-                if(videoFormat.qualityLabel().equals(quality)){
+        } else {
+            for (VideoWithAudioFormat videoFormat : videoFormats) {
+                if (videoFormat.qualityLabel().equals(quality)) {
                     format = videoFormat;
                     break;
                 }
             }
 
-            if(format == null){
+            if (format == null) {
                 System.out.println("Could not find video format!");
                 return null;
             }
         }
 
-        return downloadVideo(format);
+        return format;
     }
 
     public File downloadVideo(Format format) {
