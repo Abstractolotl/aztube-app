@@ -21,7 +21,7 @@ public class NotificationUtil {
                 //.setStyle(new NotificationCompat.BigTextStyle().bigText("Long Text"))
                 .setSmallIcon(R.drawable.icon_notification)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(false);
+                .setAutoCancel(true);
 
         SharedPreferences sp  = context.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
