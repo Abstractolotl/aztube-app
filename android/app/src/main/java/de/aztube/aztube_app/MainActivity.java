@@ -3,11 +3,13 @@ package de.aztube.aztube_app;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 
 import androidx.annotation.NonNull;
 
+import androidx.annotation.Nullable;
 import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.downloader.YoutubeProgressCallback;
 import com.github.kiulian.downloader.downloader.request.RequestVideoInfo;
@@ -28,6 +30,12 @@ import io.flutter.plugin.common.MethodChannel;
 
 public class MainActivity extends FlutterActivity {
     public static final String CHANNEL = "de.aztube.aztube_app/youtube";
+
+    @Override
+    protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        NotificationUtil.CreateNotificationChannel(this);
+    }
 
     @Override
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
@@ -61,7 +69,10 @@ public class MainActivity extends FlutterActivity {
                                 return null;
                             });
                             break;
-                        case "notification":
+                        case "showNotification":
+                            Integer numPendingDownloads = call.argument("numPendingDownloads");
+                            NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
+                            break;
                     }
                 });
     }

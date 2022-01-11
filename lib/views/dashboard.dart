@@ -14,16 +14,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class DashboardScreen extends StatefulWidget {
-
   const DashboardScreen({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => DashboardScreenState();
-
 }
 
 class DashboardScreenState extends State<DashboardScreen> {
-
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
 
   DownloadCache downloadCache = DownloadCache();
@@ -45,50 +42,64 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if(loading){
+    if (loading) {
       return Scaffold(
-          appBar: AppBar(title: AzTubeBar.title,),
-          body:  Column(
+          appBar: AppBar(
+            title: AzTubeBar.title,
+          ),
+          body: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
-                Center(
-                    child: CircularProgressIndicator(color: Colors.green)
-                )
-              ]
-          )
-      );
+                Center(child: CircularProgressIndicator(color: Colors.green))
+              ]));
     }
 
-    if(currentSettings.deviceHash.length < 10){
+    if (currentSettings.deviceHash.length < 10) {
       return Scaffold(
-        appBar: AppBar(
-            title: AzTubeBar.title,
-            actions: <Widget>[
-              IconButton(onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SettingsScreen(settings: currentSettings))
-                ).then(reload);
+        appBar: AppBar(title: AzTubeBar.title, actions: <Widget>[
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                SettingsScreen(settings: currentSettings)))
+                    .then(reload);
               },
               icon: const Icon(Icons.settings, color: Colors.white),
               tooltip: 'Open Settings')
-            ]
-        ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+        ]),
+        body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Center(
-           child: Container(
-               padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 5.0),
-               child: SimpleButton(
-                 child: const Text('Link Browser'),
-                 color: Colors.green,
-                 onPressed: () {
-                   Navigator.push(context,
-                       MaterialPageRoute(builder: (context) => LinkingScreen(settings: currentSettings))).then(reload);
-                 },
-               )
-           )
-          )
+              child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 5.0),
+                  child: Column(
+                    children: [
+                      SimpleButton(
+                        child: const Text('Link Browser'),
+                        color: Colors.green,
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LinkingScreen(
+                                      settings: currentSettings))).then(reload);
+                        },
+                      ),
+                      Container(
+                        height: 10.0,
+                      ),
+                      SimpleButton(
+                        child: const Text('Show Notification'),
+                        color: Colors.green,
+                        onPressed: () {
+                          platform.invokeMethod(
+                              "showNotification", {"numPendingDownloads": 13});
+                        },
+                      )
+                    ],
+                  )))
         ]),
       );
     }
@@ -96,36 +107,37 @@ class DashboardScreenState extends State<DashboardScreen> {
     initDownloads();
 
     return Scaffold(
-      appBar: AppBar(
-          title: AzTubeBar.title,
-          actions: <Widget>[
-            IconButton(onPressed: () {
-              Navigator.push(context,
-              MaterialPageRoute(builder: (context) => SettingsScreen(settings: currentSettings))
-              ).then(reload);
-              },
-                  icon: const Icon(Icons.settings, color: Colors.white),
-                  tooltip: 'Open Settings')
-              ]
-      ),
+      appBar: AppBar(title: AzTubeBar.title, actions: <Widget>[
+        IconButton(
+            onPressed: () {
+              Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              SettingsScreen(settings: currentSettings)))
+                  .then(reload);
+            },
+            icon: const Icon(Icons.settings, color: Colors.white),
+            tooltip: 'Open Settings')
+      ]),
       body: downloads,
     );
-
   }
 
-  void startLinking(){
-    Route route = MaterialPageRoute(builder: (context) => LinkingScreen(settings: currentSettings));
+  void startLinking() {
+    Route route = MaterialPageRoute(
+        builder: (context) => LinkingScreen(settings: currentSettings));
     Navigator.push(context, route).then(reload);
   }
-  
-  FutureOr reload(dynamic value){
+
+  FutureOr reload(dynamic value) {
     setState(() {
       loading = true;
     });
     reloadCache();
   }
 
-  void reloadCache() async{
+  void reloadCache() async {
     currentSettings = await FileManager().getSettings();
     downloadCache = await FileManager().getDownloads();
     setState(() {
@@ -133,14 +145,14 @@ class DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  void initDownloads(){
+  void initDownloads() {
     var queue = downloadCache.getAll();
     downloads = ListView.builder(
-      padding: const EdgeInsets.all(5.0),
-      itemCount: queue.length,
-      itemBuilder: (context, index){
-        return Download(name: 'Test', video: queue[index], cache: downloadCache);
-    });
+        padding: const EdgeInsets.all(5.0),
+        itemCount: queue.length,
+        itemBuilder: (context, index) {
+          return Download(
+              name: 'Test', video: queue[index], cache: downloadCache);
+        });
   }
-
 }
