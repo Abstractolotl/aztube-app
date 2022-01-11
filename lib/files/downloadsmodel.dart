@@ -16,13 +16,32 @@ class DownloadCache{
     return all;
   }
 
-  DownloadCache.fromJson(Map<String, dynamic> json)
-      : queue = json['queue'],
-        downloaded = json['downloaded'];
+  static DownloadCache fromJson(Map<String, dynamic> json){
+      DownloadCache cache = DownloadCache();
+      cache.queue = convertBack(json['queue']);
+      cache.downloaded = convertBack(json['downloaded']);
+      return cache;
+  }
 
   Map<String, dynamic> toJson() => {
-    'queue': queue,
-    'downloaded': downloaded
+    'queue': convertTo(queue),
+    'downloaded': convertTo(downloaded)
   };
+
+  List<dynamic> convertTo(List<VideoData> list){
+    List<dynamic> response = [];
+    for (var element in list) {
+      response.add(element.toJson());
+    }
+    return response;
+  }
+
+  static List<VideoData> convertBack(List<dynamic> list){
+    List<VideoData> response = [];
+    for (var element in list) {
+      response.add(VideoData.fromJson(element));
+    }
+    return response;
+  }
 
 }

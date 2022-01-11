@@ -133,11 +133,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-
   void initDownloads(){
-    VideoData testVideo = VideoData();
-    testVideo.videoID = "dQw4w9WgXcQ";
-    testVideo.quality = "720p";
     var queue = downloadCache.getAll();
     downloads = ListView.builder(
       padding: const EdgeInsets.all(5.0),
