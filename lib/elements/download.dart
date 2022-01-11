@@ -1,9 +1,12 @@
+import 'package:aztube/api/VideoData.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class Download extends StatefulWidget {
 
-  const Download({Key? key, required this.name}) : super(key: key);
+  const Download({Key? key, required this.name, required this.video}) : super(key: key);
 
+  final VideoData video;
   final String name;
 
   @override
@@ -21,10 +24,11 @@ class DownloadState extends State<Download> {
   @override
   Widget build(BuildContext context) {
     Icon icon = const Icon(Icons.download);
-    if(finished){
-      icon = const Icon(Icons.delete_forever);
-    }else if(downloading){
+    if(downloading){
       icon = const Icon(Icons.downloading);
+    }
+    if(finished && downloading){
+      return Column();
     }
     return Column(children: [
       ListTile(
@@ -41,13 +45,25 @@ class DownloadState extends State<Download> {
   }
 
   void startDownload(){
-    if(downloading){
-      setState(() {
-        finished = true;
-      });
-    }else{
+    if(!downloading){
       setState(() {
         downloading = true;
+      });
+      downloadVideo(widget.video);
+    }
+  }
+
+  void downloadVideo(VideoData video) async {
+    const platform = MethodChannel("de.aztube.aztube_app/youtube");
+    Map<String, dynamic> args = {
+      "videoId": video.videoID,
+      "quality": video.quality
+    };
+
+    final String result = await platform.invokeMethod("downloadVideo", args);
+    if(result.length > 2){
+      setState(() {
+        finished = true;
       });
     }
   }

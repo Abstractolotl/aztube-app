@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:aztube/api/VideoData.dart';
 import 'package:aztube/elements/aztubebar.dart';
 import 'package:aztube/elements/download.dart';
 import 'package:aztube/elements/simplebutton.dart';
@@ -130,14 +131,14 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   void initDownloads(){
+    VideoData testVideo = VideoData();
+    testVideo.videoID = "dQw4w9WgXcQ";
+    testVideo.quality = "audio_only";
     downloads = ListView(
       padding: const EdgeInsets.all(5.0),
       children: [
-        Download(name: "Test 1"),
-        Download(name: "Test 1"),
-        Download(name: "Test 1"),
-        Download(name: "Test 1"),
-        Download(name: "Test 1"),
+        Download(name: "Test", video: testVideo),
+        Download(name: "Test", video: testVideo),
       ],
     );
   }
