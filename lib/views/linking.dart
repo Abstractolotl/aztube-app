@@ -7,7 +7,6 @@ import 'package:aztube/elements/aztubebar.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/files/i_filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
-import 'package:aztube/views/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -25,7 +24,6 @@ class LinkingScreen extends StatefulWidget {
 class LinkingScreenState extends State<LinkingScreen> {
 
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  bool dashboard = false;
   bool registering = false;
   Barcode? result;
   QRViewController? controller;
@@ -48,9 +46,6 @@ class LinkingScreenState extends State<LinkingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if(dashboard){
-      return DashboardScreen(settings: widget.settings);
-    }
     if(registering){
       return Scaffold(
           appBar: AppBar(title: AzTubeBar.title,),
@@ -90,26 +85,30 @@ class LinkingScreenState extends State<LinkingScreen> {
     var response = await APIHelper.registerDevice(browserCode);
     if(response.statusCode == 200){
       if(jsonDecode(response.body)['success']){
-          var deviceUUID = jsonDecode(response.body)['uuid'];
-          widget.settings.deviceHash = deviceUUID;
-          FileManager().save(widget.settings);
-          Navigator.pop(context);
+          var deviceToken = jsonDecode(response.body)['deviceToken'];
+          if(deviceToken != null){
+            widget.settings.deviceHash = deviceToken;
+            FileManager().save(widget.settings);
+            Navigator.pop(context);
+            return;
+          }else{
+            redirectWithError();
+          }
       }else{
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid Code'),
-              duration: Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating),
-        );
+        redirectWithError();
       }
     }else{
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid Code'),
-            duration: Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating),
-      );
+      redirectWithError();
     }
+  }
+
+  void redirectWithError(){
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Invalid Code'),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating),
+    );
   }
 
   Widget _buildQrView(BuildContext context) {

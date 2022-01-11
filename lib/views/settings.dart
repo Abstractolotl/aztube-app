@@ -32,7 +32,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               if(widget.settings.deviceHash.length >= 10){
                 widget.settings.deviceHash = '0';
                 FileManager().save(widget.settings);
-                setState(() {});
+                Navigator.pop(context);
               }
             },
           )

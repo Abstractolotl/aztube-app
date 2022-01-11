@@ -37,9 +37,9 @@ class AzTube extends StatelessWidget {
         builder: (context, snapshot) {
           if(snapshot.hasData){
             Settings current = snapshot.data as Settings;
-            return DashboardScreen(settings: current);
+            return const DashboardScreen();
           }else if(snapshot.hasError){
-            return DashboardScreen(settings: Settings());
+            return const DashboardScreen();
           }
           return const LoadingScreen();
         })
