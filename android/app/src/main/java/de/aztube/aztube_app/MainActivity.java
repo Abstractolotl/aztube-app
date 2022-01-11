@@ -4,8 +4,6 @@ import android.content.ContextWrapper;
 import android.os.Environment;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.downloader.YoutubeProgressCallback;
 import com.github.kiulian.downloader.downloader.request.RequestVideoFileDownload;
@@ -21,8 +19,6 @@ import java.util.List;
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
-import kotlin.Unit;
-import kotlin.coroutines.Continuation;
 
 public class MainActivity extends FlutterActivity {
     public static final String CHANNEL = "de.aztube.aztube_app/youtube";
@@ -34,26 +30,13 @@ public class MainActivity extends FlutterActivity {
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
                 .setMethodCallHandler((call, result) -> {
                     if (call.method.equals("downloadVideo")) {
-                        AsyncTask async = new AsyncTask<File>() {
-                            @Nullable
-                            @Override
-                            public Object publishProgress(File value, @NonNull Continuation<? super Unit> $completion) {
-                                if (value != null) {
-                                    result.success(value.getAbsolutePath());
-                                }
-
-                                return null;
+                        new Async<File>().run(() -> requestVideoInfo(call.argument("videoId")), (data) -> {
+                            if (data != null) {
+                                result.success(data.getAbsolutePath());
                             }
 
-                            @Nullable
-                            @Override
-                            public Object background(@NonNull Continuation<? super Unit> $completion) {
-                                updateProgress(requestVideoInfo(call.argument("videoId")));
-                                return null;
-                            }
-                        };
-
-                        async.execute();
+                            return null;
+                        });
                     } else if (call.method.equals("getMediaDir")) {
                         result.success(getMediaDir());
                     }
