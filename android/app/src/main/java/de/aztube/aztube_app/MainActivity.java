@@ -30,7 +30,7 @@ public class MainActivity extends FlutterActivity {
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
                 .setMethodCallHandler((call, result) -> {
                     if (call.method.equals("downloadVideo")) {
-                        new Async<File>().run(() -> requestVideoInfo(call.argument("videoId")), (data) -> {
+                        new Async<File>().run(() -> requestVideoInfo(call.argument("videoId"), call.argument("quality")), (data) -> {
                             if (data != null) {
                                 result.success(data.getAbsolutePath());
                             }
@@ -44,7 +44,7 @@ public class MainActivity extends FlutterActivity {
     }
 
 
-    public File requestVideoInfo(String videoId) {
+    public File requestVideoInfo(String videoId, String quality) {
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
 
         RequestVideoInfo request = new RequestVideoInfo(videoId);
@@ -61,7 +61,36 @@ public class MainActivity extends FlutterActivity {
         System.out.println(videoFormats);
         System.out.println(audioFormats);
 
-        return downloadVideo(videoFormats.get(2));
+        Format format = null;
+
+        if(quality.equals("audio_only")){
+            if(audioFormats.size() > 0){
+                format = audioFormats.get(0);
+
+                for(AudioFormat audioFormat : audioFormats){
+                    if(audioFormat.averageBitrate() > ((AudioFormat) format).averageBitrate()){
+                        format = audioFormat;
+                    }
+                }
+            }else{
+                System.out.println("No audio formats available!");
+                return null;
+            }
+        }else{
+            for(VideoWithAudioFormat videoFormat : videoFormats){
+                if(videoFormat.qualityLabel().equals(quality)){
+                    format = videoFormat;
+                    break;
+                }
+            }
+
+            if(format == null){
+                System.out.println("Could not find video format!");
+                return null;
+            }
+        }
+
+        return downloadVideo(format);
     }
 
     public File downloadVideo(Format format) {
