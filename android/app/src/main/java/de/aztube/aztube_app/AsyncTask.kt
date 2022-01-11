@@ -2,24 +2,17 @@ package de.aztube.aztube_app
 
 import kotlinx.coroutines.*
 
-abstract class AsyncTask<T> {
+class Async<T> {
     private val scope = CoroutineScope(Dispatchers.Main)
 
-    abstract suspend fun background()
-    abstract suspend fun publishProgress(value: T)
-
-    fun execute() {
+    fun run(background: (() -> T), finished: ((data: T) -> Void)){
         scope.launch {
             withContext(Dispatchers.Default) {
-                background()
-            }
-        }
-    }
+                val data = background()
 
-    fun updateProgress(value: T) {
-        scope.launch {
-            withContext(Dispatchers.Main) {
-                publishProgress(value)
+                withContext(Dispatchers.Main){
+                    finished(data)
+                }
             }
         }
     }
