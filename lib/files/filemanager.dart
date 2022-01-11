@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:aztube_app/files/i_filemanager.dart';
-import 'package:aztube_app/files/settingsmodel.dart';
+import 'package:aztube/files/i_filemanager.dart';
+import 'package:aztube/files/settingsmodel.dart';
 import 'package:path_provider/path_provider.dart';
 
 class FileManager extends IFileManager{

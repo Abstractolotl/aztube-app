@@ -1,7 +1,6 @@
-import 'package:aztube_app/files/filemanager.dart';
-import 'package:aztube_app/files/settingsmodel.dart';
+import 'package:aztube/files/filemanager.dart';
+import 'package:aztube/files/settingsmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 class SettingsScreen extends StatefulWidget {
 

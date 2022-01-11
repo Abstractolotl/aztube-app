@@ -1,4 +1,4 @@
-import 'package:aztube_app/files/settingsmodel.dart';
+import 'package:aztube/files/settingsmodel.dart';
 
 abstract class IFileManager {
 

@@ -1,9 +1,9 @@
-import 'package:aztube_app/files/filemanager.dart';
-import 'package:aztube_app/files/i_filemanager.dart';
-import 'package:aztube_app/files/settingsmodel.dart';
-import 'package:aztube_app/views/dashboard.dart';
-import 'package:aztube_app/views/linking.dart';
-import 'package:aztube_app/views/loading.dart';
+import 'package:aztube/files/filemanager.dart';
+import 'package:aztube/files/i_filemanager.dart';
+import 'package:aztube/files/settingsmodel.dart';
+import 'package:aztube/views/dashboard.dart';
+import 'package:aztube/views/linking.dart';
+import 'package:aztube/views/loading.dart';
 import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 import 'package:flutter/material.dart';
 

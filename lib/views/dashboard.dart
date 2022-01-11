@@ -1,6 +1,5 @@
-import 'package:aztube_app/elements/aztubebar.dart';
-import 'package:aztube_app/files/settingsmodel.dart';
-import 'package:aztube_app/views/settings.dart';
+import 'package:aztube/elements/aztubebar.dart';
+import 'package:aztube/files/settingsmodel.dart';
 import 'package:flutter/material.dart';
 
 class DashboardScreen extends StatefulWidget {

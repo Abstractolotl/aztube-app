@@ -1,8 +1,8 @@
-import 'package:aztube_app/elements/aztubebar.dart';
-import 'package:aztube_app/files/filemanager.dart';
-import 'package:aztube_app/files/i_filemanager.dart';
-import 'package:aztube_app/files/settingsmodel.dart';
-import 'package:aztube_app/views/dashboard.dart';
+import 'package:aztube/elements/aztubebar.dart';
+import 'package:aztube/files/filemanager.dart';
+import 'package:aztube/files/i_filemanager.dart';
+import 'package:aztube/files/settingsmodel.dart';
+import 'package:aztube/views/dashboard.dart';
 import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 import 'package:flutter/material.dart';
 
@@ -27,13 +27,15 @@ class LinkingScreenState extends State<LinkingScreen> {
   void initState() {
     super.initState();
     controller = QRReaderController(widget.cameras[0], ResolutionPreset.medium, [CodeFormat.qr], (dynamic value){
-      if(value.length > 10) {
-        widget.settings.deviceHash = value;
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(value.toString())));
+      if(value.toString().length > 10) {
+        widget.settings.deviceHash = value.toString();
         FileManager().save(widget.settings);
-        setState(() {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardScreen(title: 'AzTube', settings: widget.settings)));
-        });
+        setState(() {});
+        Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardScreen(title: 'AzTube', settings: widget.settings)));
+        return;
       }
+      print(value.toString() + " rescan");
       Future.delayed(const Duration(seconds: 3), controller.startScanning);
     });
     controller.initialize().then((_) {
@@ -53,18 +55,42 @@ class LinkingScreenState extends State<LinkingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Widget body = AspectRatio(
-        aspectRatio:
-        controller.value.aspectRatio,
-        child: QRReaderPreview(controller));
-    if (!controller.value.isInitialized) {
-      body = const Center(child: CircularProgressIndicator());
-    }
     return Scaffold(
       appBar: AppBar(title: AzTubeBar.title,),
-      body: body,
+      body: getBody(),
     );
 
   }
 
+  Widget getBody(){
+    if (!controller.value.isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Stack(children: <Widget>[
+      Container(
+          child: Padding(
+              padding: const EdgeInsets.all(0.0),
+              child: Center(
+                child:AspectRatio(aspectRatio: controller.value.aspectRatio,
+                    child: QRReaderPreview(controller)),
+              )
+          )
+      ),
+      Center(
+        child: Stack(
+          children: [
+            SizedBox(
+              height: 300,
+              width: 300,
+              child: Container(
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.red, width: 2.0)
+                ),
+              ),
+            )
+          ],
+        ),
+      )
+    ]);
+  }
 }
