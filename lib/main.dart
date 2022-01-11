@@ -4,7 +4,7 @@ import 'package:aztube/files/settingsmodel.dart';
 import 'package:aztube/views/dashboard.dart';
 import 'package:aztube/views/linking.dart';
 import 'package:aztube/views/loading.dart';
-import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 List<CameraDescription> cameras = [];
@@ -14,7 +14,6 @@ Future<void> main() async{
 
   IFileManager fileManager = FileManager();
 
-  List<CameraDescription> cameras = await availableCameras();
   Future<Settings> settings = fileManager.getSettings();
 
   runApp(AzTube(settings: settings, cameras: cameras));
@@ -38,12 +37,9 @@ class AzTube extends StatelessWidget {
         builder: (context, snapshot) {
           if(snapshot.hasData){
             Settings current = snapshot.data as Settings;
-            if(current.deviceHash == '0'){
-                return LinkingScreen(cameras: cameras, settings: current);
-            }
-            return DashboardScreen(title: 'AzTube', settings: current);
+            return DashboardScreen(settings: current);
           }else if(snapshot.hasError){
-            return LinkingScreen(cameras: cameras, settings: Settings());
+            return DashboardScreen(settings: Settings());
           }
           return const LoadingScreen();
         })

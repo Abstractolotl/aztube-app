@@ -1,3 +1,4 @@
+import 'package:aztube/elements/simplebutton.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
 import 'package:flutter/material.dart';
@@ -17,23 +18,26 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   Key key = UniqueKey();
 
-  void restartApp() {
-    setState(() {
-      key = UniqueKey();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: ListView(children: [
-        Container(child: TextButton(onPressed: (){
-          widget.settings.deviceHash = '0';
-          FileManager().save(widget.settings);
-          restartApp();
-        },child: const Text('Unlink')),padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0))
-      ]),
+      body: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+        child: ListView(children: [
+          SimpleButton(
+            child: const Text('Unlink'),
+            color: (widget.settings.deviceHash.length >= 10) ? Colors.red : Colors.grey,
+            onPressed: () {
+              if(widget.settings.deviceHash.length >= 10){
+                widget.settings.deviceHash = '0';
+                FileManager().save(widget.settings);
+                setState(() {});
+              }
+            },
+          )
+        ]),
+      )
     );
 
   }
