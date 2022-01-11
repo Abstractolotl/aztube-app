@@ -61,6 +61,7 @@ public class MainActivity extends FlutterActivity {
                                 return null;
                             });
                             break;
+                        case "notification":
                     }
                 });
     }
