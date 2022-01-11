@@ -76,7 +76,7 @@ class LinkingScreenState extends State<LinkingScreen> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: AzTubeBar.title,),
+      appBar: AppBar(title: const Text('Link Browser')),
       body: _buildQrView(context),
     );
   }

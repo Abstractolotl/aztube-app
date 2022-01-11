@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:aztube/elements/aztubebar.dart';
+import 'package:aztube/elements/download.dart';
 import 'package:aztube/elements/simplebutton.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
 import 'package:aztube/views/linking.dart';
 import 'package:aztube/views/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class DashboardScreen extends StatefulWidget {
 
@@ -20,10 +22,12 @@ class DashboardScreen extends StatefulWidget {
 
 class DashboardScreenState extends State<DashboardScreen> {
 
+  static const platform = MethodChannel("de.aztube.aztube_app/youtube");
+
   Settings currentSettings = Settings();
   bool loading = true;
 
-
+  ListView downloads = ListView();
 
   @override
   void initState() {
@@ -86,6 +90,8 @@ class DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
+    initDownloads();
+
     return Scaffold(
       appBar: AppBar(
           title: AzTubeBar.title,
@@ -99,6 +105,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                   tooltip: 'Open Settings')
               ]
       ),
+      body: downloads,
     );
 
   }
@@ -120,6 +127,19 @@ class DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       loading = false;
     });
+  }
+
+  void initDownloads(){
+    downloads = ListView(
+      padding: const EdgeInsets.all(5.0),
+      children: [
+        Download(name: "Test 1"),
+        Download(name: "Test 1"),
+        Download(name: "Test 1"),
+        Download(name: "Test 1"),
+        Download(name: "Test 1"),
+      ],
+    );
   }
 
 }

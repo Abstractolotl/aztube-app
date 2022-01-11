@@ -13,4 +13,11 @@ class APIHelper{
     });
   }
 
+  static void unregisterDevice(String deviceToken){
+    var uri = Uri.parse(API_URL + "/unregister");
+    http.post(uri, body: '{"deviceToken": "$deviceToken"}', headers: {
+      HttpHeaders.contentTypeHeader: "application/json"
+    });
+  }
+
 }

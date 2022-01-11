@@ -36,7 +36,6 @@ class AzTube extends StatelessWidget {
       home: FutureBuilder(future: settings,
         builder: (context, snapshot) {
           if(snapshot.hasData){
-            Settings current = snapshot.data as Settings;
             return const DashboardScreen();
           }else if(snapshot.hasError){
             return const DashboardScreen();

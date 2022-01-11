@@ -1,3 +1,4 @@
+import 'package:aztube/api/apihelper.dart';
 import 'package:aztube/elements/simplebutton.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
@@ -30,6 +31,7 @@ class SettingsScreenState extends State<SettingsScreen> {
             color: (widget.settings.deviceHash.length >= 10) ? Colors.red : Colors.grey,
             onPressed: () {
               if(widget.settings.deviceHash.length >= 10){
+                APIHelper.unregisterDevice(widget.settings.deviceHash);
                 widget.settings.deviceHash = '0';
                 FileManager().save(widget.settings);
                 Navigator.pop(context);
