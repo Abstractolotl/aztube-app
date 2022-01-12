@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:developer';
 
-import 'package:aztube/api/videodata.dart';
+import 'package:aztube/api/apihelper.dart';
+import 'package:aztube/api/downloaddata.dart';
 import 'package:aztube/elements/aztubebar.dart';
 import 'package:aztube/elements/download.dart';
 import 'package:aztube/elements/simplebutton.dart';
@@ -12,6 +12,7 @@ import 'package:aztube/views/linking.dart';
 import 'package:aztube/views/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:uuid/uuid.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -21,16 +22,28 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class DashboardScreenState extends State<DashboardScreen> {
+
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
+
+  Future<dynamic> nativeMethodCallHandler(MethodCall methodCall) async {
+    switch(methodCall.method){
+      case "progress":
+        print(methodCall.arguments['videoId']);
+        print(methodCall.arguments['progress']);
+        break;
+    }
+  }
 
   DownloadCache downloadCache = DownloadCache();
   Settings currentSettings = Settings();
   bool loading = true;
 
-  ListView downloads = ListView();
+  Widget downloads = Column();
+  Timer? timer;
 
   @override
   void initState() {
+    platform.setMethodCallHandler(nativeMethodCallHandler);
     super.initState();
     reloadCache();
   }
@@ -110,6 +123,7 @@ class DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(title: AzTubeBar.title, actions: <Widget>[
         IconButton(
             onPressed: () {
+              timer?.cancel();
               Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -118,6 +132,18 @@ class DashboardScreenState extends State<DashboardScreen> {
                   .then(reload);
             },
             icon: const Icon(Icons.settings, color: Colors.white),
+            tooltip: 'Open Settings'),
+        IconButton(
+            onPressed: () {
+              timer?.cancel();
+              downloadCache.queue.clear();
+              downloadCache.downloaded.clear();
+              FileManager().saveDownloads(downloadCache);
+              setState(() {
+                timer?.cancel();
+              });
+            },
+            icon: const Icon(Icons.clear, color: Colors.white),
             tooltip: 'Open Settings')
       ]),
       body: downloads,
@@ -142,6 +168,9 @@ class DashboardScreenState extends State<DashboardScreen> {
     downloadCache = await FileManager().getDownloads();
     setState(() {
       loading = false;
+      if(currentSettings.deviceHash.length >= 10){
+        timer = polling();
+      }
     });
   }
 
@@ -152,7 +181,25 @@ class DashboardScreenState extends State<DashboardScreen> {
         itemCount: queue.length,
         itemBuilder: (context, index) {
           return Download(
-              name: 'Test', video: queue[index], cache: downloadCache);
+              name: 'Test ', video: queue[index], cache: downloadCache);
         });
+  }
+
+  Timer polling(){
+    return Timer.periodic(const Duration(seconds: 5),
+            (timer) async{
+                var response = await APIHelper.fetchDownloads(currentSettings.deviceHash);
+                if(downloadCache.getAll().toSet().length < 2){
+                  var uuid = const Uuid();
+                  DownloadData video = DownloadData();
+                  video.downloadID =  uuid.v4();
+                  video.videoID = 'dQw4w9WgXcQ';
+                  video.quality = '720p';
+                  downloadCache.queue.add(video);
+                  FileManager().saveDownloads(downloadCache);
+                  setState(() {
+                  });
+                }
+            });
   }
 }

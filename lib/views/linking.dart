@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:aztube/api/apihelper.dart';
@@ -9,6 +9,8 @@ import 'package:aztube/files/i_filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+
 
 class LinkingScreen extends StatefulWidget {
 
@@ -82,7 +84,8 @@ class LinkingScreenState extends State<LinkingScreen> {
   }
 
   void registerDevice(String browserCode) async{
-    var response = await APIHelper.registerDevice(browserCode);
+    var deviceName = await getDeviceName();
+    var response = await APIHelper.registerDevice(browserCode, deviceName);
     if(response.statusCode == 200){
       if(jsonDecode(response.body)['success']){
           var deviceToken = jsonDecode(response.body)['deviceToken'];
@@ -143,12 +146,26 @@ class LinkingScreenState extends State<LinkingScreen> {
   }
 
   void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
-    log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
+    dev.log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
     if (!p) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('no Permission')),
       );
     }
+  }
+
+  Future<String> getDeviceName() async{
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    if(Platform.isAndroid){
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      return androidInfo.model ?? 'Android';
+    }
+    if(Platform.isIOS){
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      return iosInfo.utsname.machine ?? 'IOS';
+    }
+    WebBrowserInfo webBrowserInfo = await deviceInfo.webBrowserInfo;
+    return webBrowserInfo.userAgent ?? 'Browser';
   }
 
 }
