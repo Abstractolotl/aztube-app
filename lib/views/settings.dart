@@ -51,7 +51,7 @@ class SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(),
           ListTile(
-              title: const Text('Background downloading'),
+              title: const Text('Download in backround'),
               trailing: Checkbox(
                 checkColor: Colors.white,
                 fillColor: MaterialStateProperty.resolveWith(getColor),
