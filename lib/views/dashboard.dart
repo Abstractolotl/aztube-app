@@ -180,7 +180,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         padding: const EdgeInsets.all(5.0),
         itemCount: queue.length,
         itemBuilder: (context, index) {
-          return Download(video: queue[index], cache: downloadCache);
+          return Download(video: queue[index], cache: downloadCache, state: this);
         });
   }
 
