@@ -3,6 +3,7 @@ import 'package:aztube/elements/simplebutton.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class SettingsScreen extends StatefulWidget {
 
@@ -19,6 +20,15 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   Key key = UniqueKey();
 
+  Color getColor(Set<MaterialState> states) {
+    const Set<MaterialState> interactiveStates = <MaterialState>{
+      MaterialState.pressed,
+      MaterialState.hovered,
+      MaterialState.focused,
+    };
+    return Colors.black54;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,17 +36,48 @@ class SettingsScreenState extends State<SettingsScreen> {
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
         child: ListView(children: [
-          SimpleButton(
-            child: const Text('Unlink'),
-            color: (widget.settings.deviceHash.length >= 10) ? Colors.red : Colors.grey,
-            onPressed: () {
-              if(widget.settings.deviceHash.length >= 10){
-                APIHelper.unregisterDevice(widget.settings.deviceHash);
-                widget.settings.deviceHash = '0';
+          ListTile(
+            title: const Text('Notifications'),
+            trailing: Checkbox(
+              checkColor: Colors.white,
+              fillColor: MaterialStateProperty.resolveWith(getColor),
+              value: widget.settings.notifications,
+              onChanged: (value){
+                widget.settings.notifications = value!;
                 FileManager().saveSettings(widget.settings);
-                Navigator.pop(context);
-              }
-            },
+                setState(() { });
+              },
+            )
+          ),
+          const Divider(),
+          ListTile(
+              title: const Text('Background downloading'),
+              trailing: Checkbox(
+                checkColor: Colors.white,
+                fillColor: MaterialStateProperty.resolveWith(getColor),
+                value: widget.settings.backgroundLoading,
+                onChanged: (value){
+                  widget.settings.backgroundLoading = value!;
+                  FileManager().saveSettings(widget.settings);
+                  setState(() { });
+                },
+              )
+          ),
+          const Divider(),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+            child: SimpleButton(
+              child: const Text('Unlink'),
+              color: (widget.settings.deviceHash.length >= 10) ? Colors.red : Colors.grey,
+              onPressed: () {
+                if(widget.settings.deviceHash.length >= 10){
+                  APIHelper.unregisterDevice(widget.settings.deviceHash);
+                  widget.settings.deviceHash = '0';
+                  FileManager().saveSettings(widget.settings);
+                  Navigator.pop(context);
+                }
+              },
+            ),
           )
         ]),
       )
