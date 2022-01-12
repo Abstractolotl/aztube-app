@@ -80,6 +80,11 @@ public class MainActivity extends FlutterActivity {
                             Integer numPendingDownloads = call.argument("numPendingDownloads");
                             NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
                             break;
+                        case "someTest":
+                            //Integer numPendingDownloads = call.argument("numPendingDownloads");
+                            //NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
+                            new BackgroundService.PollRequest(this).run();
+                            break;
                     }
                 });
     }
