@@ -2,8 +2,11 @@ package de.aztube.aztube_app;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 
@@ -36,6 +39,7 @@ public class MainActivity extends FlutterActivity {
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         NotificationUtil.CreateNotificationChannel(this);
+        BackgroundService.StartBackgroundService(this);
 
         channel = new MethodChannel(getFlutterEngine().getDartExecutor().getBinaryMessenger(), CHANNEL);
     }
@@ -83,7 +87,8 @@ public class MainActivity extends FlutterActivity {
                         case "someTest":
                             //Integer numPendingDownloads = call.argument("numPendingDownloads");
                             //NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
-                            new BackgroundService.PollRequest(this).run();
+                            BackgroundService.StartBackgroundService(this);
+
                             break;
                     }
                 });

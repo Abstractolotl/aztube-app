@@ -1,6 +1,7 @@
 package de.aztube.aztube_app;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -14,16 +15,20 @@ public class NotificationUtil {
     public final static String NOTIFICATION_CHANNEL_ID = "DOWNLOAD_REQUEST_CHANNEL";
 
 
-    public static int ShowPendingDownloadNotification(Activity context, int numPendingDownloads){
+    private static NotificationCompat.Builder buildNotification(Context context, String title, String content) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-                .setContentTitle("Download Request")
-                .setContentText("You have "+numPendingDownloads+" pending Download Requests")
+                .setContentTitle(title)
+                .setContentText(content)
                 //.setStyle(new NotificationCompat.BigTextStyle().bigText("Long Text"))
                 .setSmallIcon(R.drawable.icon_notification)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
 
-        SharedPreferences sp  = context.getPreferences(Context.MODE_PRIVATE);
+        return builder;
+    }
+
+    private static int pushNotification(Context context, Notification notif){
+        SharedPreferences sp  = context.getSharedPreferences("notificationId", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
 
         final int notificationID = sp.getInt("LAST_NOTIFICATION_ID", 0) + 1;
@@ -31,9 +36,19 @@ public class NotificationUtil {
         editor.apply();
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.notify(notificationID, builder.build());
+        notificationManager.notify(notificationID, notif);
 
         return notificationID;
+    }
+
+    public static int ShowPendingDownloadNotification(Context context, int numPendingDownloads){
+        NotificationCompat.Builder builder = buildNotification(context, "Download Request", "You have "+numPendingDownloads+" pending Download Requests");
+        return pushNotification(context, builder.build());
+    }
+
+    public static int ShowSomething(Context context, String title, String content){
+        NotificationCompat.Builder builder = buildNotification(context, title, content);
+        return pushNotification(context, builder.build());
     }
 
     public static void CreateNotificationChannel(Context context) {
