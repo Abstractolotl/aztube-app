@@ -8,11 +8,10 @@ import 'package:flutter/services.dart';
 
 class Download extends StatefulWidget {
 
-  const Download({Key? key, required this.name, required this.video, required this.cache}) : super(key: key);
+  const Download({Key? key, required this.video, required this.cache}) : super(key: key);
 
   final DownloadCache cache;
   final DownloadData video;
-  final String name;
 
   @override
   State<StatefulWidget> createState() {
@@ -24,19 +23,11 @@ class Download extends StatefulWidget {
 class DownloadState extends State<Download> {
 
   bool downloading = false;
-  int progress = 0;
 
   @override
   void initState() {
     super.initState();
-    widget.video.downloading.listen((data) {
-      setState(() {
-        progress = data;
-      });
-    });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +39,11 @@ class DownloadState extends State<Download> {
       color: Colors.black,
     );
     if(downloading){
-      trailing = CircularProgressIndicator(color: Colors.black, value: progress/100,);
+      trailing = const CircularProgressIndicator(color: Colors.black);
     }
     return Column(children: [
       ListTile(
-          title: Text(widget.name),
+          title: Text(widget.video.title),
           trailing: trailing ),
       const Divider()
     ]);

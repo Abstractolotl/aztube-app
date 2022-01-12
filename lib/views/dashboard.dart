@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:aztube/api/apihelper.dart';
 import 'package:aztube/api/downloaddata.dart';
@@ -28,8 +29,6 @@ class DashboardScreenState extends State<DashboardScreen> {
   Future<dynamic> nativeMethodCallHandler(MethodCall methodCall) async {
     switch(methodCall.method){
       case "progress":
-        print(methodCall.arguments['videoId']);
-        print(methodCall.arguments['progress']);
         break;
     }
   }
@@ -38,7 +37,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   Settings currentSettings = Settings();
   bool loading = true;
 
-  Widget downloads = Column();
+  ListView downloads = ListView();
   Timer? timer;
 
   @override
@@ -93,11 +92,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                         child: const Text('Link Browser'),
                         color: Colors.green,
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => LinkingScreen(
-                                      settings: currentSettings))).then(reload);
+                          startLinking();
                         },
                       ),
                       Container(
@@ -132,18 +127,6 @@ class DashboardScreenState extends State<DashboardScreen> {
                   .then(reload);
             },
             icon: const Icon(Icons.settings, color: Colors.white),
-            tooltip: 'Open Settings'),
-        IconButton(
-            onPressed: () {
-              timer?.cancel();
-              downloadCache.queue.clear();
-              downloadCache.downloaded.clear();
-              FileManager().saveDownloads(downloadCache);
-              setState(() {
-                timer?.cancel();
-              });
-            },
-            icon: const Icon(Icons.clear, color: Colors.white),
             tooltip: 'Open Settings')
       ]),
       body: downloads,
@@ -180,8 +163,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         padding: const EdgeInsets.all(5.0),
         itemCount: queue.length,
         itemBuilder: (context, index) {
-          return Download(
-              name: 'Test ', video: queue[index], cache: downloadCache);
+          return Download(video: queue[index], cache: downloadCache);
         });
   }
 
@@ -189,16 +171,19 @@ class DashboardScreenState extends State<DashboardScreen> {
     return Timer.periodic(const Duration(seconds: 5),
             (timer) async{
                 var response = await APIHelper.fetchDownloads(currentSettings.deviceHash);
-                if(downloadCache.getAll().toSet().length < 2){
-                  var uuid = const Uuid();
-                  DownloadData video = DownloadData();
-                  video.downloadID =  uuid.v4();
-                  video.videoID = 'dQw4w9WgXcQ';
-                  video.quality = '720p';
-                  downloadCache.queue.add(video);
-                  FileManager().saveDownloads(downloadCache);
-                  setState(() {
-                  });
+
+                if(response.statusCode == 200){
+                  var jsonResponse = jsonDecode(response.body);
+                  if(jsonResponse['success']){
+                    var downloads = jsonResponse['downloads'];
+                    for (var download in downloads){
+                      DownloadData video = DownloadData.fromJson(download);
+                      downloadCache.queue.add(video);
+                    }
+                    FileManager().saveDownloads(downloadCache);
+                    setState(() {
+                    });
+                  }
                 }
             });
   }

@@ -6,6 +6,10 @@ class DownloadData{
   String downloadID = '0';
   String videoID = '0';
   String quality = 'audio_only';
+
+  String title = 'Title';
+  String author = 'Author';
+
   String fileName = '';
   bool downloaded = false;
   String savedTo = '';
@@ -13,10 +17,12 @@ class DownloadData{
 
   DownloadData();
 
-  DownloadData.fromJson(Map<String, dynamic> json)
+  DownloadData.fromJson(dynamic json)
       : downloadID = json['downloadId'] ?? '0',
         videoID = json['videoId'],
         quality = json['quality'],
+        title = json['title'],
+        author = json['author'],
         fileName = json['fileName'] ?? json['videoID'],
         downloaded = json['downloaded'] ?? false,
         savedTo = json['savedTo'] ?? '';
@@ -25,13 +31,10 @@ class DownloadData{
     'downloadId': downloadID,
     'videoId': videoID,
     'quality': quality,
+    'title': title,
+    'author': author,
     'downloaded': downloaded,
     'savedTo': savedTo,
   };
 
-  Stream<int> get downloading async*{
-    if(progress < 100 && !downloaded){
-      yield progress;
-    }
-  }
 }
