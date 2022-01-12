@@ -21,6 +21,7 @@ import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import java.util.List;
 
 import io.flutter.embedding.android.FlutterActivity;
@@ -29,11 +30,14 @@ import io.flutter.plugin.common.MethodChannel;
 
 public class MainActivity extends FlutterActivity {
     public static final String CHANNEL = "de.aztube.aztube_app/youtube";
+    MethodChannel channel;
 
     @Override
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         NotificationUtil.CreateNotificationChannel(this);
+
+        channel = new MethodChannel(getFlutterEngine().getDartExecutor().getBinaryMessenger(), CHANNEL);
     }
 
     @Override
@@ -182,7 +186,13 @@ public class MainActivity extends FlutterActivity {
             RequestVideoStreamDownload request = new RequestVideoStreamDownload(format, fileOutputStream).callback(new YoutubeProgressCallback<Void>() {
                 @Override
                 public void onDownloading(int progress) {
-                    System.out.println(progress);
+                    HashMap<String, Object> args = new HashMap<>();
+                    args.put("progress", progress);
+
+                    new Async<Void>().run(() -> null, (garbage) -> {
+                        channel.invokeMethod("progress", args);
+                        return null;
+                    });
                 }
 
                 @Override

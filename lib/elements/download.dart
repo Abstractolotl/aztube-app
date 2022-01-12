@@ -20,6 +20,21 @@ class Download extends StatefulWidget {
 }
 
 class DownloadState extends State<Download> {
+  static const platform = MethodChannel("de.aztube.aztube_app/youtube");
+
+  @override
+  void initState(){
+    platform.setMethodCallHandler(nativeMethodCallHandler);
+    super.initState();
+  }
+
+  Future<dynamic> nativeMethodCallHandler(MethodCall methodCall) async {
+    switch(methodCall.method){
+      case "progress":
+        print(methodCall.arguments['progress']);
+        break;
+    }
+  }
 
   bool downloading = false;
 
