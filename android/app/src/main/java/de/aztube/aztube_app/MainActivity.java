@@ -53,7 +53,7 @@ public class MainActivity extends FlutterActivity {
                                 Format format = getVideoFormat(videoInfo, call.argument("quality"));
 
                                 if(format != null){
-                                    return downloadVideo(format, videoInfo, call.argument("quality").equals("audio_only"));
+                                    return downloadVideo(format, videoInfo, call.argument("videoId"), call.argument("quality").equals("audio_only"));
                                 }else{
                                     return false;
                                 }
@@ -134,7 +134,7 @@ public class MainActivity extends FlutterActivity {
         return format;
     }
 
-    public boolean downloadVideo(Format format, VideoInfo videoInfo, Boolean audio) {
+    public boolean downloadVideo(Format format, VideoInfo videoInfo, String videoId, Boolean audio) {
         final Boolean[] success = {false};
 
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
@@ -188,6 +188,7 @@ public class MainActivity extends FlutterActivity {
                 public void onDownloading(int progress) {
                     HashMap<String, Object> args = new HashMap<>();
                     args.put("progress", progress);
+                    args.put("videoId", videoId);
 
                     new Async<Void>().run(() -> null, (garbage) -> {
                         channel.invokeMethod("progress", args);

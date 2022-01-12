@@ -32,6 +32,9 @@ class DownloadState extends State<Download> {
     switch(methodCall.method){
       case "progress":
         print(methodCall.arguments['progress']);
+        print(methodCall.arguments['videoId']);
+
+        //TODO check if videoId is same as this download and display progress
         break;
     }
   }
