@@ -19,7 +19,6 @@ import com.github.kiulian.downloader.model.videos.formats.AudioFormat;
 import com.github.kiulian.downloader.model.videos.formats.Format;
 import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.List;
@@ -45,15 +44,17 @@ public class MainActivity extends FlutterActivity {
                 .setMethodCallHandler((call, result) -> {
                     switch (call.method) {
                         case "downloadVideo":
-                            new Async<Void>().run(() -> {
+                            new Async<Boolean>().run(() -> {
                                 VideoInfo videoInfo = requestVideoInfo(call.argument("videoId"));
                                 Format format = getVideoFormat(videoInfo, call.argument("quality"));
 
-                                downloadVideo(format, videoInfo, call.argument("quality").equals("audio_only"));
-                                return null;
-                            }, (garbage) -> {
-                                result.success("ok");
-
+                                if(format != null){
+                                    return downloadVideo(format, videoInfo, call.argument("quality").equals("audio_only"));
+                                }else{
+                                    return false;
+                                }
+                            }, (success) -> {
+                                result.success(success);
                                 return null;
                             });
                             break;
@@ -64,6 +65,8 @@ public class MainActivity extends FlutterActivity {
                             }, (String data) -> {
                                 if (data != null) {
                                     result.success(data);
+                                }else{
+                                    result.success(false);
                                 }
 
                                 return null;
@@ -92,8 +95,6 @@ public class MainActivity extends FlutterActivity {
     }
 
     public Format getVideoFormat(VideoInfo videoInfo, String quality) {
-        String videoTitle = videoInfo.details().title();
-
         List<VideoWithAudioFormat> videoFormats = videoInfo.videoWithAudioFormats();
         List<AudioFormat> audioFormats = videoInfo.audioFormats();
 
@@ -129,12 +130,14 @@ public class MainActivity extends FlutterActivity {
         return format;
     }
 
-    public void downloadVideo(Format format, VideoInfo videoInfo, Boolean audioOnly) {
+    public boolean downloadVideo(Format format, VideoInfo videoInfo, Boolean audio) {
+        final Boolean[] success = {false};
+
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
 
         String filename;
 
-        if(audioOnly){
+        if(audio){
             filename = "video_" + System.currentTimeMillis() + ".mp4";
         }else{
             filename = "audio_" + System.currentTimeMillis() + ".weba";
@@ -145,7 +148,7 @@ public class MainActivity extends FlutterActivity {
 
         Uri uriSaved;
 
-        if(audioOnly){
+        if(audio){
             contentValues.put(MediaStore.Audio.Media.TITLE, filename);
             contentValues.put(MediaStore.Audio.Media.DISPLAY_NAME, videoInfo.details().title());
             contentValues.put(MediaStore.Audio.Media.MIME_TYPE, "audio/ogg");
@@ -184,27 +187,33 @@ public class MainActivity extends FlutterActivity {
 
                 @Override
                 public void onFinished(Void data) {
-
+                    success[0] = true;
                 }
 
                 @Override
                 public void onError(Throwable throwable) {
                     System.out.println("Error downloading video");
+                    success[0] = false;
                 }
             });
 
             youtubeDownloader.downloadVideoStream(request).data();
 
-            contentValues.clear();
-            if(audioOnly){
-                contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0);
-            }else{
-                contentValues.put(MediaStore.Video.Media.IS_PENDING, 0);
-            }
+            if(success[0]){
+                contentValues.clear();
 
-            getContentResolver().update(uriSaved, contentValues, null, null);
+                if(audio && success[0]){
+                    contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0);
+                }else{
+                    contentValues.put(MediaStore.Video.Media.IS_PENDING, 0);
+                }
+
+                getContentResolver().update(uriSaved, contentValues, null, null);
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+        return success[0];
     }
 }
