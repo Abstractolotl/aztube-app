@@ -1,14 +1,14 @@
-import 'package:aztube/api/videodata.dart';
+import 'package:aztube/api/downloaddata.dart';
 
 class DownloadCache{
 
-  List<VideoData> queue = [];
-  List<VideoData> downloaded = [];
+  List<DownloadData> queue = [];
+  List<DownloadData> downloaded = [];
 
   DownloadCache();
 
-  List<VideoData> getAll(){
-    List<VideoData> all = [];
+  List<DownloadData> getAll(){
+    List<DownloadData> all = [];
 
     all.addAll(queue);
     all.addAll(downloaded);
@@ -28,7 +28,7 @@ class DownloadCache{
     'downloaded': convertTo(downloaded)
   };
 
-  List<dynamic> convertTo(List<VideoData> list){
+  List<dynamic> convertTo(List<DownloadData> list){
     List<dynamic> response = [];
     for (var element in list) {
       response.add(element.toJson());
@@ -36,10 +36,10 @@ class DownloadCache{
     return response;
   }
 
-  static List<VideoData> convertBack(List<dynamic> list){
-    List<VideoData> response = [];
+  static List<DownloadData> convertBack(List<dynamic> list){
+    List<DownloadData> response = [];
     for (var element in list) {
-      response.add(VideoData.fromJson(element));
+      response.add(DownloadData.fromJson(element));
     }
     return response;
   }

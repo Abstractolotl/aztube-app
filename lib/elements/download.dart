@@ -1,4 +1,6 @@
-import 'package:aztube/api/videodata.dart';
+import 'dart:developer';
+
+import 'package:aztube/api/downloaddata.dart';
 import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:flutter/material.dart';
@@ -6,11 +8,10 @@ import 'package:flutter/services.dart';
 
 class Download extends StatefulWidget {
 
-  const Download({Key? key, required this.name, required this.video, required this.cache}) : super(key: key);
+  const Download({Key? key, required this.video, required this.cache}) : super(key: key);
 
   final DownloadCache cache;
-  final VideoData video;
-  final String name;
+  final DownloadData video;
 
   @override
   State<StatefulWidget> createState() {
@@ -20,26 +21,13 @@ class Download extends StatefulWidget {
 }
 
 class DownloadState extends State<Download> {
-  static const platform = MethodChannel("de.aztube.aztube_app/youtube");
-
-  @override
-  void initState(){
-    platform.setMethodCallHandler(nativeMethodCallHandler);
-    super.initState();
-  }
-
-  Future<dynamic> nativeMethodCallHandler(MethodCall methodCall) async {
-    switch(methodCall.method){
-      case "progress":
-        print(methodCall.arguments['progress']);
-        print(methodCall.arguments['videoId']);
-
-        //TODO check if videoId is same as this download and display progress
-        break;
-    }
-  }
 
   bool downloading = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +43,7 @@ class DownloadState extends State<Download> {
     }
     return Column(children: [
       ListTile(
-          title: Text(widget.name),
+          title: Text(widget.video.title),
           trailing: trailing ),
       const Divider()
     ]);
@@ -70,15 +58,25 @@ class DownloadState extends State<Download> {
     }
   }
 
-  void downloadVideo(VideoData video) async {
+  void downloadVideo(DownloadData video) async {
     const platform = MethodChannel("de.aztube.aztube_app/youtube");
     Map<String, dynamic> args = {
       "videoId": video.videoID,
-      "quality": video.quality
+      "quality": video.quality,
+      "downloadId": video.downloadID
     };
 
-    final String result = await platform.invokeMethod("downloadVideo", args);
-    if(result.length > 2){
+    final bool result = await platform.invokeMethod("downloadVideo", args);
+    if(!result){
+      setState(() {
+        downloading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Download failed'),
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating),
+      );
+    }else{
       widget.cache.queue.remove(widget.video);
       widget.video.downloaded = true;
       widget.cache.downloaded.add(widget.video);
