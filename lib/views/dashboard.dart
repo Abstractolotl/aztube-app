@@ -29,6 +29,13 @@ class DashboardScreenState extends State<DashboardScreen> {
   Future<dynamic> nativeMethodCallHandler(MethodCall methodCall) async {
     switch(methodCall.method){
       case "progress":
+      /**
+       * Available parameters:
+       * integer methodCall.arguments['progress']
+       * string methodCall.arguments['videoId']
+       * string methodCall.arguments['downloadId']
+       */
+
         break;
     }
   }

@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
@@ -37,7 +38,7 @@ public class MainActivity extends FlutterActivity {
         super.onCreate(savedInstanceState);
         NotificationUtil.CreateNotificationChannel(this);
 
-        channel = new MethodChannel(getFlutterEngine().getDartExecutor().getBinaryMessenger(), CHANNEL);
+        channel = new MethodChannel(Objects.requireNonNull(getFlutterEngine()).getDartExecutor().getBinaryMessenger(), CHANNEL);
     }
 
     @Override
@@ -49,11 +50,19 @@ public class MainActivity extends FlutterActivity {
                     switch (call.method) {
                         case "downloadVideo":
                             new Async<Boolean>().run(() -> {
-                                VideoInfo videoInfo = requestVideoInfo(call.argument("videoId"));
-                                Format format = getVideoFormat(videoInfo, call.argument("quality"));
+                                String videoId = call.argument("videoId");
+                                String quality = call.argument("quality");
+                                String downloadId = call.argument("downloadId");
+
+                                VideoInfo videoInfo = requestVideoInfo(videoId);
+
+                                Format format = null;
+                                if (quality != null) {
+                                    format = getVideoFormat(videoInfo, quality);
+                                }
 
                                 if(format != null){
-                                    return downloadVideo(format, videoInfo, call.argument("videoId"), call.argument("quality").equals("audio_only"));
+                                    return downloadVideo(format, videoInfo, videoId, downloadId, quality.equals("audio_only"));
                                 }else{
                                     return false;
                                 }
@@ -134,7 +143,7 @@ public class MainActivity extends FlutterActivity {
         return format;
     }
 
-    public boolean downloadVideo(Format format, VideoInfo videoInfo, String videoId, Boolean audio) {
+    public boolean downloadVideo(Format format, VideoInfo videoInfo, String videoId, String downloadId, Boolean audio) {
         final Boolean[] success = {false};
 
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
@@ -142,9 +151,9 @@ public class MainActivity extends FlutterActivity {
         String filename;
 
         if(audio){
-            filename = "video_" + System.currentTimeMillis() + ".mp4";
+            filename = "video_" + downloadId + ".mp4";
         }else{
-            filename = "audio_" + System.currentTimeMillis() + ".weba";
+            filename = "audio_" + downloadId + ".weba";
         }
 
         ContentValues contentValues = new ContentValues();
@@ -189,6 +198,7 @@ public class MainActivity extends FlutterActivity {
                     HashMap<String, Object> args = new HashMap<>();
                     args.put("progress", progress);
                     args.put("videoId", videoId);
+                    args.put("downloadId", downloadId);
 
                     new Async<Void>().run(() -> null, (garbage) -> {
                         channel.invokeMethod("progress", args);
@@ -213,7 +223,7 @@ public class MainActivity extends FlutterActivity {
             if(success[0]){
                 contentValues.clear();
 
-                if(audio && success[0]){
+                if(audio){
                     contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0);
                 }else{
                     contentValues.put(MediaStore.Video.Media.IS_PENDING, 0);

@@ -62,7 +62,8 @@ class DownloadState extends State<Download> {
     const platform = MethodChannel("de.aztube.aztube_app/youtube");
     Map<String, dynamic> args = {
       "videoId": video.videoID,
-      "quality": video.quality
+      "quality": video.quality,
+      "downloadId": video.downloadID
     };
 
     final bool result = await platform.invokeMethod("downloadVideo", args);
