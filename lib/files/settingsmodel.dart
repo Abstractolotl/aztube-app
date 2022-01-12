@@ -1,9 +1,9 @@
 class Settings {
 
   String deviceHash = '0';
-  String fileLocation = 'Downloads/';
+  String fileLocation = '';
+  bool notifications = true;
   bool backgroundLoading = false;
-  bool notifications = false;
 
   Settings();
 
@@ -11,7 +11,7 @@ class Settings {
       : deviceHash = json['device'],
         fileLocation = json['fileLocation'],
         backgroundLoading = json['background'] ?? false,
-        notifications = json['notifications'] ?? false;
+        notifications = json['notifications'] ?? true;
 
   Map<String, dynamic> toJson() => {
     'device': deviceHash,
