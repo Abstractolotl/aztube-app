@@ -3,6 +3,7 @@ import 'package:aztube/elements/simplebutton.dart';
 import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class DownloadScreen extends StatefulWidget {
 
@@ -22,9 +23,13 @@ class DownloadScreenState extends State<DownloadScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-        appBar: AppBar(title: Text(widget.video.title)),
+        appBar: AppBar(title: const Text('Options')),
         body: ListView(
           children: [
+            ListTile(
+              title: Text('Author: ${widget.video.title}'),
+            ),
+            const Divider(),
             ListTile(
               title: Text('Author: ${widget.video.author}'),
             ),
@@ -38,32 +43,39 @@ class DownloadScreenState extends State<DownloadScreen> {
             ),
             const Divider(),
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SimpleButton(
-                  color: Colors.orange,
-                  child: const Text('Remove'),
-                  onPressed: (){
-                    removeFromList();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${widget.video.title} removed'),
-                          duration: const Duration(seconds: 2),
-                          behavior: SnackBarBehavior.floating),
-                    );
-                    Navigator.pop(context);
-                  },
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  child: SimpleButton(
+                    color: Colors.orange,
+                    child: const Text('Remove'),
+                    onPressed: (){
+                      removeFromList();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${widget.video.title} removed'),
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating),
+                      );
+                      Navigator.pop(context);
+                    },
+                  )
                 ),
-                SimpleButton(
-                  disabled: !widget.video.downloaded,
-                  color: widget.video.downloaded ? Colors.orange : Colors.grey,
-                  child: const Text('Delete'),
-                  onPressed: (){
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${widget.video.title} deleted'),
-                          duration: const Duration(seconds: 2),
-                          behavior: SnackBarBehavior.floating),
-                    );
-                  },
-                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  child: SimpleButton(
+                    disabled: !widget.video.downloaded,
+                    color: widget.video.downloaded ? Colors.orange : Colors.grey,
+                    child: const Text('Delete'),
+                    onPressed: (){
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${widget.video.title} deleted'),
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating),
+                      );
+                    },
+                  ),
+                )
               ],
             )
           ],

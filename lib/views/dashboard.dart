@@ -192,7 +192,6 @@ class DashboardScreenState extends State<DashboardScreen> {
     return Timer.periodic(const Duration(seconds: timeout),
             (timer) async{
                 var response = await APIHelper.fetchDownloads(currentSettings.deviceHash);
-
                 if(response.statusCode == 200){
                   var jsonResponse = jsonDecode(response.body);
                   if(jsonResponse['success']){
