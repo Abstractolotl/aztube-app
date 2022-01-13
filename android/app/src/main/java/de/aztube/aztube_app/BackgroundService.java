@@ -106,11 +106,11 @@ public class BackgroundService extends Service {
         public void run() {
             RequestQueue queue = Volley.newRequestQueue(context);
 
-            Request request = new GsonRequest<PollResponse>(Request.Method.POST, "http://de2.lucaspape.de:4020/poll", PollResponse.class,
+            Request request = new GsonRequest<PollResponse>(Request.Method.GET, "http://de2.lucaspape.de:4020/poll/" + deviceToken, PollResponse.class,
                     response -> {
                         if(response.getDownloads() == null || response.getDownloads().size() <= 0) return;
                         DownloadRequest req1 = response.getDownloads().get(0);
-                        Log.d("AzTube", req1.getVideoID());
+                        Log.d("AzTube", req1.getVideoId());
                         if(settingAutoDownload) {
                             NotificationUtil.ShowSomething(context, "New Code", req1.getTitle());
                         } else {
@@ -122,19 +122,7 @@ public class BackgroundService extends Service {
                         Log.d("AzTube", error.toString(), error);
                         NotificationUtil.ShowSomething(context, "Error", "Something went Wrong :c");
                     }
-                    ){
-                @Override
-                public byte[] getBody() throws AuthFailureError {
-                    return ("{\"deviceToken\":\""+deviceToken+"\"}").getBytes(StandardCharsets.UTF_8);
-                }
-
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    Map<String, String> map = new HashMap<>();
-                    map.put("Content-Type", "application/json");
-                    return map;
-                }
-            };
+                    );
 
             queue.add(request);
         }

@@ -2,8 +2,8 @@ package de.aztube.aztube_app;
 
 public class DownloadRequest {
 
-    private int downloadID;
-    private String videoID;
+    private int downloadId;
+    private String videoId;
     private String title;
     private String author;
     private String quality;
@@ -11,28 +11,28 @@ public class DownloadRequest {
     public DownloadRequest() {
     }
 
-    public DownloadRequest(int downloadID, String videoID, String title, String author, String quality) {
-        this.downloadID = downloadID;
-        this.videoID = videoID;
+    public DownloadRequest(int downloadId, String videoId, String title, String author, String quality) {
+        this.downloadId = downloadId;
+        this.videoId = videoId;
         this.title = title;
         this.author = author;
         this.quality = quality;
     }
 
-    public int getDownloadID() {
-        return downloadID;
+    public int getDownloadId() {
+        return downloadId;
     }
 
-    public void setDownloadID(int downloadID) {
-        this.downloadID = downloadID;
+    public void setDownloadId(int downloadId) {
+        this.downloadId = downloadId;
     }
 
-    public String getVideoID() {
-        return videoID;
+    public String getVideoId() {
+        return videoId;
     }
 
-    public void setVideoID(String videoID) {
-        this.videoID = videoID;
+    public void setVideoId(String videoId) {
+        this.videoId = videoId;
     }
 
     public String getTitle() {
