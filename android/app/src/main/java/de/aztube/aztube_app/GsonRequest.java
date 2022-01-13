@@ -32,7 +32,7 @@ public class GsonRequest<T> extends Request<T> {
 
             T obj = gson.fromJson(json, clazz);
             return Response.success( obj,
-                    HttpHeaderParser.parsCacheHeaders(response));
+                    HttpHeaderParser.parseCacheHeaders(response));
         } catch (UnsupportedEncodingException | JsonSyntaxException e) {
             return Response.error(new ParseError(e));
         }
