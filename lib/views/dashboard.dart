@@ -165,6 +165,20 @@ class DashboardScreenState extends State<DashboardScreen> {
           return Download(
               video: queue[index], cache: downloadCache, state: this);
         });
+    
+    initRunningDownloads();
+  }
+  
+  void initRunningDownloads() async {
+    List<dynamic> result = await platform.invokeMethod("getActiveDownloads");
+
+    for(var i = 0; i < result.length; i++){
+      Map<String, dynamic> args = {
+        "downloadId": result[i]["downloadId"]
+      };
+
+      await platform.invokeMethod("registerDownloadProgressUpdate", args);
+    }
   }
 
   Timer polling() {
