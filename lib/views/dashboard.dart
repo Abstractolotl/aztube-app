@@ -100,27 +100,6 @@ class DashboardScreenState extends State<DashboardScreen> {
                         onPressed: () {
                           startLinking();
                         },
-                      ),
-                      Container(
-                        height: 10.0,
-                      ),
-                      SimpleButton(
-                        child: const Text('Show Notification'),
-                        color: Colors.green,
-                        onPressed: () {
-                          platform.invokeMethod(
-                              "showNotification", {"numPendingDownloads": 13});
-                        },
-                      ),
-                      Container(
-                        height: 10.0,
-                      ),
-                      SimpleButton(
-                        child: const Text('Send some Request'),
-                        color: Colors.green,
-                        onPressed: () {
-                          platform.invokeMethod("someTest");
-                        },
                       )
                     ],
                   )))

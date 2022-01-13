@@ -89,14 +89,10 @@ public class MainActivity extends FlutterActivity {
                                 return null;
                             });
                             break;
-                        case "showNotification":
-                            Integer numPendingDownloads = call.argument("numPendingDownloads");
-                            NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
-                            break;
                         case "someTest":
                             //Integer numPendingDownloads = call.argument("numPendingDownloads");
                             //NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
-                            BackgroundService.StartBackgroundService(this);
+                            //BackgroundService.StartBackgroundService(this);
 
                             break;
                     }
