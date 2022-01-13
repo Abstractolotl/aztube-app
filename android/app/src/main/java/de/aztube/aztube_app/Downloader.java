@@ -83,8 +83,7 @@ public class Downloader {
     }
 
     public static String getThumbnailUrl(String videoId) {
-        VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
-        return Downloader.getThumbnailUrl(videoInfo);
+        return "https://i.ytimg.com/vi/" + videoId + "/maxresdefault.jpg";
     }
 
     public static List<HashMap<String, Object>> getActiveDownloads() {
