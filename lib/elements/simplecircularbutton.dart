@@ -5,6 +5,7 @@ class SimpleCircularButton extends StatelessWidget {
   const SimpleCircularButton(
       {this.fillColor = Colors.transparent,
         required this.iconData,
+        this.disabled = false,
         this.iconColor = Colors.blue,
         this.outlineColor = Colors.transparent,
         this.notificationFillColor = Colors.red,
@@ -14,6 +15,7 @@ class SimpleCircularButton extends StatelessWidget {
         Key? key})
       : super(key: key);
 
+  final bool disabled;
   final IconData iconData;
   final Color fillColor;
   final Color outlineColor;
@@ -36,6 +38,7 @@ class SimpleCircularButton extends StatelessWidget {
             shape: CircleBorder(side: BorderSide(color: outlineColor)),
           ),
           child: IconButton(
+            enableFeedback: !disabled,
             padding: EdgeInsets.zero,
             splashRadius: radius / 2,
             iconSize: radius / 2,

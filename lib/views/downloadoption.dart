@@ -36,11 +36,7 @@ class DownloadScreenState extends State<DownloadScreen> {
             ),
             const Divider(),
             ListTile(
-              title: Text(widget.video.downloaded ? 'Location: ${widget.video.savedTo}' : 'Location: -'),
-              trailing: IconButton(
-                icon: const Icon(Icons.copy),
-                onPressed: () {  },
-              ),
+              title: Text(widget.video.downloaded ? 'Location: ${widget.video.savedTo}' : 'Location: Not Downloaded'),
             ),
             const Divider(),
             Row(
@@ -70,18 +66,22 @@ class DownloadScreenState extends State<DownloadScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: SimpleCircularButton(
                     iconData: Icons.play_arrow,
-                    fillColor: Colors.green,
+                    fillColor: widget.video.downloaded ? Colors.green : Colors.grey,
                     iconColor: Colors.white,
-                    onPressed: (){},
+                    onPressed: (){
+                      if(!widget.video.downloaded) return;
+                      // TODO Open Download in MediaPlayer
+                    },
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: SimpleCircularButton(
                     iconData: Icons.delete_forever,
-                    fillColor: Colors.red,
+                    fillColor: widget.video.downloaded ? Colors.red : Colors.grey,
                     iconColor: Colors.white,
                     onPressed: (){
+                      if(!widget.video.downloaded) return;
                       displayDialog('Delete completely', 'The download will be completely removed from your device.', () {
                         Navigator.pop(context, 'OK');
                         removeFromList();
