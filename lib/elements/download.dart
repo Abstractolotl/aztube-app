@@ -82,16 +82,18 @@ class DownloadState extends State<Download> {
     };
 
     final dynamic result = await platform.invokeMethod("downloadVideo", args);
-    if(!result){
-      setState(() {
-        downloading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Download failed'),
-            duration: Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating),
-      );
-    }else{
+    try{
+      if(!result){
+        setState(() {
+          downloading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Download failed'),
+              duration: Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating),
+        );
+      }
+    }catch(e){
       widget.cache.queue.remove(widget.video);
 
       widget.video.downloaded = true;

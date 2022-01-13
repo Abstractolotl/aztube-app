@@ -22,6 +22,11 @@ class DownloadScreen extends StatefulWidget {
 class DownloadScreenState extends State<DownloadScreen> {
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
 
     return Scaffold(
