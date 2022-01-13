@@ -5,6 +5,7 @@ import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 class DownloadScreen extends StatefulWidget {
 
@@ -70,7 +71,7 @@ class DownloadScreenState extends State<DownloadScreen> {
                     iconColor: Colors.white,
                     onPressed: (){
                       if(!widget.video.downloaded) return;
-                      // TODO Open Download in MediaPlayer
+                      play();
                     },
                   ),
                 ),
@@ -84,13 +85,7 @@ class DownloadScreenState extends State<DownloadScreen> {
                       if(!widget.video.downloaded) return;
                       displayDialog('Delete completely', 'The download will be completely removed from your device.', () {
                         Navigator.pop(context, 'OK');
-                        removeFromList();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${widget.video.title} deleted'),
-                              duration: const Duration(seconds: 2),
-                              behavior: SnackBarBehavior.floating),
-                        );
-                        Navigator.pop(context);
+                        deleteCompletely();
                       });
                     },
                   ),
@@ -110,6 +105,32 @@ class DownloadScreenState extends State<DownloadScreen> {
       widget.cache.queue.remove(widget.video);
     }
     FileManager().saveDownloads(widget.cache);
+  }
+
+  void deleteCompletely() async{
+    const platform = MethodChannel("de.aztube.aztube_app/youtube");
+    Map<String, dynamic> args = {
+      "uri": widget.video.savedTo
+    };
+    bool result = await platform.invokeMethod("deleteDownload", args);
+    if(result){
+      removeFromList();
+      Navigator.pop(context);
+    }else{
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Deletion failed'),
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating),
+      );
+    }
+  }
+
+  void play() async{
+    const platform = MethodChannel("de.aztube.aztube_app/youtube");
+    Map<String, dynamic> args = {
+      "uri": widget.video.savedTo
+    };
+    platform.invokeMethod("openDownload", args);
   }
 
   Future<void> displayDialog(String title, String message, dynamic onApprove){

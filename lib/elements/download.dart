@@ -81,7 +81,7 @@ class DownloadState extends State<Download> {
       "downloadId": video.downloadId
     };
 
-    final bool result = await platform.invokeMethod("downloadVideo", args);
+    final dynamic result = await platform.invokeMethod("downloadVideo", args);
     if(!result){
       setState(() {
         downloading = false;
@@ -93,7 +93,10 @@ class DownloadState extends State<Download> {
       );
     }else{
       widget.cache.queue.remove(widget.video);
+
       widget.video.downloaded = true;
+      widget.video.savedTo = result;
+
       widget.cache.downloaded.add(widget.video);
       FileManager().saveDownloads(widget.cache);
       setState(() {
