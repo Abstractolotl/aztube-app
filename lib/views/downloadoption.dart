@@ -1,5 +1,6 @@
 import 'package:aztube/api/downloaddata.dart';
 import 'package:aztube/elements/simplebutton.dart';
+import 'package:aztube/elements/simplecircularbutton.dart';
 import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:flutter/material.dart';
@@ -47,9 +48,52 @@ class DownloadScreenState extends State<DownloadScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  child: SimpleCircularButton(
+                    iconData: Icons.delete_forever,
+                    fillColor: Colors.red,
+                    iconColor: Colors.white,
+                    onPressed: (){
+                      displayDialog('Delete completely', 'This download will completely removed from your system', () {
+                        Navigator.pop(context, 'OK');
+                      });
+                    },
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  child: SimpleCircularButton(
+                    iconData: Icons.download,
+                    fillColor: Colors.green,
+                    iconColor: Colors.white,
+                    onPressed: (){
+
+                    },
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  child: SimpleCircularButton(
+                    iconData: Icons.play_arrow,
+                    fillColor: Colors.green,
+                    iconColor: Colors.white,
+                    onPressed: (){},
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  child: SimpleCircularButton(
+                    iconData: Icons.delete,
+                    fillColor: Colors.red,
+                    iconColor: Colors.white,
+                    onPressed: (){},
+                  ),
+                ),
+                /*
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: SimpleButton(
                     color: Colors.orange,
-                    child: const Text('Remove'),
+                    child: const Text('Remove Item'),
                     onPressed: (){
                       removeFromList();
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +110,7 @@ class DownloadScreenState extends State<DownloadScreen> {
                   child: SimpleButton(
                     disabled: !widget.video.downloaded,
                     color: widget.video.downloaded ? Colors.orange : Colors.grey,
-                    child: const Text('Delete'),
+                    child: const Text('Delete File'),
                     onPressed: (){
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('${widget.video.title} deleted'),
@@ -76,6 +120,7 @@ class DownloadScreenState extends State<DownloadScreen> {
                     },
                   ),
                 )
+                 */
               ],
             )
           ],
@@ -91,6 +136,29 @@ class DownloadScreenState extends State<DownloadScreen> {
       widget.cache.queue.remove(widget.video);
     }
     FileManager().saveDownloads(widget.cache);
+  }
+
+  Future<void> displayDialog(String title, String message, dynamic onApprove){
+    return showDialog<void>(context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(title),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  Text(message),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context, 'Cancel'),
+                  child: const Text('Cancel')),
+              TextButton(onPressed: onApprove as void Function()?,
+                child: const Text('Accept'))
+            ],
+          );
+        });
   }
 
 }
