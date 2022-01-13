@@ -49,24 +49,20 @@ class DownloadScreenState extends State<DownloadScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: SimpleCircularButton(
-                    iconData: Icons.delete_forever,
+                    iconData: Icons.delete,
                     fillColor: Colors.red,
                     iconColor: Colors.white,
                     onPressed: (){
-                      displayDialog('Delete completely', 'This download will completely removed from your system', () {
+                      displayDialog('Delete from List', 'The download is removed from the list but remains available on the device.', () {
                         Navigator.pop(context, 'OK');
+                        removeFromList();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('${widget.video.title} removed'),
+                              duration: const Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating),
+                        );
+                        Navigator.pop(context);
                       });
-                    },
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                  child: SimpleCircularButton(
-                    iconData: Icons.download,
-                    fillColor: Colors.green,
-                    iconColor: Colors.white,
-                    onPressed: (){
-
                     },
                   ),
                 ),
@@ -82,45 +78,23 @@ class DownloadScreenState extends State<DownloadScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: SimpleCircularButton(
-                    iconData: Icons.delete,
+                    iconData: Icons.delete_forever,
                     fillColor: Colors.red,
                     iconColor: Colors.white,
-                    onPressed: (){},
-                  ),
-                ),
-                /*
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                  child: SimpleButton(
-                    color: Colors.orange,
-                    child: const Text('Remove Item'),
                     onPressed: (){
-                      removeFromList();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${widget.video.title} removed'),
-                            duration: const Duration(seconds: 2),
-                            behavior: SnackBarBehavior.floating),
-                      );
-                      Navigator.pop(context);
-                    },
-                  )
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                  child: SimpleButton(
-                    disabled: !widget.video.downloaded,
-                    color: widget.video.downloaded ? Colors.orange : Colors.grey,
-                    child: const Text('Delete File'),
-                    onPressed: (){
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${widget.video.title} deleted'),
-                            duration: const Duration(seconds: 2),
-                            behavior: SnackBarBehavior.floating),
-                      );
+                      displayDialog('Delete completely', 'The download will be completely removed from your device.', () {
+                        Navigator.pop(context, 'OK');
+                        removeFromList();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('${widget.video.title} deleted'),
+                              duration: const Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating),
+                        );
+                        Navigator.pop(context);
+                      });
                     },
                   ),
-                )
-                 */
+                ),
               ],
             )
           ],
