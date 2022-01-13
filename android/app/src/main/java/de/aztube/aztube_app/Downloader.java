@@ -234,7 +234,7 @@ public class Downloader {
             if (ReturnCode.isSuccess(session.getReturnCode())) {
                 Download download = new Download(false, 100, downloadId, videoId);
 
-                new Async<Void>().run(() -> null, (garbage) -> {
+                new Async<Void>().runOnMain(() -> {
                     downloads.put(downloadId, download);
 
                     ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
@@ -369,7 +369,7 @@ public class Downloader {
             public void onDownloading(int progress) {
                 Download download = new Download(false, (int) (progressStart + (progress * progressFactor)), downloadId, videoId);
 
-                new Async<Void>().run(() -> null, (garbage) -> {
+                new Async<Void>().runOnMain(() -> {
                     downloads.put(downloadId, download);
 
                     ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
