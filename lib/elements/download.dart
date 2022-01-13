@@ -43,10 +43,10 @@ class DownloadState extends State<Download> {
         }
       },
       icon: Icon(widget.video.downloaded  ? Icons.download_done : Icons.download),
-      color: Colors.black,
+      color: widget.video.downloaded ? Colors.green : Colors.black,
     );
     if(downloading){
-      trailing = CircularProgressIndicator(color: Colors.black, value: widget.video.progress/100,);
+      trailing = CircularProgressIndicator(color: Colors.green, value: widget.video.progress/100,);
     }
     return Column(children: [
       ListTile(
