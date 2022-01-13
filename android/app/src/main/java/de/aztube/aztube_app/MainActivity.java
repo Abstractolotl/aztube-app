@@ -95,6 +95,15 @@ public class MainActivity extends FlutterActivity {
                             //BackgroundService.StartBackgroundService(this);
 
                             break;
+                        case "settingsChanged":
+                            //Integer numPendingDownloads = call.argument("numPendingDownloads");
+                            //NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
+                            //BackgroundService.StartBackgroundService(this);
+                            Intent bgStartIntent = new Intent(this, BackgroundService.class);
+                            bgStartIntent.putExtra("settingsChanged", true);
+                            startService(bgStartIntent);
+
+                            break;
                     }
                 });
     }
