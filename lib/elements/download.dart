@@ -41,20 +41,6 @@ class DownloadState extends State<Download> {
           startDownload();
         }
       },
-<<<<<<< Updated upstream
-      icon: Icon(widget.video.downloaded  ? Icons.download_done : Icons.download),
-      color: widget.video.downloaded ? Colors.green : Colors.black,
-    );
-    if(downloading){
-      trailing = CircularProgressIndicator(color: Colors.green, value: widget.video.progress/100,);
-    }
-    var type = widget.video.quality == 'audio' ? ' [Audio]' : ' [Video]';
-    return Column(children: [
-      ListTile(
-          title: Text(widget.video.title + type),
-          trailing: trailing,
-          onLongPress: openInformationView,
-=======
       icon:
           Icon(widget.video.downloaded ? Icons.download_done : Icons.download),
       color: widget.video.downloaded ? Colors.green : Colors.black,
@@ -111,7 +97,6 @@ class DownloadState extends State<Download> {
         ),
         trailing: trailing,
         onLongPress: openInformationView,
->>>>>>> Stashed changes
       ),
       const Divider()
     ]);
