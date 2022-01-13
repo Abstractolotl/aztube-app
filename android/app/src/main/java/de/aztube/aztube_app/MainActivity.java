@@ -2,6 +2,7 @@ package de.aztube.aztube_app;
 
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -39,14 +40,11 @@ public class MainActivity extends FlutterActivity {
                                 String quality = call.argument("quality");
                                 Integer downloadId = call.argument("downloadId");
 
-                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (download) -> new Async<Void>().run(() -> null, (garbage) -> {
-                                    channel.invokeMethod("progress", download.toHashMap());
-                                    return null;
-                                }));
+                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (download) -> channel.invokeMethod("progress", download.toHashMap()));
                             }, (uri) -> {
-                                if(uri != null){
+                                if (uri != null) {
                                     result.success(uri);
-                                }else{
+                                } else {
                                     result.success(false);
                                 }
 
@@ -57,7 +55,7 @@ public class MainActivity extends FlutterActivity {
                             new Async<String>().run(() -> Downloader.getThumbnailUrl(call.argument("videoId")), (String data) -> {
                                 if (data != null) {
                                     result.success(data);
-                                }else{
+                                } else {
                                     result.success(false);
                                 }
 
@@ -80,7 +78,7 @@ public class MainActivity extends FlutterActivity {
                         case "registerDownloadProgressUpdate":
                             Integer downloadId = call.argument("downloadId");
 
-                            Downloader.registerProgressUpdate(downloadId, download -> channel.invokeMethod("progress", download.toHashMap()));
+                            Downloader.registerProgressUpdate(downloadId, (download) -> channel.invokeMethod("progress", download.toHashMap()));
                             break;
                         case "showNotification":
                             Integer numPendingDownloads = call.argument("numPendingDownloads");

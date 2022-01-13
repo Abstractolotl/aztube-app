@@ -39,14 +39,14 @@ public class Downloader {
         public int downloadId;
         public String videoId;
 
-        Download(boolean done, int progress, int downloadId, String videoId){
+        Download(boolean done, int progress, int downloadId, String videoId) {
             this.done = done;
             this.progress = progress;
             this.downloadId = downloadId;
             this.videoId = videoId;
         }
 
-        HashMap<String, Object> toHashMap(){
+        HashMap<String, Object> toHashMap() {
             HashMap<String, Object> map = new HashMap<>();
 
             map.put("done", done);
@@ -64,7 +64,7 @@ public class Downloader {
 
     private static final HashMap<Integer, Download> downloads = new HashMap<>();
 
-    public static String downloadVideo(Context context, String videoId, Integer downloadId, String quality, ProgressUpdate progressUpdate){
+    public static String downloadVideo(Context context, String videoId, Integer downloadId, String quality, ProgressUpdate progressUpdate) {
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
 
         List<Format> formats = null;
@@ -72,25 +72,25 @@ public class Downloader {
             formats = Downloader.getVideoFormats(videoInfo, quality);
         }
 
-        if(formats != null){
+        if (formats != null) {
             return Downloader.downloadVideo(context, formats, videoInfo, videoId, downloadId, quality.equals("audio"), progressUpdate);
-        }else{
+        } else {
             return null;
         }
     }
 
-    public static String getThumbnailUrl(String videoId){
+    public static String getThumbnailUrl(String videoId) {
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
         return Downloader.getThumbnailUrl(videoInfo);
     }
 
-    public static List<HashMap<String, Object>> getActiveDownloads(){
+    public static List<HashMap<String, Object>> getActiveDownloads() {
         ArrayList<HashMap<String, Object>> downloadList = new ArrayList<>();
 
-        for(Integer downloadId : downloads.keySet()){
+        for (Integer downloadId : downloads.keySet()) {
             Download download = downloads.get(downloadId);
 
-            if(download != null && !download.done){
+            if (download != null && !download.done) {
                 downloadList.add(download.toHashMap());
             }
         }
@@ -98,35 +98,35 @@ public class Downloader {
         return downloadList;
     }
 
-    public static boolean deleteDownload(Context context, String uri){
-        try{
+    public static boolean deleteDownload(Context context, String uri) {
+        try {
             return context.getContentResolver().delete(Uri.parse(uri), null, null) > 0;
-        }catch (SecurityException e){
+        } catch (SecurityException e) {
             return false;
         }
     }
 
-    public static void openDownload(Context context, String uri){
+    public static void openDownload(Context context, String uri) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(uri));
         context.startActivity(intent);
     }
 
-    public static boolean downloadExists(Context context, String uri){
+    public static boolean downloadExists(Context context, String uri) {
         try {
             InputStream inputStream = context.getContentResolver().openInputStream(Uri.parse(uri));
             inputStream.close();
-            
+
             return true;
         } catch (IOException e) {
             return false;
         }
     }
 
-    public static void registerProgressUpdate(Integer downloadId, ProgressUpdate progressUpdate){
+    public static void registerProgressUpdate(Integer downloadId, ProgressUpdate progressUpdate) {
         ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
 
-        if(progressUpdateArrayList == null){
+        if (progressUpdateArrayList == null) {
             progressUpdateArrayList = new ArrayList<>();
         }
 
@@ -145,7 +145,7 @@ public class Downloader {
     private static String getThumbnailUrl(VideoInfo videoInfo) {
         List<String> thumbnails = videoInfo.details().thumbnails();
 
-        return thumbnails.get(thumbnails.size()-1);
+        return thumbnails.get(thumbnails.size() - 1);
     }
 
     private static List<Format> getVideoFormats(VideoInfo videoInfo, String quality) {
@@ -181,9 +181,9 @@ public class Downloader {
                 }
             }
 
-            if(videoFormat != null){
+            if (videoFormat != null) {
                 formats.add(videoFormat);
-            }else{
+            } else {
                 System.out.println("Video format not found");
                 return null;
             }
@@ -201,64 +201,67 @@ public class Downloader {
 
         double startProgress = 0;
 
-        for(Format format : formats){
+        for (Format format : formats) {
             double progressFactor = 1;
 
             boolean isAudio = format instanceof AudioFormat;
 
-            if(isAudio && formats.size() > 1){
+            if (isAudio && formats.size() > 1) {
                 progressFactor = 0.2;
-            }else if(formats.size() > 1){
+            } else if (formats.size() > 1) {
                 progressFactor = 0.7;
             }
 
             String file = downloadFormat(context, format, videoId, downloadId, isAudio, progressUpdate, startProgress, progressFactor);
 
-            if(file != null){
+            if (file != null) {
                 files.add(file);
-            }else{
+            } else {
                 System.out.println("Part of download failed.");
                 return null;
             }
 
-            startProgress += progressFactor*100;
+            startProgress += progressFactor * 100;
         }
 
-        String filename =  context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/video_combined_" + downloadId + ".mp4";
+        String filename = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/video_combined_" + downloadId + ".mp4";
 
-        if(files.size() > 1){
+        if (files.size() > 1) {
             System.out.println("Combining video and audio");
 
             FFmpegSession session = FFmpegKit.execute("-i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a aac " + filename);
 
-            if(ReturnCode.isSuccess(session.getReturnCode())){
+            if (ReturnCode.isSuccess(session.getReturnCode())) {
                 Download download = new Download(false, 100, downloadId, videoId);
 
-                downloads.put(downloadId, download);
+                new Async<Void>().run(() -> null, (garbage) -> {
+                    downloads.put(downloadId, download);
 
-                ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
+                    ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
 
-                if(progressUpdateArrayList != null){
-                    for(ProgressUpdate runProgressUpdate : progressUpdateArrayList){
-                        runProgressUpdate.run(download);
+                    if (progressUpdateArrayList != null) {
+                        for (ProgressUpdate runProgressUpdate : progressUpdateArrayList) {
+                            runProgressUpdate.run(download);
+                        }
                     }
-                }
+                    return null;
+                });
 
                 System.out.println("Video and audio combined.");
 
-                for(String file : files){
+                for (String file : files) {
                     boolean result = new File(file).delete();
 
-                    if(!result){
+                    if (!result) {
                         System.out.println("Failed to delete part file");
                     }
                 }
-            }else{
+            } else {
                 System.out.println("Failed to combine video and audio.");
 
                 return null;
             }
-        }else{
+        } else {
             filename = files.get(0);
         }
 
@@ -267,23 +270,23 @@ public class Downloader {
 
         Uri uriSaved;
 
-        if(audio){
+        if (audio) {
             contentValues.put(MediaStore.Audio.Media.TITLE, filename);
             contentValues.put(MediaStore.Audio.Media.DISPLAY_NAME, videoInfo.details().title());
             contentValues.put(MediaStore.Audio.Media.MIME_TYPE, "audio/ogg");
             contentValues.put(MediaStore.Audio.Media.RELATIVE_PATH, "Music/" + "AZTube");
-            contentValues.put(MediaStore.Audio.Media.DATE_ADDED, System.currentTimeMillis()/1000);
+            contentValues.put(MediaStore.Audio.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
             contentValues.put(MediaStore.Audio.Media.DATE_TAKEN, System.currentTimeMillis());
             contentValues.put(MediaStore.Audio.Media.IS_PENDING, 1);
 
             Uri collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             uriSaved = contentResolver.insert(collection, contentValues);
-        }else{
+        } else {
             contentValues.put(MediaStore.Video.Media.TITLE, filename);
             contentValues.put(MediaStore.Video.Media.DISPLAY_NAME, videoInfo.details().title());
             contentValues.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
             contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/" + "AZTube");
-            contentValues.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis()/1000);
+            contentValues.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
             contentValues.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis());
             contentValues.put(MediaStore.Video.Media.IS_PENDING, 1);
 
@@ -303,15 +306,15 @@ public class Downloader {
             int length;
 
             try {
-                while((length = fileInputStream.read(buffer)) > 0){
+                while ((length = fileInputStream.read(buffer)) > 0) {
                     fileOutputStream.write(buffer, 0, length);
                 }
 
                 success = true;
-            }catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
-            }finally {
+            } finally {
                 try {
                     fileInputStream.close();
                     fileOutputStream.close();
@@ -321,16 +324,16 @@ public class Downloader {
                 }
             }
 
-            if(!new File(filename).delete()){
+            if (!new File(filename).delete()) {
                 success = false;
             }
 
-            if(success){
+            if (success) {
                 contentValues.clear();
 
-                if(audio){
+                if (audio) {
                     contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0);
-                }else{
+                } else {
                     contentValues.put(MediaStore.Video.Media.IS_PENDING, 0);
                 }
                 context.getContentResolver().update(uriSaved, contentValues, null, null);
@@ -339,23 +342,23 @@ public class Downloader {
             e.printStackTrace();
         }
 
-        if(success){
+        if (success) {
             return uriSaved.toString();
-        }else{
+        } else {
             return null;
         }
     }
 
-    private static String downloadFormat(Context context, Format format, String videoId, Integer downloadId, Boolean audio, ProgressUpdate progressUpdate, Double progressStart, Double progressFactor){
+    private static String downloadFormat(Context context, Format format, String videoId, Integer downloadId, Boolean audio, ProgressUpdate progressUpdate, Double progressStart, Double progressFactor) {
         final Boolean[] success = {false};
 
         registerProgressUpdate(downloadId, progressUpdate);
 
         String filename;
 
-        if(audio){
+        if (audio) {
             filename = "video_" + downloadId + ".mp4";
-        }else{
+        } else {
             filename = "audio_" + downloadId + ".weba";
         }
 
@@ -364,17 +367,21 @@ public class Downloader {
         RequestVideoFileDownload videoFileDownload = new RequestVideoFileDownload(format).callback(new YoutubeProgressCallback<File>() {
             @Override
             public void onDownloading(int progress) {
-                Download download = new Download(false, (int)(progressStart + (progress*progressFactor)), downloadId, videoId);
+                Download download = new Download(false, (int) (progressStart + (progress * progressFactor)), downloadId, videoId);
 
-                downloads.put(downloadId, download);
+                new Async<Void>().run(() -> null, (garbage) -> {
+                    downloads.put(downloadId, download);
 
-                ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
+                    ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
 
-                if(progressUpdateArrayList != null){
-                    for(ProgressUpdate progressUpdate : progressUpdateArrayList){
-                        progressUpdate.run(download);
+                    if (progressUpdateArrayList != null) {
+                        for (ProgressUpdate progressUpdate : progressUpdateArrayList) {
+                            progressUpdate.run(download);
+                        }
                     }
-                }
+
+                    return null;
+                });
             }
 
             @Override
@@ -397,9 +404,9 @@ public class Downloader {
 
         File data = youtubeDownloader.downloadVideoFile(videoFileDownload).data();
 
-        if(success[0]){
+        if (success[0]) {
             return data.getAbsolutePath();
-        }else{
+        } else {
             return null;
         }
     }
