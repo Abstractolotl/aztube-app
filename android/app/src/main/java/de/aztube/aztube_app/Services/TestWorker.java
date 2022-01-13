@@ -32,8 +32,10 @@ public class TestWorker extends Worker {
             url.set(Downloader.downloadVideo(getApplicationContext(), req.getVideoId(), req.getDownloadId(), req.getQuality(), new Downloader.ProgressUpdate() {
                 @Override
                 public void run(Downloader.Download download) {
-                    if (download.progress % 10 == 0) {
-                        NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Downloading", req.getTitle() + " - " + download.progress + "%", notifId);
+                    if(download.progress == 100) {
+                        NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Download complete", req.getTitle(), notifId);
+                    } else if (download.progress % 5 == 0) {
+                        NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Downloading - " + download.progress + "%", req.getTitle(), notifId);
                     }
                 }
             }));
