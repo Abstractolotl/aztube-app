@@ -8,19 +8,14 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.Nullable;
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 public class BackgroundService extends Service {
 
@@ -45,7 +40,16 @@ public class BackgroundService extends Service {
             handler = new Handler(Looper.getMainLooper());
             handler.post(new PollRequestRunner(this, handler));
         }
+    }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if(!started || intent.getBooleanExtra("settingsChanged", false)) {
+            init();
+            started = true;
+        }
+
+        return START_STICKY;
     }
 
     private void readSettingsFile() {
@@ -60,26 +64,15 @@ public class BackgroundService extends Service {
             }
 
             Gson gson = new Gson();
-            JsonObject settings = gson.fromJson(sb.toString(), JsonObject.class);
-            settingAutoDownload = settings.get("background").getAsBoolean();
-            JsonElement json = settings.get("device");
-            if(json != null) deviceToken = json.getAsString();
 
-            //NotificationUtil.ShowSomething(this, "Settings", sb.toString());
+            JsonObject settings = gson.fromJson(sb.toString(), JsonObject.class);
+            JsonElement json;
+            if((json = settings.get("background")) != null) settingAutoDownload = json.getAsBoolean();
+            if((json = settings.get("device")) != null) deviceToken = json.getAsString();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        init();
-        if(!started) {
-            started = true;
-        }
-
-        return START_STICKY;
     }
 
     @Nullable
@@ -106,12 +99,12 @@ public class BackgroundService extends Service {
         public void run() {
             RequestQueue queue = Volley.newRequestQueue(context);
 
-            Request request = new GsonRequest<PollResponse>(Request.Method.GET, "http://de2.lucaspape.de:4020/poll/" + deviceToken, PollResponse.class,
+            Request<PollResponse> request = new GsonRequest<>(Request.Method.GET, "http://de2.lucaspape.de:4020/poll/" + deviceToken, PollResponse.class,
                     response -> {
-                        if(response.getDownloads() == null || response.getDownloads().size() <= 0) return;
+                        if (response.getDownloads() == null || response.getDownloads().size() <= 0) return;
                         DownloadRequest req1 = response.getDownloads().get(0);
                         Log.d("AzTube", req1.getVideoId());
-                        if(settingAutoDownload) {
+                        if (settingAutoDownload) {
                             NotificationUtil.ShowSomething(context, "New Code", req1.getTitle());
                         } else {
                             //TODO
@@ -122,7 +115,7 @@ public class BackgroundService extends Service {
                         Log.d("AzTube", error.toString(), error);
                         NotificationUtil.ShowSomething(context, "Error", "Something went Wrong :c");
                     }
-                    );
+            );
 
             queue.add(request);
         }
