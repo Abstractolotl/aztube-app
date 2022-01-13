@@ -34,7 +34,7 @@ public class Downloader {
         }
 
         if(format != null){
-            return Downloader.downloadVideo(context, format, videoInfo, videoId, downloadId, quality.equals("audio_only"), progressUpdate);
+            return Downloader.downloadVideo(context, format, videoInfo, videoId, downloadId, quality.equals("audio"), progressUpdate);
         }else{
             return false;
         }
@@ -65,7 +65,7 @@ public class Downloader {
 
         Format format = null;
 
-        if (quality.equals("audio_only")) {
+        if (quality.equals("audio")) {
             if (audioFormats.size() > 0) {
                 format = audioFormats.get(0);
 
