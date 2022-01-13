@@ -321,6 +321,7 @@ public class Downloader {
                 }
             }
 
+            success = new File(filename).delete();
 
             if(success){
                 contentValues.clear();
