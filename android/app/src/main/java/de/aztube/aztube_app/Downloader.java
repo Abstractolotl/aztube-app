@@ -169,8 +169,19 @@ public class Downloader {
                 }
             }
 
-            if (format == null) {
-                System.out.println("Could not find video format!");
+            if (format == null && videoFormats.size() > 0) {
+                System.out.println("Could not find video format. Using highest quality available.");
+
+                format = videoFormats.get(0);
+
+                for (VideoWithAudioFormat videoFormat : videoFormats) {
+                    if (videoFormat.width() > ((VideoWithAudioFormat) format).width()) {
+                        format = videoFormat;
+                    }
+                }
+            }else{
+                System.out.println("No video formats available");
+
                 return null;
             }
         }
