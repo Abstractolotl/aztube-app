@@ -156,16 +156,8 @@ class DashboardScreenState extends State<DashboardScreen> {
     var queue = downloadCache.getAll();
     downloads = ListView.builder(
         padding: const EdgeInsets.all(5.0),
-        itemCount: queue.length + 1,
+        itemCount: queue.length,
         itemBuilder: (context, index) {
-          if (index == 0) {
-            return SimpleButton(
-              child: Text('Testing'),
-              onPressed: () {
-                platform.invokeMethod("someTest");
-              },
-            );
-          }
           return Download(video: queue[index], cache: downloadCache);
         });
   }
