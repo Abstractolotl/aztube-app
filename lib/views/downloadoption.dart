@@ -21,14 +21,30 @@ class DownloadScreen extends StatefulWidget {
 
 class DownloadScreenState extends State<DownloadScreen> {
 
+  bool loading = false;
+
   @override
   void initState() {
+    if(widget.video.downloaded){
+      loading = true;
+      checkExists();
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-
+    if(loading){
+      return Scaffold(
+          appBar: AppBar(
+            title: const Text('Options'),
+          ),
+          body: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Center(child: CircularProgressIndicator(color: Colors.green))
+              ]));
+    }
     return Scaffold(
         appBar: AppBar(title: const Text('Options')),
         body: ListView(
@@ -96,6 +112,31 @@ class DownloadScreenState extends State<DownloadScreen> {
           ],
         )
     );
+  }
+
+  void checkExists() async{
+    const platform = MethodChannel("de.aztube.aztube_app/youtube");
+    Map<String, dynamic> args = {
+      "uri": widget.video.savedTo
+    };
+    bool result = await platform.invokeMethod("downloadExists", args);
+    if(result){
+      setState(() {
+        loading = false;
+      });
+    }else{
+      widget.video.downloaded = false;
+      if(widget.cache.downloaded.contains(widget.video)){
+        widget.cache.downloaded.remove(widget.video);
+      }
+      if(!widget.cache.queue.contains(widget.video)){
+        widget.cache.queue.add(widget.video);
+      }
+      FileManager().saveDownloads(widget.cache);
+      setState(() {
+        loading = false;
+      });
+    }
   }
 
   void removeFromList(){
