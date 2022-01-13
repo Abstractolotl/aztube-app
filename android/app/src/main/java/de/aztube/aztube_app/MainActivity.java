@@ -76,7 +76,7 @@ public class MainActivity extends FlutterActivity {
                         case "downloadExists":
                             result.success(Downloader.downloadExists(this, call.argument("uri")));
                             break;
-                        case "registerDownloadProgressUpdater":
+                        case "registerDownloadProgressUpdate":
                             int downloadId = call.argument("downloadId");
 
                             Downloader.registerProgressUpdate(downloadId, download -> channel.invokeMethod("progress", download.toHashMap()));
