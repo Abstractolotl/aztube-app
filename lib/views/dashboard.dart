@@ -206,7 +206,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     });
                   }else{
                     var error = jsonResponse['error'];
-                    if(error == 'no entry in database'){
+                    if(error != 'no entry in database'){
                       timer.cancel();
                       currentSettings.deviceHash = '0';
                       FileManager().saveSettings(currentSettings);
