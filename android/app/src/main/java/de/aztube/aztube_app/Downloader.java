@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -116,6 +117,15 @@ public class Downloader {
         }
     }
 
+    public static void registerProgressUpdate(int downloadId, ProgressUpdate progressUpdate){
+        ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
+
+        if(progressUpdateArrayList != null){
+            progressUpdateArrayList.add(progressUpdate);
+            progressUpdaters.put(downloadId, progressUpdateArrayList);
+        }
+    }
+
     private static VideoInfo requestVideoInfo(String videoId) {
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
 
@@ -166,8 +176,15 @@ public class Downloader {
         return format;
     }
 
+    private static final HashMap<Integer, ArrayList<ProgressUpdate>> progressUpdaters = new HashMap<>();
+
     private static String downloadVideo(Context context, Format format, VideoInfo videoInfo, String videoId, int downloadId, Boolean audio, ProgressUpdate progressUpdate) {
         final Boolean[] success = {false};
+
+        ArrayList<ProgressUpdate> progressUpdaterList = new ArrayList<>();
+        progressUpdaterList.add(progressUpdate);
+
+        progressUpdaters.put(downloadId, progressUpdaterList);
 
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
 
@@ -221,7 +238,12 @@ public class Downloader {
                     Download download = new Download(false, progress, downloadId, videoId);
 
                     downloads.put(downloadId, download);
-                    progressUpdate.run(download);
+
+                    ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
+
+                    for(ProgressUpdate progressUpdate : progressUpdateArrayList){
+                        progressUpdate.run(download);
+                    }
                 }
 
                 @Override
