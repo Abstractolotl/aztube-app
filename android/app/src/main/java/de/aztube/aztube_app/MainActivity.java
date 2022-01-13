@@ -73,6 +73,9 @@ public class MainActivity extends FlutterActivity {
                         case "deleteDownload":
                             result.success(Downloader.deleteDownload(this, call.argument("uri")));
                             break;
+                        case "downloadExists":
+                            result.success(Downloader.downloadExists(this, call.argument("uri")));
+                            break;
                         case "showNotification":
                             Integer numPendingDownloads = call.argument("numPendingDownloads");
                             NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);

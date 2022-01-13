@@ -19,6 +19,8 @@ import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,6 +99,17 @@ public class Downloader {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(uri));
         context.startActivity(intent);
+    }
+
+    public static boolean downloadExists(Context context, String uri){
+        try {
+            InputStream inputStream = context.getContentResolver().openInputStream(Uri.parse(uri));
+            inputStream.close();
+            
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     private static VideoInfo requestVideoInfo(String videoId) {
