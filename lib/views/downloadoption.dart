@@ -32,7 +32,7 @@ class DownloadScreenState extends State<DownloadScreen> {
             ),
             const Divider(),
             ListTile(
-              title: Text('Location: ${widget.video.savedTo}'),
+              title: Text(widget.video.downloaded ? 'Location: ${widget.video.savedTo}' : 'Location: -'),
               trailing: IconButton(
                 icon: const Icon(Icons.copy),
                 onPressed: () {  },
