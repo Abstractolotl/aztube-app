@@ -204,6 +204,14 @@ class DashboardScreenState extends State<DashboardScreen> {
                     FileManager().saveDownloads(downloadCache);
                     setState(() {
                     });
+                  }else{
+                    var error = jsonResponse['error'];
+                    if(error == 'no entry in database'){
+                      timer.cancel();
+                      currentSettings.deviceHash = '0';
+                      FileManager().saveSettings(currentSettings);
+                      setState(() { });
+                    }
                   }
                 }
             });
