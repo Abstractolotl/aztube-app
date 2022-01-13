@@ -4,6 +4,8 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
@@ -197,12 +199,27 @@ public class Downloader {
     private static String downloadVideo(Context context, List<Format> formats, VideoInfo videoInfo, String videoId, Integer downloadId, Boolean audio, ProgressUpdate progressUpdate) {
         boolean success = false;
 
+        String thumbnail = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/thumbnail_" + downloadId + ".jpg";
+
+        try {
+            InputStream input = new java.net.URL(getThumbnailUrl(videoId)).openStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+
+            FileOutputStream out = new FileOutputStream(thumbnail);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            thumbnail = null;
+        }
+
         ArrayList<String> files = new ArrayList<>();
 
         double startProgress = 0;
 
         for (Format format : formats) {
-            double progressFactor = 1;
+            double progressFactor = 0.9;
 
             boolean isAudio = format instanceof AudioFormat;
 
@@ -229,7 +246,13 @@ public class Downloader {
         if (files.size() > 1) {
             System.out.println("Combining video and audio");
 
-            FFmpegSession session = FFmpegKit.execute("-i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a aac " + filename);
+            FFmpegSession session;
+
+            if(thumbnail != null){
+                session = FFmpegKit.execute("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a aac -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename);
+            }else{
+                session = FFmpegKit.execute("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a aac " + filename);
+            }
 
             if (ReturnCode.isSuccess(session.getReturnCode())) {
                 Download download = new Download(false, 100, downloadId, videoId);
@@ -262,7 +285,51 @@ public class Downloader {
                 return null;
             }
         } else {
-            filename = files.get(0);
+            if(thumbnail != null){
+                filename = new StringBuilder(files.get(0)).insert(files.get(0).lastIndexOf("/")+1, "thumbnail-").toString();
+
+                FFmpegSession session;
+
+                if(audio){
+                    filename += ".mp3";
+                    session = FFmpegKit.execute("-y -i " + files.get(0) + " -i " + thumbnail + " -map 0:0 -map 1:0 -c:a libmp3lame -id3v2_version 3 -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover (front)\" " + filename);
+                }else{
+                    session = FFmpegKit.execute("-y -i " + files.get(0) + " -c:v copy -c:a aac -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename);
+                }
+
+                if (ReturnCode.isSuccess(session.getReturnCode())) {
+                    Download download = new Download(false, 100, downloadId, videoId);
+
+                    new Async<Void>().runOnMain(() -> {
+                        downloads.put(downloadId, download);
+
+                        ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
+
+                        if (progressUpdateArrayList != null) {
+                            for (ProgressUpdate runProgressUpdate : progressUpdateArrayList) {
+                                runProgressUpdate.run(download);
+                            }
+                        }
+                        return null;
+                    });
+
+                    System.out.println("Added thumbnail.");
+
+                    for (String file : files) {
+                        boolean result = new File(file).delete();
+
+                        if (!result) {
+                            System.out.println("Failed to delete part file");
+                        }
+                    }
+                } else {
+                    System.out.println("Failed to add thumbnail");
+
+                    return null;
+                }
+            }else{
+                filename = files.get(0);
+            }
         }
 
         ContentValues contentValues = new ContentValues();
@@ -273,7 +340,7 @@ public class Downloader {
         if (audio) {
             contentValues.put(MediaStore.Audio.Media.TITLE, filename);
             contentValues.put(MediaStore.Audio.Media.DISPLAY_NAME, videoInfo.details().title());
-            contentValues.put(MediaStore.Audio.Media.MIME_TYPE, "audio/ogg");
+            contentValues.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mpeg");
             contentValues.put(MediaStore.Audio.Media.RELATIVE_PATH, "Music/" + "AZTube");
             contentValues.put(MediaStore.Audio.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
             contentValues.put(MediaStore.Audio.Media.DATE_TAKEN, System.currentTimeMillis());
@@ -361,9 +428,9 @@ public class Downloader {
         String filename;
 
         if (audio) {
-            filename = "video_" + downloadId + ".mp4";
+            filename = "audio_" + downloadId;
         } else {
-            filename = "audio_" + downloadId + ".weba";
+            filename = "video_" + downloadId;
         }
 
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
@@ -390,7 +457,7 @@ public class Downloader {
 
             @Override
             public void onFinished(File data) {
-                Download download = new Download(true, 100, downloadId, videoId);
+                Download download = new Download(true, (int) (progressStart + (100 * progressFactor)), downloadId, videoId);
 
                 new Async<Void>().runOnMain(() -> {
                     downloads.put(downloadId, download);
