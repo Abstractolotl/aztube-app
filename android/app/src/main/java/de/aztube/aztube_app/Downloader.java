@@ -27,33 +27,33 @@ import java.util.HashMap;
 import java.util.List;
 
 
-class Download {
-    boolean done;
-    int progress;
-    int downloadId;
-    String videoId;
-
-    Download(boolean done, int progress, int downloadId, String videoId){
-        this.done = done;
-        this.progress = progress;
-        this.downloadId = downloadId;
-        this.videoId = videoId;
-    }
-
-    HashMap<String, Object> toHashMap(){
-        HashMap<String, Object> map = new HashMap<>();
-
-        map.put("done", done);
-        map.put("progress", progress);
-        map.put("downloadId", downloadId);
-        map.put("videoId", videoId);
-
-        return map;
-    }
-}
 
 public class Downloader {
 
+    public static class Download {
+        public boolean done;
+        public int progress;
+        public int downloadId;
+        public String videoId;
+
+        Download(boolean done, int progress, int downloadId, String videoId){
+            this.done = done;
+            this.progress = progress;
+            this.downloadId = downloadId;
+            this.videoId = videoId;
+        }
+
+        HashMap<String, Object> toHashMap(){
+            HashMap<String, Object> map = new HashMap<>();
+
+            map.put("done", done);
+            map.put("progress", progress);
+            map.put("downloadId", downloadId);
+            map.put("videoId", videoId);
+
+            return map;
+        }
+    }
 
     public interface ProgressUpdate {
         void run(Download download);

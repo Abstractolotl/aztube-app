@@ -4,6 +4,7 @@ import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key, required this.settings}) : super(key: key);
@@ -15,6 +16,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class SettingsScreenState extends State<SettingsScreen> {
+  static const platform = MethodChannel("de.aztube.aztube_app/youtube");
   Key key = UniqueKey();
 
   Color getColor(Set<MaterialState> states) {
@@ -82,14 +84,12 @@ class SettingsScreenState extends State<SettingsScreen> {
             padding:
                 const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
             child: SimpleButton(
-              child: const Text('lel'),
+              child: const Text('trigger settings changed'),
               color: (widget.settings.deviceHash.length >= 10)
                   ? Colors.red
                   : Colors.grey,
               onPressed: () {
-                widget.settings.deviceHash =
-                    "c99789bf-1477-44f8-8844-a8f189b6f40f";
-                FileManager().saveSettings(widget.settings);
+                platform.invokeMethod("settingsChanged");
               },
             ),
           )

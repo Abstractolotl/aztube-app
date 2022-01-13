@@ -19,6 +19,7 @@ import de.aztube.aztube_app.Communication.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class BackgroundService extends Service {
 
@@ -140,15 +141,18 @@ public class BackgroundService extends Service {
         }
 
         private void startDownload(DownloadRequest req, int notifId) {
+            AtomicReference<String> url = new AtomicReference<>();
             new Async<Boolean>().run(() -> {
-                return Downloader.downloadVideo(context, req.getVideoId(), req.getDownloadId(), req.getQuality(), new Downloader.ProgressUpdate() {
+                url.set(Downloader.downloadVideo(context, req.getVideoId(), req.getDownloadId(), req.getQuality(), new Downloader.ProgressUpdate() {
                     @Override
-                    public void run(String videoId, int downloadId, int progress) {
-                        if(progress % 10 == 0) {
-                            NotificationUtil.ShowSomething(context, "Downloading", req.getTitle() + " - " + progress + "%", notifId);
+                    public void run(Downloader.Download download) {
+                        if (download.progress % 10 == 0) {
+                            NotificationUtil.ShowSomething(context, "Downloading", req.getTitle() + " - " + download.progress + "%", notifId);
                         }
                     }
-                });
+                }));
+
+                return true;
             }, (success) -> {
                 Cache cache = readCache();
                 CachedDownload cachedDownload = cache.getQueue().stream()
@@ -158,6 +162,7 @@ public class BackgroundService extends Service {
                 cache.getQueue().remove(cachedDownload);
 
                 cachedDownload.setDownloaded(true);
+                cachedDownload.setSavedTo(url.get());
                 cache.getDownloaded().add(cachedDownload);
                 try {
                     saveCache(cache);
