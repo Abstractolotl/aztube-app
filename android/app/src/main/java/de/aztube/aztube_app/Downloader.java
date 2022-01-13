@@ -21,12 +21,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-
 
 public class Downloader {
 
@@ -61,7 +58,7 @@ public class Downloader {
 
     private static final HashMap<Integer, Download> downloads = new HashMap<>();
 
-    public static String downloadVideo(Context context, String videoId, int downloadId, String quality, ProgressUpdate progressUpdate){
+    public static String downloadVideo(Context context, String videoId, Integer downloadId, String quality, ProgressUpdate progressUpdate){
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
 
         Format format = null;
@@ -120,13 +117,15 @@ public class Downloader {
         }
     }
 
-    public static void registerProgressUpdate(int downloadId, ProgressUpdate progressUpdate){
+    public static void registerProgressUpdate(Integer downloadId, ProgressUpdate progressUpdate){
         ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
 
-        if(progressUpdateArrayList != null){
-            progressUpdateArrayList.add(progressUpdate);
-            progressUpdaters.put(downloadId, progressUpdateArrayList);
+        if(progressUpdateArrayList == null){
+            progressUpdateArrayList = new ArrayList<>();
         }
+
+        progressUpdateArrayList.add(progressUpdate);
+        progressUpdaters.put(downloadId, progressUpdateArrayList);
     }
 
     private static VideoInfo requestVideoInfo(String videoId) {
@@ -181,13 +180,10 @@ public class Downloader {
 
     private static final HashMap<Integer, ArrayList<ProgressUpdate>> progressUpdaters = new HashMap<>();
 
-    private static String downloadVideo(Context context, Format format, VideoInfo videoInfo, String videoId, int downloadId, Boolean audio, ProgressUpdate progressUpdate) {
+    private static String downloadVideo(Context context, Format format, VideoInfo videoInfo, String videoId, Integer downloadId, Boolean audio, ProgressUpdate progressUpdate) {
         final Boolean[] success = {false};
 
-        ArrayList<ProgressUpdate> progressUpdaterList = new ArrayList<>();
-        progressUpdaterList.add(progressUpdate);
-
-        progressUpdaters.put(downloadId, progressUpdaterList);
+        registerProgressUpdate(downloadId, progressUpdate);
 
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
 
@@ -244,8 +240,10 @@ public class Downloader {
 
                     ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
 
-                    for(ProgressUpdate progressUpdate : progressUpdateArrayList){
-                        progressUpdate.run(download);
+                    if(progressUpdateArrayList != null){
+                        for(ProgressUpdate progressUpdate : progressUpdateArrayList){
+                            progressUpdate.run(download);
+                        }
                     }
                 }
 

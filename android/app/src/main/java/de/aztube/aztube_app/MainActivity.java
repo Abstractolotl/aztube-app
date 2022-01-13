@@ -37,14 +37,12 @@ public class MainActivity extends FlutterActivity {
                             new Async<String>().run(() -> {
                                 String videoId = call.argument("videoId");
                                 String quality = call.argument("quality");
-                                int downloadId = call.argument("downloadId");
+                                Integer downloadId = call.argument("downloadId");
 
-                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (download) -> {
-                                    new Async<Void>().run(() -> null, (garbage) -> {
-                                        channel.invokeMethod("progress", download.toHashMap());
-                                        return null;
-                                    });
-                                });
+                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (download) -> new Async<Void>().run(() -> null, (garbage) -> {
+                                    channel.invokeMethod("progress", download.toHashMap());
+                                    return null;
+                                }));
                             }, (uri) -> {
                                 if(uri != null){
                                     result.success(uri);
@@ -80,7 +78,7 @@ public class MainActivity extends FlutterActivity {
                             result.success(Downloader.downloadExists(this, call.argument("uri")));
                             break;
                         case "registerDownloadProgressUpdate":
-                            int downloadId = call.argument("downloadId");
+                            Integer downloadId = call.argument("downloadId");
 
                             Downloader.registerProgressUpdate(downloadId, download -> channel.invokeMethod("progress", download.toHashMap()));
                             break;
