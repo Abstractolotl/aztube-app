@@ -73,26 +73,30 @@ class DownloadState extends State<Download> {
                   style: TextStyle(fontSize: 17),
                   overflow: TextOverflow.ellipsis,
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.video.author,
-                      style: TextStyle(
-                          fontSize: 10.0,
-                          color: Colors.black.withOpacity(0.25)),
-                    ),
-                    Text(
-                      widget.video.downloadId.toString() +
-                          " - " +
-                          widget.video.videoId +
-                          " - " +
-                          widget.video.quality,
-                      style: TextStyle(
-                          fontSize: 10.0,
-                          color: Colors.black.withOpacity(0.25)),
-                    ),
-                  ],
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                      minWidth: MediaQuery.of(context).size.width),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.video.author,
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: Colors.black.withOpacity(0.25)),
+                      ),
+                      Text(
+                        widget.video.downloadId.toString() +
+                            " - " +
+                            widget.video.videoId +
+                            " - " +
+                            widget.video.quality,
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: Colors.black.withOpacity(0.25)),
+                      ),
+                    ],
+                  ),
                 )
               ],
             ),
@@ -130,8 +134,6 @@ class DownloadState extends State<Download> {
     };
 
     final dynamic result = await platform.invokeMethod("downloadVideo", args);
-    final dynamic thumbnail =
-        await platform.invokeMethod("trailing", {"videoId": video.videoId});
     try {
       if (!result) {
         setState(() {
@@ -149,7 +151,7 @@ class DownloadState extends State<Download> {
 
       widget.video.downloaded = true;
       widget.video.savedTo = result;
-      widget.video.thumbnail = thumbnail;
+      widget.video.thumbnail = "";
 
       widget.cache.downloaded.add(widget.video);
       FileManager().saveDownloads(widget.cache);
