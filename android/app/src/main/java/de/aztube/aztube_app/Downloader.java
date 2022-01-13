@@ -92,7 +92,11 @@ public class Downloader {
     }
 
     public static boolean deleteDownload(Context context, String uri){
-        return context.getContentResolver().delete(Uri.parse(uri), null) > 0;
+        try{
+            return context.getContentResolver().delete(Uri.parse(uri), null) > 0;
+        }catch (SecurityException e){
+            return false;
+        }
     }
 
     public static void openDownload(Context context, String uri){
