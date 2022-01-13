@@ -45,7 +45,7 @@ class DownloadState extends State<Download> {
       color: Colors.black,
     );
     if(downloading){
-      trailing = const CircularProgressIndicator(color: Colors.black);
+      trailing = CircularProgressIndicator(color: Colors.black, value: widget.video.progress/100,);
     }
     return Column(children: [
       ListTile(

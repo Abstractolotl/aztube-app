@@ -13,7 +13,6 @@ import 'package:aztube/views/linking.dart';
 import 'package:aztube/views/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:uuid/uuid.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -29,13 +28,17 @@ class DashboardScreenState extends State<DashboardScreen> {
   Future<dynamic> nativeMethodCallHandler(MethodCall methodCall) async {
     switch(methodCall.method){
       case "progress":
-      /**
-       * Available parameters:
-       * integer methodCall.arguments['progress']
-       * string methodCall.arguments['videoId']
-       * string methodCall.arguments['downloadId']
-       */
-
+        var videoId = methodCall.arguments['videoId'];
+        var downloadId = methodCall.arguments['downloadId'];
+        var progress = methodCall.arguments['progress'];
+        DownloadData? download = downloadCache.findBy(videoId, downloadId);
+        if(download != null && !download.downloaded){
+          download.progress = progress;
+          setState(() {
+            timer?.cancel();
+            timer = polling();
+          });
+        }
         break;
     }
   }
