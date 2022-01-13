@@ -23,6 +23,7 @@ class DashboardScreen extends StatefulWidget {
 
 class DashboardScreenState extends State<DashboardScreen> {
 
+  static const timeout = 2;
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
 
   Future<dynamic> nativeMethodCallHandler(MethodCall methodCall) async {
@@ -188,7 +189,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   Timer polling(){
-    return Timer.periodic(const Duration(seconds: 5),
+    return Timer.periodic(const Duration(seconds: timeout),
             (timer) async{
                 var response = await APIHelper.fetchDownloads(currentSettings.deviceHash);
 

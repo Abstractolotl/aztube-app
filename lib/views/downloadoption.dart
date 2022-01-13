@@ -18,8 +18,6 @@ class DownloadScreen extends StatefulWidget {
 
 class DownloadScreenState extends State<DownloadScreen> {
 
-
-
   @override
   Widget build(BuildContext context) {
 
