@@ -6,10 +6,13 @@ class SimpleButton extends StatelessWidget {
       {this.child,
         this.color,
         this.onPressed,
+        this.disabled = false,
         this.borderRadius = 6,
         this.padding = const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
         Key? key})
       : super(key: key);
+
+  final bool disabled;
   final Color? color;
   final Widget? child;
   final Function? onPressed;
@@ -22,6 +25,7 @@ class SimpleButton extends StatelessWidget {
     return ElevatedButton(
       child: child,
       style: ElevatedButton.styleFrom(
+        enableFeedback: !disabled,
         padding: padding,
         primary: color ?? currentTheme.primaryColor,
         shape: RoundedRectangleBorder(

@@ -3,13 +3,16 @@ import 'dart:developer';
 import 'package:aztube/api/downloaddata.dart';
 import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
+import 'package:aztube/views/dashboard.dart';
+import 'package:aztube/views/downloadoption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class Download extends StatefulWidget {
 
-  const Download({Key? key, required this.video, required this.cache}) : super(key: key);
+  const Download({Key? key, required this.video, required this.cache, required this.state}) : super(key: key);
 
+  final DashboardScreenState state;
   final DownloadCache cache;
   final DownloadData video;
 
@@ -32,21 +35,32 @@ class DownloadState extends State<Download> {
   @override
   Widget build(BuildContext context) {
     Widget trailing = IconButton(
+      enableFeedback: !(!widget.video.downloaded && !downloading),
       onPressed: () {
-        startDownload();
+        if(!widget.video.downloaded && !downloading){
+          startDownload();
+        }
       },
       icon: Icon(widget.video.downloaded  ? Icons.download_done : Icons.download),
       color: Colors.black,
     );
     if(downloading){
-      trailing = const CircularProgressIndicator(color: Colors.black);
+      trailing = CircularProgressIndicator(color: Colors.black, value: widget.video.progress/100,);
     }
     return Column(children: [
       ListTile(
           title: Text(widget.video.title),
-          trailing: trailing ),
+          trailing: trailing,
+          onLongPress: openInformationView,
+      ),
       const Divider()
     ]);
+  }
+
+  void openInformationView(){
+    Route route = MaterialPageRoute(
+        builder: (context) => DownloadScreen(video: widget.video, cache: widget.cache));
+    Navigator.push(context, route).then(widget.state.reload);
   }
 
   void startDownload(){
@@ -61,9 +75,9 @@ class DownloadState extends State<Download> {
   void downloadVideo(DownloadData video) async {
     const platform = MethodChannel("de.aztube.aztube_app/youtube");
     Map<String, dynamic> args = {
-      "videoId": video.videoID,
+      "videoId": video.videoId,
       "quality": video.quality,
-      "downloadId": video.downloadID
+      "downloadId": video.downloadId
     };
 
     final bool result = await platform.invokeMethod("downloadVideo", args);

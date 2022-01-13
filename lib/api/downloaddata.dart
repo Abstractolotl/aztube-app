@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 
 class DownloadData{
 
-  String downloadID = '0';
-  String videoID = '0';
+  int downloadId = 0;
+  String videoId = '0';
   String quality = 'audio_only';
 
   String title = 'Title';
@@ -18,18 +18,18 @@ class DownloadData{
   DownloadData();
 
   DownloadData.fromJson(dynamic json)
-      : downloadID = json['downloadId'] ?? '0',
-        videoID = json['videoId'],
+      : downloadId = json['downloadId'] ?? 0,
+        videoId = json['videoId'],
         quality = json['quality'],
         title = json['title'],
         author = json['author'],
-        fileName = json['fileName'] ?? json['videoID'],
+        fileName = json['fileName'] ?? json['videoId'],
         downloaded = json['downloaded'] ?? false,
         savedTo = json['savedTo'] ?? '';
 
   Map<String, dynamic> toJson() => {
-    'downloadId': downloadID,
-    'videoId': videoID,
+    'downloadId': downloadId,
+    'videoId': videoId,
     'quality': quality,
     'title': title,
     'author': author,

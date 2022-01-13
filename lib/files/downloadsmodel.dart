@@ -16,6 +16,15 @@ class DownloadCache{
     return all;
   }
 
+
+  DownloadData? findBy(String videoId, int downloadId){
+    Iterable<DownloadData> filtered = queue.where((element){
+      return element.downloadId == downloadId && element.videoId == videoId;
+    });
+    if(filtered.toSet().isNotEmpty) return filtered.first;
+    return null;
+  }
+
   static DownloadCache fromJson(Map<String, dynamic> json){
       DownloadCache cache = DownloadCache();
       cache.queue = convertBack(json['queue']);

@@ -13,7 +13,6 @@ import 'package:aztube/views/linking.dart';
 import 'package:aztube/views/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:uuid/uuid.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -23,18 +22,23 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class DashboardScreenState extends State<DashboardScreen> {
+  static const timeout = 2;
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
 
   Future<dynamic> nativeMethodCallHandler(MethodCall methodCall) async {
     switch (methodCall.method) {
       case "progress":
-        /**
-       * Available parameters:
-       * integer methodCall.arguments['progress']
-       * string methodCall.arguments['videoId']
-       * string methodCall.arguments['downloadId']
-       */
-
+        var videoId = methodCall.arguments['videoId'];
+        var downloadId = methodCall.arguments['downloadId'];
+        var progress = methodCall.arguments['progress'];
+        DownloadData? download = downloadCache.findBy(videoId, downloadId);
+        if (download != null && !download.downloaded) {
+          download.progress = progress;
+          setState(() {
+            timer?.cancel();
+            timer = polling();
+          });
+        }
         break;
     }
   }
@@ -158,12 +162,13 @@ class DashboardScreenState extends State<DashboardScreen> {
         padding: const EdgeInsets.all(5.0),
         itemCount: queue.length,
         itemBuilder: (context, index) {
-          return Download(video: queue[index], cache: downloadCache);
+          return Download(
+              video: queue[index], cache: downloadCache, state: this);
         });
   }
 
   Timer polling() {
-    return Timer.periodic(const Duration(seconds: 5), (timer) async {
+    return Timer.periodic(const Duration(seconds: timeout), (timer) async {
       var response = await APIHelper.fetchDownloads(currentSettings.deviceHash);
 
       if (response.statusCode == 200) {
@@ -176,6 +181,14 @@ class DashboardScreenState extends State<DashboardScreen> {
           }
           FileManager().saveDownloads(downloadCache);
           setState(() {});
+        } else {
+          var error = jsonResponse['error'];
+          if (error != 'no entry in database') {
+            timer.cancel();
+            currentSettings.deviceHash = '0';
+            FileManager().saveSettings(currentSettings);
+            setState(() {});
+          }
         }
       }
     });
