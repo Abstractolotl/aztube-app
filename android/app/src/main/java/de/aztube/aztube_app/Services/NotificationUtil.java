@@ -57,8 +57,9 @@ public class NotificationUtil {
         return pushNotification(context, builder.build());
     }
 
-    public static int ShowSomething(Context context, String title, String content, int notifId){
+    public static int ShowDownloadingNotification(Context context, String title, String content, int notifId){
         NotificationCompat.Builder builder = buildNotification(context, title, content);
+        builder.setOnlyAlertOnce(true);
         return pushNotification(context, builder.build(), notifId);
     }
 

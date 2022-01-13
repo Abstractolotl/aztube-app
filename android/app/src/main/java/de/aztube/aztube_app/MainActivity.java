@@ -1,14 +1,13 @@
 package de.aztube.aztube_app;
 
-import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.Objects;
 
-import de.aztube.aztube_app.Services.BackgroundService;
 import de.aztube.aztube_app.Services.NotificationUtil;
+import de.aztube.aztube_app.Services.ServiceUtil;
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
@@ -21,9 +20,22 @@ public class MainActivity extends FlutterActivity {
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         NotificationUtil.CreateNotificationChannel(this);
-        BackgroundService.StartBackgroundService(this);
+
 
         channel = new MethodChannel(Objects.requireNonNull(getFlutterEngine()).getDartExecutor().getBinaryMessenger(), CHANNEL);
+    }
+
+    @Override
+    protected void onResume() {
+        ServiceUtil.StopBackgroundService(this);
+        ServiceUtil.StartBackgroundService(this, 3);
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        ServiceUtil.StartBackgroundService(this);
+        super.onPause();
     }
 
     @Override
@@ -83,15 +95,6 @@ public class MainActivity extends FlutterActivity {
                             int downloadId = call.argument("downloadId");
 
                             Downloader.registerProgressUpdate(downloadId, download -> channel.invokeMethod("progress", download.toHashMap()));
-                            break;
-                        case "showNotification":
-                            Integer numPendingDownloads = call.argument("numPendingDownloads");
-                            NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
-                            break;
-                        case "settingsChanged":
-                            Intent bgStartIntent = new Intent(this, BackgroundService.class);
-                            bgStartIntent.putExtra("settingsChanged", true);
-                            startService(bgStartIntent);
                             break;
                     }
                 });
