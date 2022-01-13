@@ -76,6 +76,11 @@ public class MainActivity extends FlutterActivity {
                         case "downloadExists":
                             result.success(Downloader.downloadExists(this, call.argument("uri")));
                             break;
+                        case "registerDownloadProgressUpdater":
+                            int downloadId = call.argument("downloadId");
+
+                            Downloader.registerProgressUpdate(downloadId, download -> channel.invokeMethod("progress", download.toHashMap()));
+                            break;
                         case "showNotification":
                             Integer numPendingDownloads = call.argument("numPendingDownloads");
                             NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
