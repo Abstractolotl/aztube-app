@@ -18,13 +18,42 @@ import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 interface ProgressUpdate {
-    void run(String videoId, int downloadId, int progress);
+    void run(Download download);
+}
+
+class Download {
+    boolean done;
+    int progress;
+    int downloadId;
+    String videoId;
+
+    Download(boolean done, int progress, int downloadId, String videoId){
+        this.done = done;
+        this.progress = progress;
+        this.downloadId = downloadId;
+        this.videoId = videoId;
+    }
+
+    HashMap<String, Object> toHashMap(){
+        HashMap<String, Object> map = new HashMap<>();
+
+        map.put("done", done);
+        map.put("progress", progress);
+        map.put("downloadId", downloadId);
+        map.put("videoId", videoId);
+
+        return map;
+    }
 }
 
 public class Downloader {
+    private static final HashMap<Integer, Download> downloads = new HashMap<>();
+
     public static boolean downloadVideo(Context context, String videoId, int downloadId, String quality, ProgressUpdate progressUpdate){
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
 
@@ -43,6 +72,20 @@ public class Downloader {
     public static String getThumbnailUrl(String videoId){
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
         return Downloader.getThumbnailUrl(videoInfo);
+    }
+
+    public static List<HashMap<String, Object>> getActiveDownloads(){
+        ArrayList<HashMap<String, Object>> downloadList = new ArrayList<>();
+
+        for(Integer downloadId : downloads.keySet()){
+            Download download = downloads.get(downloadId);
+
+            if(download != null && !download.done){
+                downloadList.add(download.toHashMap());
+            }
+        }
+
+        return downloadList;
     }
 
     private static VideoInfo requestVideoInfo(String videoId) {
@@ -147,16 +190,25 @@ public class Downloader {
             RequestVideoStreamDownload request = new RequestVideoStreamDownload(format, fileOutputStream).callback(new YoutubeProgressCallback<Void>() {
                 @Override
                 public void onDownloading(int progress) {
-                    progressUpdate.run(videoId, downloadId, progress);
+                    Download download = new Download(false, progress, downloadId, videoId);
+
+                    downloads.put(downloadId, download);
+                    progressUpdate.run(download);
                 }
 
                 @Override
                 public void onFinished(Void data) {
+                    Download download = new Download(true, 100, downloadId, videoId);
+                    downloads.put(downloadId, download);
+
                     success[0] = true;
                 }
 
                 @Override
                 public void onError(Throwable throwable) {
+                    Download download = new Download(true, -1, downloadId, videoId);
+                    downloads.put(downloadId, download);
+
                     System.out.println("Error downloading video");
                     success[0] = false;
                 }

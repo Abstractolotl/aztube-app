@@ -37,15 +37,9 @@ public class MainActivity extends FlutterActivity {
                                 String quality = call.argument("quality");
                                 int downloadId = call.argument("downloadId");
 
-                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (videoId1, downloadId1, progress) -> {
-                                    HashMap<String, Object> args = new HashMap<>();
-
-                                    args.put("videoId", videoId1);
-                                    args.put("downloadId", downloadId1);
-                                    args.put("progress", progress);
-
+                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (download) -> {
                                     new Async<Void>().run(() -> null, (garbage) -> {
-                                        channel.invokeMethod("progress", args);
+                                        channel.invokeMethod("progress", download.toHashMap());
                                         return null;
                                     });
                                 });
@@ -65,6 +59,8 @@ public class MainActivity extends FlutterActivity {
                                 return null;
                             });
                             break;
+                        case "getActiveDownloads":
+                            result.success(Downloader.getActiveDownloads());
                         case "showNotification":
                             Integer numPendingDownloads = call.argument("numPendingDownloads");
                             NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
