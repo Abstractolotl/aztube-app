@@ -352,7 +352,11 @@ public class Downloader {
     private static String downloadFormat(Context context, Format format, String videoId, Integer downloadId, Boolean audio, ProgressUpdate progressUpdate, Double progressStart, Double progressFactor) {
         final Boolean[] success = {false};
 
-        registerProgressUpdate(downloadId, progressUpdate);
+        new Async<Void>().runOnMain(() -> {
+            registerProgressUpdate(downloadId, progressUpdate);
+
+            return null;
+        });
 
         String filename;
 
@@ -387,7 +391,12 @@ public class Downloader {
             @Override
             public void onFinished(File data) {
                 Download download = new Download(true, 100, downloadId, videoId);
-                downloads.put(downloadId, download);
+
+                new Async<Void>().runOnMain(() -> {
+                    downloads.put(downloadId, download);
+
+                    return null;
+                });
 
                 success[0] = true;
             }
@@ -395,7 +404,12 @@ public class Downloader {
             @Override
             public void onError(Throwable throwable) {
                 Download download = new Download(true, -1, downloadId, videoId);
-                downloads.put(downloadId, download);
+
+                new Async<Void>().runOnMain(() -> {
+                    downloads.put(downloadId, download);
+
+                    return null;
+                });
 
                 System.out.println("Error downloading video");
                 success[0] = false;

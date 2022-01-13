@@ -20,7 +20,7 @@ class Async<T> {
     fun runOnMain(onMain: () -> Void){
         scope.launch {
             withContext(Dispatchers.Main){
-                onMain();
+                onMain()
             }
         }
     }
