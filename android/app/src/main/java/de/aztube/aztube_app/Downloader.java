@@ -224,7 +224,7 @@ public class Downloader {
             startProgress += progressFactor * 100;
         }
 
-        String filename = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/video_combined_" + downloadId + ".mp4";
+        String filename = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/video_combined_" + downloadId + ".mkv";
 
         if (files.size() > 1) {
             System.out.println("Combining video and audio");
@@ -284,7 +284,7 @@ public class Downloader {
         } else {
             contentValues.put(MediaStore.Video.Media.TITLE, filename);
             contentValues.put(MediaStore.Video.Media.DISPLAY_NAME, videoInfo.details().title());
-            contentValues.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+            contentValues.put(MediaStore.Video.Media.MIME_TYPE, "video/x-matroska");
             contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/" + "AZTube");
             contentValues.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
             contentValues.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis());
