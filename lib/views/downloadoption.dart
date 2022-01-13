@@ -41,10 +41,6 @@ class DownloadScreenState extends State<DownloadScreen> {
               title: Text('Author: ${widget.video.author}'),
             ),
             const Divider(),
-            ListTile(
-              title: Text(widget.video.downloaded ? 'Location: ${widget.video.savedTo}' : 'Location: Not Downloaded'),
-            ),
-            const Divider(),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -120,6 +116,11 @@ class DownloadScreenState extends State<DownloadScreen> {
     bool result = await platform.invokeMethod("deleteDownload", args);
     if(result){
       removeFromList();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${widget.video.title} deleted'),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating),
+      );
       Navigator.pop(context);
     }else{
       ScaffoldMessenger.of(context).showSnackBar(
