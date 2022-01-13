@@ -1,6 +1,7 @@
 package de.aztube.aztube_app;
 
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -49,18 +50,13 @@ public class MainActivity extends FlutterActivity {
                             new Async<String>().run(() -> {
                                 String videoId = call.argument("videoId");
                                 String quality = call.argument("quality");
-                                int downloadId = call.argument("downloadId");
+                                Integer downloadId = call.argument("downloadId");
 
-                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (download) -> {
-                                    new Async<Void>().run(() -> null, (garbage) -> {
-                                        channel.invokeMethod("progress", download.toHashMap());
-                                        return null;
-                                    });
-                                });
+                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (download) -> channel.invokeMethod("progress", download.toHashMap()));
                             }, (uri) -> {
-                                if(uri != null){
+                                if (uri != null) {
                                     result.success(uri);
-                                }else{
+                                } else {
                                     result.success(false);
                                 }
 
@@ -71,7 +67,7 @@ public class MainActivity extends FlutterActivity {
                             new Async<String>().run(() -> Downloader.getThumbnailUrl(call.argument("videoId")), (String data) -> {
                                 if (data != null) {
                                     result.success(data);
-                                }else{
+                                } else {
                                     result.success(false);
                                 }
 
@@ -92,9 +88,9 @@ public class MainActivity extends FlutterActivity {
                             result.success(Downloader.downloadExists(this, call.argument("uri")));
                             break;
                         case "registerDownloadProgressUpdate":
-                            int downloadId = call.argument("downloadId");
+                            Integer downloadId = call.argument("downloadId");
 
-                            Downloader.registerProgressUpdate(downloadId, download -> channel.invokeMethod("progress", download.toHashMap()));
+                            Downloader.registerProgressUpdate(downloadId, (download) -> channel.invokeMethod("progress", download.toHashMap()));
                             break;
                     }
                 });

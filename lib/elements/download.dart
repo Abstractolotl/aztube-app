@@ -43,14 +43,15 @@ class DownloadState extends State<Download> {
       },
 <<<<<<< Updated upstream
       icon: Icon(widget.video.downloaded  ? Icons.download_done : Icons.download),
-      color: Colors.black,
+      color: widget.video.downloaded ? Colors.green : Colors.black,
     );
     if(downloading){
-      trailing = CircularProgressIndicator(color: Colors.black, value: widget.video.progress/100,);
+      trailing = CircularProgressIndicator(color: Colors.green, value: widget.video.progress/100,);
     }
+    var type = widget.video.quality == 'audio' ? ' [Audio]' : ' [Video]';
     return Column(children: [
       ListTile(
-          title: Text(widget.video.title),
+          title: Text(widget.video.title + type),
           trailing: trailing,
           onLongPress: openInformationView,
 =======
