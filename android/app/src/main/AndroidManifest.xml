@@ -34,7 +34,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".BackgroundService" />
+        <service android:name=".Services.BackgroundService" android:process=":ServiceProcess" />
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -42,7 +42,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <receiver android:name=".BootCompletedIntentReceiver" android:exported="true">
+        <receiver android:name=".Services.BootCompletedIntentReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>

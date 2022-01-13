@@ -20,11 +20,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.List;
 
-interface ProgressUpdate {
-    void run(String videoId, int downloadId, int progress);
-}
 
 public class Downloader {
+
+    public interface ProgressUpdate {
+        void run(String videoId, int downloadId, int progress);
+    }
+
     public static boolean downloadVideo(Context context, String videoId, int downloadId, String quality, ProgressUpdate progressUpdate){
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
 

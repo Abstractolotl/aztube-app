@@ -1,6 +1,5 @@
-package de.aztube.aztube_app;
+package de.aztube.aztube_app.Services;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import de.aztube.aztube_app.R;
 
 public class NotificationUtil {
 
@@ -41,6 +41,12 @@ public class NotificationUtil {
         return notificationID;
     }
 
+    private static int pushNotification(Context context, Notification notif, int notifId){
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.notify(notifId, notif);
+        return notifId;
+    }
+
     public static int ShowPendingDownloadNotification(Context context, int numPendingDownloads){
         NotificationCompat.Builder builder = buildNotification(context, "Download Request", "You have "+numPendingDownloads+" pending Download Requests");
         return pushNotification(context, builder.build());
@@ -49,6 +55,11 @@ public class NotificationUtil {
     public static int ShowSomething(Context context, String title, String content){
         NotificationCompat.Builder builder = buildNotification(context, title, content);
         return pushNotification(context, builder.build());
+    }
+
+    public static int ShowSomething(Context context, String title, String content, int notifId){
+        NotificationCompat.Builder builder = buildNotification(context, title, content);
+        return pushNotification(context, builder.build(), notifId);
     }
 
     public static void CreateNotificationChannel(Context context) {

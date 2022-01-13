@@ -1,4 +1,4 @@
-package de.aztube.aztube_app;
+package de.aztube.aztube_app.Communication;
 
 import java.util.List;
 

@@ -1,5 +1,6 @@
 package de.aztube.aztube_app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -7,6 +8,8 @@ import androidx.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Objects;
 
+import de.aztube.aztube_app.Services.BackgroundService;
+import de.aztube.aztube_app.Services.NotificationUtil;
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
