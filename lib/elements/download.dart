@@ -58,15 +58,18 @@ class DownloadState extends State<Download> {
         visualDensity: VisualDensity(horizontal: 0, vertical: 0),
         dense: true,
         horizontalTitleGap: 5,
-        leading: Image.network(
-            "https://i.ytimg.com/vi/xyVfLxV08I0/maxresdefault.jpg"),
+        leading: Image.network(widget.video.thumbnail.isNotEmpty
+            ? widget.video.thumbnail
+            : "https://i.ytimg.com/vi/" +
+                widget.video.videoId +
+                "/maxresdefault.jpg"),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Wrap(
               children: [
                 Text(
-                  widget.video.title + "sehr sehr langer langer titel itel",
+                  widget.video.title,
                   style: TextStyle(fontSize: 17),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -127,6 +130,8 @@ class DownloadState extends State<Download> {
     };
 
     final dynamic result = await platform.invokeMethod("downloadVideo", args);
+    final dynamic thumbnail =
+        await platform.invokeMethod("trailing", {"videoId": video.videoId});
     try {
       if (!result) {
         setState(() {
@@ -144,6 +149,7 @@ class DownloadState extends State<Download> {
 
       widget.video.downloaded = true;
       widget.video.savedTo = result;
+      widget.video.thumbnail = thumbnail;
 
       widget.cache.downloaded.add(widget.video);
       FileManager().saveDownloads(widget.cache);

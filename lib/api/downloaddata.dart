@@ -1,5 +1,4 @@
-class DownloadData{
-
+class DownloadData {
   int downloadId = 0;
   String videoId = '0';
   String quality = 'audio_only';
@@ -10,6 +9,7 @@ class DownloadData{
   String fileName = '';
   bool downloaded = false;
   String savedTo = '';
+  String thumbnail = '';
   int progress = 0;
 
   DownloadData();
@@ -22,16 +22,17 @@ class DownloadData{
         author = json['author'] ?? 'Unknown',
         fileName = json['fileName'] ?? json['title'],
         downloaded = json['downloaded'] ?? false,
-        savedTo = json['savedTo'] ?? '';
+        savedTo = json['savedTo'] ?? '',
+        thumbnail = json['thumbnail'] ?? '';
 
   Map<String, dynamic> toJson() => {
-    'downloadId': downloadId,
-    'videoId': videoId,
-    'quality': quality,
-    'title': title,
-    'author': author,
-    'downloaded': downloaded,
-    'savedTo': savedTo,
-  };
-
+        'downloadId': downloadId,
+        'videoId': videoId,
+        'quality': quality,
+        'title': title,
+        'author': author,
+        'downloaded': downloaded,
+        'savedTo': savedTo,
+        'thumbnail': thumbnail,
+      };
 }
