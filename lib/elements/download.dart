@@ -58,11 +58,15 @@ class DownloadState extends State<Download> {
         visualDensity: VisualDensity(horizontal: 0, vertical: 0),
         dense: true,
         horizontalTitleGap: 5,
-        leading: Image.network(widget.video.thumbnail.isNotEmpty
-            ? widget.video.thumbnail
-            : "https://i.ytimg.com/vi/" +
-                widget.video.videoId +
-                "/maxresdefault.jpg"),
+        leading: Image.network(
+          /* widget.video.thumbnail.isNotEmpty
+              ? widget.video.thumbnail
+              : */
+          "https://i.ytimg.com/vi/" +
+              widget.video.videoId +
+              "/maxresdefault.jpg",
+          width: 75,
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -151,7 +155,6 @@ class DownloadState extends State<Download> {
 
       widget.video.downloaded = true;
       widget.video.savedTo = result;
-      widget.video.thumbnail = "";
 
       widget.cache.downloaded.add(widget.video);
       FileManager().saveDownloads(widget.cache);

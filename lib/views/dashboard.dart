@@ -165,17 +165,15 @@ class DashboardScreenState extends State<DashboardScreen> {
           return Download(
               video: queue[index], cache: downloadCache, state: this);
         });
-    
+
     initRunningDownloads();
   }
-  
+
   void initRunningDownloads() async {
     List<dynamic> result = await platform.invokeMethod("getActiveDownloads");
 
-    for(var i = 0; i < result.length; i++){
-      Map<String, dynamic> args = {
-        "downloadId": result[i]["downloadId"]
-      };
+    for (var i = 0; i < result.length; i++) {
+      Map<String, dynamic> args = {"downloadId": result[i]["downloadId"]};
 
       await platform.invokeMethod("registerDownloadProgressUpdate", args);
     }
@@ -190,6 +188,9 @@ class DashboardScreenState extends State<DashboardScreen> {
           var downloads = jsonResponse['downloads'];
           for (var download in downloads) {
             DownloadData video = DownloadData.fromJson(download);
+            final dynamic thumbnail = await platform
+                .invokeMethod("getThumbnailUrl", {"videoId": video.videoId});
+            video.thumbnail = thumbnail;
             downloadCache.queue.add(video);
           }
           FileManager().saveDownloads(downloadCache);
