@@ -17,7 +17,7 @@ class DownloadCache{
   }
 
 
-  DownloadData? findBy(String videoId, String downloadId){
+  DownloadData? findBy(String videoId, int downloadId){
     Iterable<DownloadData> filtered = queue.where((element){
       return element.downloadId == downloadId && element.videoId == videoId;
     });

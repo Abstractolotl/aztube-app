@@ -21,11 +21,11 @@ import java.io.FileOutputStream;
 import java.util.List;
 
 interface ProgressUpdate {
-    void run(String videoId, String downloadId, int progress);
+    void run(String videoId, int downloadId, int progress);
 }
 
 public class Downloader {
-    public static boolean downloadVideo(Context context, String videoId, String downloadId, String quality, ProgressUpdate progressUpdate){
+    public static boolean downloadVideo(Context context, String videoId, int downloadId, String quality, ProgressUpdate progressUpdate){
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
 
         Format format = null;
@@ -95,7 +95,7 @@ public class Downloader {
         return format;
     }
 
-    private static boolean downloadVideo(Context context, Format format, VideoInfo videoInfo, String videoId, String downloadId, Boolean audio, ProgressUpdate progressUpdate) {
+    private static boolean downloadVideo(Context context, Format format, VideoInfo videoInfo, String videoId, int downloadId, Boolean audio, ProgressUpdate progressUpdate) {
         final Boolean[] success = {false};
 
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();

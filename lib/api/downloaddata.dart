@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 class DownloadData{
 
-  String downloadId = '0';
+  int downloadId = 0;
   String videoId = '0';
   String quality = 'audio_only';
 
@@ -18,7 +18,7 @@ class DownloadData{
   DownloadData();
 
   DownloadData.fromJson(dynamic json)
-      : downloadId = json['downloadId'] ?? '0',
+      : downloadId = json['downloadId'] ?? 0,
         videoId = json['videoId'],
         quality = json['quality'],
         title = json['title'],

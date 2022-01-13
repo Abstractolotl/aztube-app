@@ -35,7 +35,7 @@ public class MainActivity extends FlutterActivity {
                             new Async<Boolean>().run(() -> {
                                 String videoId = call.argument("videoId");
                                 String quality = call.argument("quality");
-                                String downloadId = call.argument("downloadId");
+                                int downloadId = call.argument("downloadId");
 
                                 return Downloader.downloadVideo(this, videoId, downloadId, quality, (videoId1, downloadId1, progress) -> {
                                     HashMap<String, Object> args = new HashMap<>();
