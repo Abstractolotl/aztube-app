@@ -22,6 +22,7 @@ import com.github.kiulian.downloader.model.videos.VideoInfo;
 import com.github.kiulian.downloader.model.videos.formats.AudioFormat;
 import com.github.kiulian.downloader.model.videos.formats.Format;
 import com.github.kiulian.downloader.model.videos.formats.VideoFormat;
+import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -151,6 +152,7 @@ public class Downloader {
     }
 
     private static List<Format> getVideoFormats(VideoInfo videoInfo, String quality) {
+        List<VideoWithAudioFormat> videoWithAudioFormats = videoInfo.videoWithAudioFormats();
         List<VideoFormat> videoFormats = videoInfo.videoFormats();
         List<AudioFormat> audioFormats = videoInfo.audioFormats();
 
@@ -167,7 +169,9 @@ public class Downloader {
                 }
             }
 
-            formats.add(audioFormat);
+            if(quality.equals("audio")){
+                formats.add(audioFormat);
+            }
         } else {
             System.out.println("No audio formats available!");
             return null;
@@ -175,11 +179,21 @@ public class Downloader {
 
         if (!quality.equals("audio")) {
             Format videoFormat = null;
-
-            for (VideoFormat bestVideoFormat : videoFormats) {
+            for(VideoWithAudioFormat bestVideoFormat : videoWithAudioFormats){
                 if (bestVideoFormat.qualityLabel().equals(quality)) {
                     videoFormat = bestVideoFormat;
                     break;
+                }
+            }
+
+            if(videoFormat == null){
+                formats.add(audioFormat);
+
+                for (VideoFormat bestVideoFormat : videoFormats) {
+                    if (bestVideoFormat.qualityLabel().equals(quality)) {
+                        videoFormat = bestVideoFormat;
+                        break;
+                    }
                 }
             }
 
@@ -294,6 +308,7 @@ public class Downloader {
                     filename += ".mp3";
                     session = FFmpegKit.execute("-y -i " + files.get(0) + " -i " + thumbnail + " -map 0:0 -map 1:0 -c:a libmp3lame -id3v2_version 3 -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover (front)\" " + filename);
                 }else{
+                    filename += ".mkv";
                     session = FFmpegKit.execute("-y -i " + files.get(0) + " -c:v copy -c:a aac -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename);
                 }
 
