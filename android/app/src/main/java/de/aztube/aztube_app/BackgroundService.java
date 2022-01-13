@@ -3,21 +3,24 @@ package de.aztube.aztube_app;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.Nullable;
-import com.alibaba.fastjson.JSON;
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BackgroundService extends Service {
 
@@ -33,12 +36,16 @@ public class BackgroundService extends Service {
     private boolean started;
 
     private boolean settingAutoDownload;
+    private String deviceToken;
 
     private void init() {
-        //handler = new Handler(Looper.getMainLooper());
-        //handler.post(new PollRequest(this, handler));
-
         readSettingsFile();
+
+        if(deviceToken != null && !deviceToken.trim().equals("")) {
+            handler = new Handler(Looper.getMainLooper());
+            handler.post(new PollRequestRunner(this, handler));
+        }
+
     }
 
     private void readSettingsFile() {
@@ -55,6 +62,8 @@ public class BackgroundService extends Service {
             Gson gson = new Gson();
             JsonObject settings = gson.fromJson(sb.toString(), JsonObject.class);
             settingAutoDownload = settings.get("background").getAsBoolean();
+            JsonElement json = settings.get("device");
+            if(json != null) deviceToken = json.getAsString();
 
             //NotificationUtil.ShowSomething(this, "Settings", sb.toString());
         } catch (IOException e) {
@@ -65,8 +74,8 @@ public class BackgroundService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        init();
         if(!started) {
-            init();
             started = true;
         }
 
@@ -79,38 +88,55 @@ public class BackgroundService extends Service {
         return null;
     }
 
-    private class PollRequest implements Runnable {
+    private class PollRequestRunner implements Runnable {
 
         private Context context;
         private Handler handler;
 
-        public PollRequest(Context context, Handler handler) {
+        public PollRequestRunner(Context context, Handler handler) {
             this.context = context;
             this.handler = handler;
         }
 
         private void restartService() {
-            handler.postDelayed(new PollRequest(context, handler), DEFAULT_SYNC_INTERVAL);
+            handler.postDelayed(new PollRequestRunner(context, handler), DEFAULT_SYNC_INTERVAL);
         }
 
         @Override
         public void run() {
             RequestQueue queue = Volley.newRequestQueue(context);
-            StringRequest stringRequest = new StringRequest(Request.Method.GET, "http://de2.lucaspape.de:4020/generate",
+
+            Request request = new GsonRequest<PollResponse>(Request.Method.POST, "http://de2.lucaspape.de:4020/poll", PollResponse.class,
                     response -> {
-                        Log.d("AzTube", response);
+                        if(response.getDownloads() == null || response.getDownloads().size() <= 0) return;
+                        DownloadRequest req1 = response.getDownloads().get(0);
+                        Log.d("AzTube", req1.getVideoID());
                         if(settingAutoDownload) {
-                            NotificationUtil.ShowSomething(context, "New Code", response);
+                            NotificationUtil.ShowSomething(context, "New Code", req1.getTitle());
                         } else {
                             //TODO
                         }
                         restartService();
                     },
                     error -> {
-                        Log.d("AzTube", error.toString());
+                        Log.d("AzTube", error.toString(), error);
                         NotificationUtil.ShowSomething(context, "Error", "Something went Wrong :c");
-                    });
-            queue.add(stringRequest);
+                    }
+                    ){
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                    return ("{\"deviceToken\":\""+deviceToken+"\"}").getBytes(StandardCharsets.UTF_8);
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> map = new HashMap<>();
+                    map.put("Content-Type", "application/json");
+                    return map;
+                }
+            };
+
+            queue.add(request);
         }
     }
 

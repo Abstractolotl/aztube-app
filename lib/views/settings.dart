@@ -6,18 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 class SettingsScreen extends StatefulWidget {
-
   const SettingsScreen({Key? key, required this.settings}) : super(key: key);
 
   final Settings settings;
 
   @override
   State<StatefulWidget> createState() => SettingsScreenState();
-
 }
 
 class SettingsScreenState extends State<SettingsScreen> {
-
   Key key = UniqueKey();
 
   Color getColor(Set<MaterialState> states) {
@@ -37,18 +34,17 @@ class SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
         child: ListView(children: [
           ListTile(
-            title: const Text('Notifications'),
-            trailing: Checkbox(
-              checkColor: Colors.white,
-              fillColor: MaterialStateProperty.resolveWith(getColor),
-              value: widget.settings.notifications,
-              onChanged: (value){
-                widget.settings.notifications = value!;
-                FileManager().saveSettings(widget.settings);
-                setState(() { });
-              },
-            )
-          ),
+              title: const Text('Notifications'),
+              trailing: Checkbox(
+                checkColor: Colors.white,
+                fillColor: MaterialStateProperty.resolveWith(getColor),
+                value: widget.settings.notifications,
+                onChanged: (value) {
+                  widget.settings.notifications = value!;
+                  FileManager().saveSettings(widget.settings);
+                  setState(() {});
+                },
+              )),
           const Divider(),
           ListTile(
               title: const Text('Download in backround'),
@@ -56,21 +52,23 @@ class SettingsScreenState extends State<SettingsScreen> {
                 checkColor: Colors.white,
                 fillColor: MaterialStateProperty.resolveWith(getColor),
                 value: widget.settings.backgroundLoading,
-                onChanged: (value){
+                onChanged: (value) {
                   widget.settings.backgroundLoading = value!;
                   FileManager().saveSettings(widget.settings);
-                  setState(() { });
+                  setState(() {});
                 },
-              )
-          ),
+              )),
           const Divider(),
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+            padding:
+                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
             child: SimpleButton(
               child: const Text('Unlink'),
-              color: (widget.settings.deviceHash.length >= 10) ? Colors.red : Colors.grey,
+              color: (widget.settings.deviceHash.length >= 10)
+                  ? Colors.red
+                  : Colors.grey,
               onPressed: () {
-                if(widget.settings.deviceHash.length >= 10){
+                if (widget.settings.deviceHash.length >= 10) {
                   APIHelper.unregisterDevice(widget.settings.deviceHash);
                   widget.settings.deviceHash = '0';
                   FileManager().saveSettings(widget.settings);
@@ -78,11 +76,25 @@ class SettingsScreenState extends State<SettingsScreen> {
                 }
               },
             ),
+          ),
+          const Divider(),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+            child: SimpleButton(
+              child: const Text('lel'),
+              color: (widget.settings.deviceHash.length >= 10)
+                  ? Colors.red
+                  : Colors.grey,
+              onPressed: () {
+                widget.settings.deviceHash =
+                    "c99789bf-1477-44f8-8844-a8f189b6f40f";
+                FileManager().saveSettings(widget.settings);
+              },
+            ),
           )
         ]),
-      )
+      ),
     );
-
   }
-
 }

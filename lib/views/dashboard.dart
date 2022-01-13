@@ -23,13 +23,12 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class DashboardScreenState extends State<DashboardScreen> {
-
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
 
   Future<dynamic> nativeMethodCallHandler(MethodCall methodCall) async {
-    switch(methodCall.method){
+    switch (methodCall.method) {
       case "progress":
-      /**
+        /**
        * Available parameters:
        * integer methodCall.arguments['progress']
        * string methodCall.arguments['videoId']
@@ -168,7 +167,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     downloadCache = await FileManager().getDownloads();
     setState(() {
       loading = false;
-      if(currentSettings.deviceHash.length >= 10){
+      if (currentSettings.deviceHash.length >= 10) {
         timer = polling();
       }
     });
@@ -178,30 +177,36 @@ class DashboardScreenState extends State<DashboardScreen> {
     var queue = downloadCache.getAll();
     downloads = ListView.builder(
         padding: const EdgeInsets.all(5.0),
-        itemCount: queue.length,
+        itemCount: queue.length + 1,
         itemBuilder: (context, index) {
+          if (index == 0) {
+            return SimpleButton(
+              child: Text('Testing'),
+              onPressed: () {
+                platform.invokeMethod("someTest");
+              },
+            );
+          }
           return Download(video: queue[index], cache: downloadCache);
         });
   }
 
-  Timer polling(){
-    return Timer.periodic(const Duration(seconds: 5),
-            (timer) async{
-                var response = await APIHelper.fetchDownloads(currentSettings.deviceHash);
+  Timer polling() {
+    return Timer.periodic(const Duration(seconds: 5), (timer) async {
+      var response = await APIHelper.fetchDownloads(currentSettings.deviceHash);
 
-                if(response.statusCode == 200){
-                  var jsonResponse = jsonDecode(response.body);
-                  if(jsonResponse['success']){
-                    var downloads = jsonResponse['downloads'];
-                    for (var download in downloads){
-                      DownloadData video = DownloadData.fromJson(download);
-                      downloadCache.queue.add(video);
-                    }
-                    FileManager().saveDownloads(downloadCache);
-                    setState(() {
-                    });
-                  }
-                }
-            });
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success']) {
+          var downloads = jsonResponse['downloads'];
+          for (var download in downloads) {
+            DownloadData video = DownloadData.fromJson(download);
+            downloadCache.queue.add(video);
+          }
+          FileManager().saveDownloads(downloadCache);
+          setState(() {});
+        }
+      }
+    });
   }
 }
