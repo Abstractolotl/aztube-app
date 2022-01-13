@@ -3,6 +3,7 @@ package de.aztube.aztube_app;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
@@ -54,7 +55,7 @@ class Download {
 public class Downloader {
     private static final HashMap<Integer, Download> downloads = new HashMap<>();
 
-    public static boolean downloadVideo(Context context, String videoId, int downloadId, String quality, ProgressUpdate progressUpdate){
+    public static String downloadVideo(Context context, String videoId, int downloadId, String quality, ProgressUpdate progressUpdate){
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
 
         Format format = null;
@@ -65,7 +66,7 @@ public class Downloader {
         if(format != null){
             return Downloader.downloadVideo(context, format, videoInfo, videoId, downloadId, quality.equals("audio"), progressUpdate);
         }else{
-            return false;
+            return null;
         }
     }
 
@@ -86,6 +87,16 @@ public class Downloader {
         }
 
         return downloadList;
+    }
+
+    public static boolean deleteDownload(Context context, String uri){
+        return context.getContentResolver().delete(Uri.parse(uri), null) > 0;
+    }
+
+    public static void openDownload(Context context, String uri){
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(uri));
+        context.startActivity(intent);
     }
 
     private static VideoInfo requestVideoInfo(String videoId) {
@@ -138,7 +149,7 @@ public class Downloader {
         return format;
     }
 
-    private static boolean downloadVideo(Context context, Format format, VideoInfo videoInfo, String videoId, int downloadId, Boolean audio, ProgressUpdate progressUpdate) {
+    private static String downloadVideo(Context context, Format format, VideoInfo videoInfo, String videoId, int downloadId, Boolean audio, ProgressUpdate progressUpdate) {
         final Boolean[] success = {false};
 
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
@@ -224,13 +235,16 @@ public class Downloader {
                 }else{
                     contentValues.put(MediaStore.Video.Media.IS_PENDING, 0);
                 }
-
                 context.getContentResolver().update(uriSaved, contentValues, null, null);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        return success[0];
+        if(success[0]){
+            return uriSaved.toString();
+        }else{
+            return null;
+        }
     }
 }

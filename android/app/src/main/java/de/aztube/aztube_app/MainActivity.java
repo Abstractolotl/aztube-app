@@ -4,7 +4,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.HashMap;
 import java.util.Objects;
 
 import io.flutter.embedding.android.FlutterActivity;
@@ -28,11 +27,13 @@ public class MainActivity extends FlutterActivity {
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
 
+        Downloader.deleteDownload(this, "content://media/external_primary/audio/media/137");
+
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
                 .setMethodCallHandler((call, result) -> {
                     switch (call.method) {
                         case "downloadVideo":
-                            new Async<Boolean>().run(() -> {
+                            new Async<String>().run(() -> {
                                 String videoId = call.argument("videoId");
                                 String quality = call.argument("quality");
                                 int downloadId = call.argument("downloadId");
@@ -43,8 +44,13 @@ public class MainActivity extends FlutterActivity {
                                         return null;
                                     });
                                 });
-                            }, (success) -> {
-                                result.success(success);
+                            }, (uri) -> {
+                                if(uri != null){
+                                    result.success(uri);
+                                }else{
+                                    result.success(false);
+                                }
+
                                 return null;
                             });
                             break;
@@ -61,6 +67,14 @@ public class MainActivity extends FlutterActivity {
                             break;
                         case "getActiveDownloads":
                             result.success(Downloader.getActiveDownloads());
+                            break;
+                        case "openDownload":
+                            Downloader.openDownload(this, call.argument("uri"));
+                            result.success(true);
+                            break;
+                        case "deleteDownload":
+                            result.success(Downloader.deleteDownload(this, call.argument("uri")));
+                            break;
                         case "showNotification":
                             Integer numPendingDownloads = call.argument("numPendingDownloads");
                             NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
