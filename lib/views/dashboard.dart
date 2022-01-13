@@ -170,7 +170,6 @@ class DashboardScreenState extends State<DashboardScreen> {
   Timer polling() {
     return Timer.periodic(const Duration(seconds: timeout), (timer) async {
       var response = await APIHelper.fetchDownloads(currentSettings.deviceHash);
-
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success']) {
@@ -183,7 +182,8 @@ class DashboardScreenState extends State<DashboardScreen> {
           setState(() {});
         } else {
           var error = jsonResponse['error'];
-          if (error != 'no entry in database') {
+          if (error != 'no entry in database' &&
+              error != 'deviceToken not ready yet') {
             timer.cancel();
             currentSettings.deviceHash = '0';
             FileManager().saveSettings(currentSettings);

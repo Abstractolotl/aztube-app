@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.HashMap;
 import java.util.Objects;
 
 import de.aztube.aztube_app.Services.BackgroundService;
@@ -35,25 +34,24 @@ public class MainActivity extends FlutterActivity {
                 .setMethodCallHandler((call, result) -> {
                     switch (call.method) {
                         case "downloadVideo":
-                            new Async<Boolean>().run(() -> {
+                            new Async<String>().run(() -> {
                                 String videoId = call.argument("videoId");
                                 String quality = call.argument("quality");
                                 int downloadId = call.argument("downloadId");
 
-                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (videoId1, downloadId1, progress) -> {
-                                    HashMap<String, Object> args = new HashMap<>();
-
-                                    args.put("videoId", videoId1);
-                                    args.put("downloadId", downloadId1);
-                                    args.put("progress", progress);
-
+                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (download) -> {
                                     new Async<Void>().run(() -> null, (garbage) -> {
-                                        channel.invokeMethod("progress", args);
+                                        channel.invokeMethod("progress", download.toHashMap());
                                         return null;
                                     });
                                 });
-                            }, (success) -> {
-                                result.success(success);
+                            }, (uri) -> {
+                                if(uri != null){
+                                    result.success(uri);
+                                }else{
+                                    result.success(false);
+                                }
+
                                 return null;
                             });
                             break;
@@ -68,20 +66,32 @@ public class MainActivity extends FlutterActivity {
                                 return null;
                             });
                             break;
-                        case "someTest":
-                            //Integer numPendingDownloads = call.argument("numPendingDownloads");
-                            //NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
-                            //BackgroundService.StartBackgroundService(this);
+                        case "getActiveDownloads":
+                            result.success(Downloader.getActiveDownloads());
+                            break;
+                        case "openDownload":
+                            Downloader.openDownload(this, call.argument("uri"));
+                            result.success(true);
+                            break;
+                        case "deleteDownload":
+                            result.success(Downloader.deleteDownload(this, call.argument("uri")));
+                            break;
+                        case "downloadExists":
+                            result.success(Downloader.downloadExists(this, call.argument("uri")));
+                            break;
+                        case "registerDownloadProgressUpdate":
+                            int downloadId = call.argument("downloadId");
 
+                            Downloader.registerProgressUpdate(downloadId, download -> channel.invokeMethod("progress", download.toHashMap()));
+                            break;
+                        case "showNotification":
+                            Integer numPendingDownloads = call.argument("numPendingDownloads");
+                            NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
                             break;
                         case "settingsChanged":
-                            //Integer numPendingDownloads = call.argument("numPendingDownloads");
-                            //NotificationUtil.ShowPendingDownloadNotification(this, numPendingDownloads == null ? 0 : numPendingDownloads);
-                            //BackgroundService.StartBackgroundService(this);
                             Intent bgStartIntent = new Intent(this, BackgroundService.class);
                             bgStartIntent.putExtra("settingsChanged", true);
                             startService(bgStartIntent);
-
                             break;
                     }
                 });

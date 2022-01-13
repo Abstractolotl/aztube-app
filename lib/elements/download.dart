@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:aztube/api/downloaddata.dart';
 import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
@@ -29,6 +27,9 @@ class DownloadState extends State<Download> {
 
   @override
   void initState() {
+    if(widget.video.progress > 0 && !widget.video.downloaded){
+      downloading = true;
+    }
     super.initState();
   }
 
@@ -80,19 +81,24 @@ class DownloadState extends State<Download> {
       "downloadId": video.downloadId
     };
 
-    final bool result = await platform.invokeMethod("downloadVideo", args);
-    if(!result){
-      setState(() {
-        downloading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Download failed'),
-            duration: Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating),
-      );
-    }else{
+    final dynamic result = await platform.invokeMethod("downloadVideo", args);
+    try{
+      if(!result){
+        setState(() {
+          downloading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Download failed'),
+              duration: Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating),
+        );
+      }
+    }catch(e){
       widget.cache.queue.remove(widget.video);
+
       widget.video.downloaded = true;
+      widget.video.savedTo = result;
+
       widget.cache.downloaded.add(widget.video);
       FileManager().saveDownloads(widget.cache);
       setState(() {

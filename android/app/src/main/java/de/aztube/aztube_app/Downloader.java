@@ -3,6 +3,7 @@ package de.aztube.aztube_app;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
@@ -18,16 +19,49 @@ import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
-public class Downloader {
+class Download {
+    boolean done;
+    int progress;
+    int downloadId;
+    String videoId;
 
-    public interface ProgressUpdate {
-        void run(String videoId, int downloadId, int progress);
+    Download(boolean done, int progress, int downloadId, String videoId){
+        this.done = done;
+        this.progress = progress;
+        this.downloadId = downloadId;
+        this.videoId = videoId;
     }
 
-    public static boolean downloadVideo(Context context, String videoId, int downloadId, String quality, ProgressUpdate progressUpdate){
+    HashMap<String, Object> toHashMap(){
+        HashMap<String, Object> map = new HashMap<>();
+
+        map.put("done", done);
+        map.put("progress", progress);
+        map.put("downloadId", downloadId);
+        map.put("videoId", videoId);
+
+        return map;
+    }
+}
+
+public class Downloader {
+
+
+    public interface ProgressUpdate {
+        void run(Download download);
+    }
+
+    private static final HashMap<Integer, Download> downloads = new HashMap<>();
+
+    public static String downloadVideo(Context context, String videoId, int downloadId, String quality, ProgressUpdate progressUpdate){
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
 
         Format format = null;
@@ -38,13 +72,61 @@ public class Downloader {
         if(format != null){
             return Downloader.downloadVideo(context, format, videoInfo, videoId, downloadId, quality.equals("audio"), progressUpdate);
         }else{
-            return false;
+            return null;
         }
     }
 
     public static String getThumbnailUrl(String videoId){
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
         return Downloader.getThumbnailUrl(videoInfo);
+    }
+
+    public static List<HashMap<String, Object>> getActiveDownloads(){
+        ArrayList<HashMap<String, Object>> downloadList = new ArrayList<>();
+
+        for(Integer downloadId : downloads.keySet()){
+            Download download = downloads.get(downloadId);
+
+            if(download != null && !download.done){
+                downloadList.add(download.toHashMap());
+            }
+        }
+
+        return downloadList;
+    }
+
+    public static boolean deleteDownload(Context context, String uri){
+        try{
+            return context.getContentResolver().delete(Uri.parse(uri), null, null) > 0;
+        }catch (SecurityException e){
+            return false;
+        }
+    }
+
+    public static void openDownload(Context context, String uri){
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(uri));
+        context.startActivity(intent);
+    }
+
+    public static boolean downloadExists(Context context, String uri){
+        try {
+            InputStream inputStream = context.getContentResolver().openInputStream(Uri.parse(uri));
+            inputStream.close();
+            
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    public static void registerProgressUpdate(int downloadId, ProgressUpdate progressUpdate){
+        ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
+
+        if(progressUpdateArrayList != null){
+            progressUpdateArrayList.add(progressUpdate);
+            progressUpdaters.put(downloadId, progressUpdateArrayList);
+        }
     }
 
     private static VideoInfo requestVideoInfo(String videoId) {
@@ -97,8 +179,15 @@ public class Downloader {
         return format;
     }
 
-    private static boolean downloadVideo(Context context, Format format, VideoInfo videoInfo, String videoId, int downloadId, Boolean audio, ProgressUpdate progressUpdate) {
+    private static final HashMap<Integer, ArrayList<ProgressUpdate>> progressUpdaters = new HashMap<>();
+
+    private static String downloadVideo(Context context, Format format, VideoInfo videoInfo, String videoId, int downloadId, Boolean audio, ProgressUpdate progressUpdate) {
         final Boolean[] success = {false};
+
+        ArrayList<ProgressUpdate> progressUpdaterList = new ArrayList<>();
+        progressUpdaterList.add(progressUpdate);
+
+        progressUpdaters.put(downloadId, progressUpdaterList);
 
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
 
@@ -149,16 +238,30 @@ public class Downloader {
             RequestVideoStreamDownload request = new RequestVideoStreamDownload(format, fileOutputStream).callback(new YoutubeProgressCallback<Void>() {
                 @Override
                 public void onDownloading(int progress) {
-                    progressUpdate.run(videoId, downloadId, progress);
+                    Download download = new Download(false, progress, downloadId, videoId);
+
+                    downloads.put(downloadId, download);
+
+                    ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
+
+                    for(ProgressUpdate progressUpdate : progressUpdateArrayList){
+                        progressUpdate.run(download);
+                    }
                 }
 
                 @Override
                 public void onFinished(Void data) {
+                    Download download = new Download(true, 100, downloadId, videoId);
+                    downloads.put(downloadId, download);
+
                     success[0] = true;
                 }
 
                 @Override
                 public void onError(Throwable throwable) {
+                    Download download = new Download(true, -1, downloadId, videoId);
+                    downloads.put(downloadId, download);
+
                     System.out.println("Error downloading video");
                     success[0] = false;
                 }
@@ -174,13 +277,16 @@ public class Downloader {
                 }else{
                     contentValues.put(MediaStore.Video.Media.IS_PENDING, 0);
                 }
-
                 context.getContentResolver().update(uriSaved, contentValues, null, null);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        return success[0];
+        if(success[0]){
+            return uriSaved.toString();
+        }else{
+            return null;
+        }
     }
 }

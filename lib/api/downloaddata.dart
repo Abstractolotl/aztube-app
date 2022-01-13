@@ -1,6 +1,3 @@
-import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
-
 class DownloadData{
 
   int downloadId = 0;
@@ -8,7 +5,7 @@ class DownloadData{
   String quality = 'audio_only';
 
   String title = 'Title';
-  String author = 'Author';
+  String author = 'Unknown';
 
   String fileName = '';
   bool downloaded = false;
@@ -22,8 +19,8 @@ class DownloadData{
         videoId = json['videoId'],
         quality = json['quality'],
         title = json['title'],
-        author = json['author'],
-        fileName = json['fileName'] ?? json['videoId'],
+        author = json['author'] ?? 'Unknown',
+        fileName = json['fileName'] ?? json['title'],
         downloaded = json['downloaded'] ?? false,
         savedTo = json['savedTo'] ?? '';
 
