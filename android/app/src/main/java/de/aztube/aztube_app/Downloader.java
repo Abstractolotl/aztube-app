@@ -56,6 +56,10 @@ public class Downloader {
         HashMap<String, Object> toHashMap() {
             HashMap<String, Object> map = new HashMap<>();
 
+            if(progress > 100){
+                progress = 100;
+            }
+
             map.put("done", done);
             map.put("progress", progress);
             map.put("downloadId", downloadId);
