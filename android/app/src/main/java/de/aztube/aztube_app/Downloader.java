@@ -209,6 +209,13 @@ public class Downloader {
         return formats;
     }
 
+    private static final String VIDEO_FORMAT = ".mkv";
+    private static final String VIDEO_MIME_TYPE = "video/x-matroska";
+    private static final String VIDEO_AUDIO_CODEC = "aac";
+    private static final String AUDIO_FORMAT = ".mp3";
+    private static final String AUDIO_MIME_TYPE = "audio/mpeg";
+    private static final String AUDIO_CODEC = "libmp3lame";
+
     private static final HashMap<Integer, ArrayList<ProgressUpdate>> progressUpdaters = new HashMap<>();
 
     private static String downloadVideo(Context context, List<Format> formats, VideoInfo videoInfo, String videoId, Integer downloadId, Boolean audio, ProgressUpdate progressUpdate) {
@@ -256,7 +263,7 @@ public class Downloader {
             startProgress += progressFactor * 100;
         }
 
-        String filename = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/video_combined_" + downloadId + ".mkv";
+        String filename = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/video_combined_" + downloadId + Downloader.VIDEO_FORMAT;
 
 
         AtomicBoolean done = new AtomicBoolean(false);
@@ -297,9 +304,9 @@ public class Downloader {
 
             synchronized (done){
                 if(thumbnail != null){
-                    session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a aac -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
+                    session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a " + Downloader.VIDEO_AUDIO_CODEC + " -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
                 }else{
-                    session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a aac " + filename, callback, logCallback, statisticsCallback);
+                    session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a " + Downloader.VIDEO_AUDIO_CODEC + " " + filename, callback, logCallback, statisticsCallback);
                 }
 
                 try {
@@ -349,12 +356,12 @@ public class Downloader {
 
                 synchronized (done){
                     if(audio){
-                        filename += ".mp3";
+                        filename += Downloader.AUDIO_FORMAT;
 
-                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + thumbnail + " -map 0:0 -map 1:0 -c:a libmp3lame -id3v2_version 3 -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover (front)\" " + filename, callback, logCallback, statisticsCallback);
+                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + thumbnail + " -map 0:0 -map 1:0 -c:a " + Downloader.AUDIO_CODEC + " -id3v2_version 3 -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover (front)\" " + filename, callback, logCallback, statisticsCallback);
                     }else{
-                        filename += ".mkv";
-                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -c:v copy -c:a aac -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
+                        filename += Downloader.VIDEO_FORMAT;
+                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -c:v copy -c:a " + Downloader.VIDEO_AUDIO_CODEC + " -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
                     }
 
                     try {
@@ -409,7 +416,7 @@ public class Downloader {
         if (audio) {
             contentValues.put(MediaStore.Audio.Media.TITLE, filename);
             contentValues.put(MediaStore.Audio.Media.DISPLAY_NAME, videoInfo.details().title());
-            contentValues.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mpeg");
+            contentValues.put(MediaStore.Audio.Media.MIME_TYPE, Downloader.AUDIO_MIME_TYPE);
             contentValues.put(MediaStore.Audio.Media.RELATIVE_PATH, "Music/" + "AZTube");
             contentValues.put(MediaStore.Audio.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
             contentValues.put(MediaStore.Audio.Media.DATE_TAKEN, System.currentTimeMillis());
@@ -421,7 +428,7 @@ public class Downloader {
         } else {
             contentValues.put(MediaStore.Video.Media.TITLE, filename);
             contentValues.put(MediaStore.Video.Media.DISPLAY_NAME, videoInfo.details().title());
-            contentValues.put(MediaStore.Video.Media.MIME_TYPE, "video/x-matroska");
+            contentValues.put(MediaStore.Video.Media.MIME_TYPE, Downloader.VIDEO_MIME_TYPE);
             contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/" + "AZTube");
             contentValues.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
             contentValues.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis());
