@@ -5,11 +5,11 @@ Currently only Android is supported, but there maybe will be an IOS Version in t
 
 ## Installation
 
-Download the latest version from the release page. [here](https://github.com/NouCake/aztube-app/releases)
+Download the latest version from the release page [here](https://github.com/NouCake/aztube-app/releases).
 Open it with the Installer on your smartphone, maybe you have to allow unsecured Apps or apps from unsecured locations.
 
 ## Build
 
-This App is build with flutter for more information about building read [her for Android](https://docs.flutter.dev/deployment/android).
+This App is build with flutter for more information about building read [here for Android](https://docs.flutter.dev/deployment/android).
 
 
