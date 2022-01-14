@@ -1,6 +1,6 @@
 # AzTube
 
-This is the source for the glorious AzTube Azubi project from some awesome guys by *censored*
+This is the source for the  App of the glorious AzTube Azubi project from some awesome guys by *censored*
 Currently only Android is supported, but there maybe will be an IOS Version in the future.
 
 ## Installation
