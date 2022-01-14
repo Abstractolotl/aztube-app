@@ -1,6 +1,7 @@
 package de.aztube.aztube_app.Services;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -11,6 +12,7 @@ import com.android.volley.toolbox.Volley;
 import de.aztube.aztube_app.Async;
 import de.aztube.aztube_app.Communication.*;
 import de.aztube.aztube_app.Downloader;
+import de.aztube.aztube_app.MainActivity;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -32,12 +34,10 @@ public class TestWorker extends Worker {
     @Override
     public Result doWork() {
         Settings settings = readSettings(getApplicationContext());
-        if(settings.isShowNotifications()) NotificationUtil.ShowSomething(getApplicationContext(), "Working", "");
 
         for(int i = 0; i < 25; i++) {
             Log.d("AzTube", "Working");
             if(canceled) {
-                if(settings.isShowNotifications()) NotificationUtil.ShowSomething(getApplicationContext(), "Worker", "Worker was canceled");
                 Log.d("AzTube", "Worker canceled");
                 return Result.failure();
             }
@@ -57,6 +57,7 @@ public class TestWorker extends Worker {
     private void startDownload(DownloadRequest req, int notifId) {
         AtomicReference<String> url = new AtomicReference<>();
         AtomicReference<Long> lastUpdate = new AtomicReference<>();
+        lastUpdate.set(0L);
         new Async<Boolean>().run(() -> {
             url.set(Downloader.downloadVideo(getApplicationContext(), req.getVideoId(), req.getDownloadId(), req.getQuality(), new Downloader.ProgressUpdate() {
                 @Override
@@ -86,14 +87,22 @@ public class TestWorker extends Worker {
                 saveCache(getApplicationContext(), cache);
             } catch (IOException e) {
                 if(notifId != -1) NotificationUtil.ShowSomething(getApplicationContext(), "Error", "Could not save to Cache");
+                return null;
+            }
+
+            Log.d("AzTube", "Download finished");
+            if(canceled) {
+                Log.d("AzTube", "Sending Intent");
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.putExtra("reloadUI", true);
+                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
+                getApplicationContext().startActivity(intent);
             }
             return null;
         });
     }
 
     private void poll(Settings settings) {
-        if(settings.isShowNotifications()) NotificationUtil.ShowSomething(getApplicationContext(), "Polling", "");
-
         if(settings.getDeviceToken() != null && settings.getDeviceToken().trim().equals("")){
             return;
         }

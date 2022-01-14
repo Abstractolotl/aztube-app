@@ -1,21 +1,35 @@
 package de.aztube.aztube_app;
 
+import android.content.Intent;
 import android.os.Bundle;
 
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import de.aztube.aztube_app.Services.NotificationUtil;
 import de.aztube.aztube_app.Services.ServiceUtil;
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
+import org.jetbrains.annotations.NotNull;
 
 public class MainActivity extends FlutterActivity {
     public static final String CHANNEL = "de.aztube.aztube_app/youtube";
     MethodChannel channel;
+
+    @Override
+    protected void onNewIntent(@NonNull @NotNull Intent intent) {
+        super.onNewIntent(intent);
+        Log.d("AzTube", "got new Intent");
+        if(channel != null && intent.getBooleanExtra("reloadUI", false)) {
+            channel.invokeMethod("reload", null);
+            Log.d("AzTube", "reloading");
+        }
+    }
 
     @Override
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
