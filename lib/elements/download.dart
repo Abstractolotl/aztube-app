@@ -101,10 +101,35 @@ class DownloadState extends State<Download> {
           ],
         ),
         trailing: trailing,
+        onTap: play,
         onLongPress: openInformationView,
       ),
       const Divider()
     ]);
+  }
+
+  void play() async{
+    if(widget.video.downloaded){
+      const platform = MethodChannel("de.aztube.aztube_app/youtube");
+      Map<String, dynamic> args = {
+        "uri": widget.video.savedTo
+      };
+      bool result = await platform.invokeMethod("downloadExists", args);
+      if(result){
+        platform.invokeMethod("openDownload", args);
+      }else{
+        widget.video.downloaded = false;
+        widget.video.downloaded = false;
+        if(widget.cache.downloaded.contains(widget.video)){
+          widget.cache.downloaded.remove(widget.video);
+        }
+        if(!widget.cache.queue.contains(widget.video)){
+          widget.cache.queue.add(widget.video);
+        }
+        FileManager().saveDownloads(widget.cache);
+        setState(() {});
+      }
+    }
   }
 
   void openInformationView() {
