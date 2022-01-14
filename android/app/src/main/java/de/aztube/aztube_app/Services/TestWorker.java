@@ -63,7 +63,7 @@ public class TestWorker extends Worker {
                 public void run(Downloader.Download download) {
                     if(download.progress == 100) {
                         if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Download complete", req.getTitle(), notifId);
-                    } else if (if(System.currentTimeMillis() - lastUpdate.get() > 1000) {
+                    } else if (System.currentTimeMillis() - lastUpdate.get() > 1000) {
                         lastUpdate.set(System.currentTimeMillis());
                         if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Downloading - " + download.progress + "%", req.getTitle(), notifId);
                     }
