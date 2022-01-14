@@ -130,10 +130,12 @@ class DownloadState extends State<Download> {
   }
 
   void openInformationView() {
-    Route route = MaterialPageRoute(
-        builder: (context) =>
-            DownloadScreen(video: widget.video, cache: widget.cache));
-    Navigator.push(context, route).then(widget.state.reload);
+    if(!downloading){
+      Route route = MaterialPageRoute(
+          builder: (context) =>
+              DownloadScreen(video: widget.video, cache: widget.cache));
+      Navigator.push(context, route).then(widget.state.reload);
+    }
   }
 
   void startDownload() {
@@ -175,7 +177,16 @@ class DownloadState extends State<Download> {
       widget.cache.downloaded.add(widget.video);
       FileManager().saveDownloads(widget.cache);
 
-      widget.state.reload(null);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Download succeed'),
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating),
+      );
+
+      setState(() {
+        downloading = false;
+      });
     }
   }
 }
