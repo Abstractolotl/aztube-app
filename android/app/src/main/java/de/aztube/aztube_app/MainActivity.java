@@ -24,10 +24,8 @@ public class MainActivity extends FlutterActivity {
     @Override
     protected void onNewIntent(@NonNull @NotNull Intent intent) {
         super.onNewIntent(intent);
-        Log.d("AzTube", "got new Intent");
         if(channel != null && intent.getBooleanExtra("reloadUI", false)) {
             channel.invokeMethod("reload", null);
-            Log.d("AzTube", "reloading");
         }
     }
 

@@ -36,9 +36,7 @@ public class TestWorker extends Worker {
         Settings settings = readSettings(getApplicationContext());
 
         for(int i = 0; i < 25; i++) {
-            Log.d("AzTube", "Working");
             if(canceled) {
-                Log.d("AzTube", "Worker canceled");
                 return Result.failure();
             }
 
@@ -90,9 +88,7 @@ public class TestWorker extends Worker {
                 return null;
             }
 
-            Log.d("AzTube", "Download finished");
             if(canceled) {
-                Log.d("AzTube", "Sending Intent");
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 intent.putExtra("reloadUI", true);
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);

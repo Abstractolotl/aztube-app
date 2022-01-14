@@ -15,13 +15,11 @@ public class WorkerStarterService extends Service {
 
     @Override
     public void onCreate() {
-        Log.d("AzTube", "Service Created");
         super.onCreate();
     }
 
     @Override
     public void onDestroy() {
-        Log.d("AzTube", "Service Destroyed");
         ServiceUtil.StartWorker(this);
         super.onDestroy();
     }
