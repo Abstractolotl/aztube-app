@@ -1,15 +1,18 @@
 import 'package:aztube/api/downloaddata.dart';
 import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
-import 'package:aztube/views/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class BackgroundLoading{
 
-  BackgroundLoading();
+  final DownloadData data;
+  final DownloadCache cache;
+  final BuildContext context;
 
-  void startBackground(DownloadData data, DownloadCache cache, DashboardScreenState dashboard) async{
+  const BackgroundLoading(this.cache, this.context, this.data) : super();
+
+  Future<void> startBackground() async{
       if(!data.downloaded && data.progress <= 0){
         const platform = MethodChannel("de.aztube.aztube_app/youtube");
         Map<String, dynamic> args = {
@@ -21,7 +24,7 @@ class BackgroundLoading{
         final dynamic result = await platform.invokeMethod("downloadVideo", args);
         try {
           if (!result) {
-            ScaffoldMessenger.of(dashboard.context).showSnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                   content: Text('Download failed'),
                   duration: Duration(seconds: 2),
@@ -36,8 +39,6 @@ class BackgroundLoading{
 
           cache.downloaded.add(data);
           FileManager().saveDownloads(cache);
-
-          dashboard.setState(() { });
         }
       }
   }
