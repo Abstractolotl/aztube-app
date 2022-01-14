@@ -25,7 +25,7 @@ class SettingsScreenState extends State<SettingsScreen> {
       MaterialState.hovered,
       MaterialState.focused,
     };
-    return Colors.black54;
+    return Colors.indigo;
   }
 
   @override

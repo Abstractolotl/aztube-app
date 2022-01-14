@@ -26,13 +26,39 @@ class AzTube extends StatelessWidget {
   final Future<Settings> settings;
   final List<CameraDescription> cameras;
 
+  ThemeData _darkTheme(){
+    return ThemeData(
+        brightness: Brightness.dark,
+
+        fontFamily: 'OpenSans',
+
+        textTheme: const TextTheme(
+          headline1: TextStyle(fontSize: 17, color: Colors.white),
+          bodyText1: TextStyle(fontSize: 10.0, color: Colors.white54),
+        )
+    );
+  }
+
+  ThemeData _lightTheme(){
+    return ThemeData(
+        primarySwatch: Colors.blueGrey,
+        brightness: Brightness.light,
+
+        fontFamily: 'OpenSans',
+
+        textTheme: const TextTheme(
+          headline1: TextStyle(fontSize: 17, color: Colors.black),
+          bodyText1: TextStyle(fontSize: 10.0, color: Colors.black38),
+        )
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'AzTube',
-      theme: ThemeData(
-        primarySwatch: Colors.blueGrey
-      ),
+      theme: _lightTheme(),
+      darkTheme: _darkTheme(),
       home: FutureBuilder(future: settings,
         builder: (context, snapshot) {
           if(snapshot.hasData){

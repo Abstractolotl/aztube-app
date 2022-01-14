@@ -22,6 +22,7 @@ class Download extends StatefulWidget {
 }
 
 class DownloadState extends State<Download> {
+
   bool downloading = false;
 
   @override
@@ -43,7 +44,7 @@ class DownloadState extends State<Download> {
       },
       icon:
           Icon(widget.video.downloaded ? Icons.download_done : Icons.download),
-      color: widget.video.downloaded ? Colors.green : Colors.black,
+      color: widget.video.downloaded ? Colors.green : Theme.of(context).textTheme.headline1?.color,
     );
     if (downloading) {
       trailing = CircularProgressIndicator(
@@ -72,7 +73,7 @@ class DownloadState extends State<Download> {
               children: [
                 Text(
                   widget.video.title,
-                  style: TextStyle(fontSize: 17),
+                  style: const TextStyle(fontSize: 17),
                   overflow: TextOverflow.ellipsis,
                 ),
                 ConstrainedBox(
@@ -83,15 +84,11 @@ class DownloadState extends State<Download> {
                     children: [
                       Text(
                         widget.video.author,
-                        style: TextStyle(
-                            fontSize: 10.0,
-                            color: Colors.black.withOpacity(0.25)),
+                        style: Theme.of(context).textTheme.bodyText1,
                       ),
                       Text(
                         typeInfo,
-                        style: TextStyle(
-                            fontSize: 10.0,
-                            color: Colors.black.withOpacity(0.25)),
+                        style: Theme.of(context).textTheme.bodyText1,
                       ),
                     ],
                   ),
