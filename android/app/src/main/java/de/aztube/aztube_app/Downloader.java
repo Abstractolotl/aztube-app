@@ -13,7 +13,10 @@ import android.provider.MediaStore;
 
 import com.arthenica.ffmpegkit.FFmpegKit;
 import com.arthenica.ffmpegkit.FFmpegSession;
+import com.arthenica.ffmpegkit.FFmpegSessionCompleteCallback;
+import com.arthenica.ffmpegkit.LogCallback;
 import com.arthenica.ffmpegkit.ReturnCode;
+import com.arthenica.ffmpegkit.StatisticsCallback;
 import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.downloader.YoutubeProgressCallback;
 import com.github.kiulian.downloader.downloader.request.RequestVideoFileDownload;
@@ -33,6 +36,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Downloader {
 
@@ -144,12 +148,6 @@ public class Downloader {
         return youtubeDownloader.getVideoInfo(request).data();
     }
 
-    private static String getThumbnailUrl(VideoInfo videoInfo) {
-        List<String> thumbnails = videoInfo.details().thumbnails();
-
-        return thumbnails.get(thumbnails.size() - 1);
-    }
-
     private static List<Format> getVideoFormats(VideoInfo videoInfo, String quality) {
         List<VideoWithAudioFormat> videoWithAudioFormats = videoInfo.videoWithAudioFormats();
         List<VideoFormat> videoFormats = videoInfo.videoFormats();
@@ -232,14 +230,14 @@ public class Downloader {
         double startProgress = 0;
 
         for (Format format : formats) {
-            double progressFactor = 0.9;
+            double progressFactor = 0.5;
 
             boolean isAudio = format instanceof AudioFormat;
 
             if (isAudio && formats.size() > 1) {
-                progressFactor = 0.2;
+                progressFactor = 0.1;
             } else if (formats.size() > 1) {
-                progressFactor = 0.7;
+                progressFactor = 0.4;
             }
 
             String file = downloadFormat(context, format, videoId, downloadId, isAudio, progressUpdate, startProgress, progressFactor);
@@ -256,15 +254,57 @@ public class Downloader {
 
         String filename = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/video_combined_" + downloadId + ".mkv";
 
+
+        AtomicBoolean done = new AtomicBoolean(false);
+
+        FFmpegSessionCompleteCallback callback = session -> {
+            synchronized (done){
+                done.set(true);
+                done.notify();
+            }
+        };
+
+        LogCallback logCallback = log -> { };
+
+        StatisticsCallback statisticsCallback = statistics -> {
+            int progress = (int)((((double) statistics.getTime()) / (double) videoInfo.bestVideoFormat().duration()) * 100);
+
+            Download download = new Download(false, (int) (50 + (progress * 0.5)), downloadId, videoId);
+
+            new Async<Void>().runOnMain(() -> {
+                downloads.put(downloadId, download);
+
+                ArrayList<ProgressUpdate> progressUpdateArrayList = progressUpdaters.get(downloadId);
+
+                if (progressUpdateArrayList != null) {
+                    for (ProgressUpdate progressUpdate1 : progressUpdateArrayList) {
+                        progressUpdate1.run(download);
+                    }
+                }
+
+                return null;
+            });
+        };
+
         if (files.size() > 1) {
             System.out.println("Combining video and audio");
 
             FFmpegSession session;
 
-            if(thumbnail != null){
-                session = FFmpegKit.execute("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a aac -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename);
-            }else{
-                session = FFmpegKit.execute("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a aac " + filename);
+            synchronized (done){
+                if(thumbnail != null){
+                    session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a aac -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
+                }else{
+                    session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a aac " + filename, callback, logCallback, statisticsCallback);
+                }
+
+                try {
+                    while(!done.get()){
+                        done.wait();
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
             if (ReturnCode.isSuccess(session.getReturnCode())) {
@@ -303,12 +343,23 @@ public class Downloader {
 
                 FFmpegSession session;
 
-                if(audio){
-                    filename += ".mp3";
-                    session = FFmpegKit.execute("-y -i " + files.get(0) + " -i " + thumbnail + " -map 0:0 -map 1:0 -c:a libmp3lame -id3v2_version 3 -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover (front)\" " + filename);
-                }else{
-                    filename += ".mkv";
-                    session = FFmpegKit.execute("-y -i " + files.get(0) + " -c:v copy -c:a aac -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename);
+                synchronized (done){
+                    if(audio){
+                        filename += ".mp3";
+
+                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + thumbnail + " -map 0:0 -map 1:0 -c:a libmp3lame -id3v2_version 3 -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover (front)\" " + filename, callback, logCallback, statisticsCallback);
+                    }else{
+                        filename += ".mkv";
+                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -c:v copy -c:a aac -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
+                    }
+
+                    try {
+                        while(!done.get()){
+                            done.wait();
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 if (ReturnCode.isSuccess(session.getReturnCode())) {
