@@ -174,9 +174,8 @@ class DownloadState extends State<Download> {
 
       widget.cache.downloaded.add(widget.video);
       FileManager().saveDownloads(widget.cache);
-      setState(() {
-        downloading = false;
-      });
+
+      widget.state.reload(null);
     }
   }
 }
