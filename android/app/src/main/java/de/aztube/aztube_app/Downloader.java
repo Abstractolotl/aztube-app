@@ -83,7 +83,7 @@ public class Downloader {
     }
 
     public static String getThumbnailUrl(String videoId) {
-        return "https://i.ytimg.com/vi/" + videoId + "/maxresdefault.jpg";
+        return "https://img.youtube.com/vi/" + videoId + "/default.jpg";
     }
 
     public static List<HashMap<String, Object>> getActiveDownloads() {
@@ -358,6 +358,7 @@ public class Downloader {
             contentValues.put(MediaStore.Audio.Media.RELATIVE_PATH, "Music/" + "AZTube");
             contentValues.put(MediaStore.Audio.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
             contentValues.put(MediaStore.Audio.Media.DATE_TAKEN, System.currentTimeMillis());
+            contentValues.put(MediaStore.Audio.Media.ARTIST, videoInfo.details().author());
             contentValues.put(MediaStore.Audio.Media.IS_PENDING, 1);
 
             Uri collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
@@ -369,6 +370,7 @@ public class Downloader {
             contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/" + "AZTube");
             contentValues.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
             contentValues.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis());
+            contentValues.put(MediaStore.Video.Media.ARTIST, videoInfo.details().author());
             contentValues.put(MediaStore.Video.Media.IS_PENDING, 1);
 
             Uri collection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
