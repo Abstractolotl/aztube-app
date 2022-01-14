@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:aztube/api/apihelper.dart';
 import 'package:aztube/api/downloaddata.dart';
 import 'package:aztube/elements/aztubebar.dart';
+import 'package:aztube/elements/backgroundloading.dart';
 import 'package:aztube/elements/download.dart';
 import 'package:aztube/elements/simplebutton.dart';
 import 'package:aztube/files/downloadsmodel.dart';
@@ -203,6 +204,9 @@ class DashboardScreenState extends State<DashboardScreen> {
                 .invokeMethod("getThumbnailUrl", {"videoId": video.videoId});
             video.thumbnail = thumbnail;
             downloadCache.queue.add(video);
+            if(currentSettings.backgroundLoading){
+              BackgroundLoading().startBackground(video, downloadCache, this);
+            }
           }
           FileManager().saveDownloads(downloadCache);
           setState(() {});
