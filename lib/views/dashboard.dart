@@ -36,8 +36,8 @@ class DashboardScreenState extends State<DashboardScreen> {
         DownloadData? download = downloadCache.findBy(videoId, downloadId);
         if (download != null && !download.downloaded) {
           download.progress = progress;
+          timer?.cancel();
           setState(() {
-            timer?.cancel();
             timer = polling();
           });
         }
@@ -155,6 +155,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   FutureOr reload(dynamic value) {
+    timer?.cancel();
     setState(() {
       loading = true;
     });

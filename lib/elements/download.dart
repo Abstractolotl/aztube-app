@@ -42,11 +42,10 @@ class DownloadState extends State<Download> {
           startDownload();
         }
       },
-      icon:
-          Icon(widget.video.downloaded ? Icons.download_done : Icons.download),
+      icon: Icon(widget.video.downloaded ? Icons.download_done : Icons.download),
       color: widget.video.downloaded ? Colors.green : Theme.of(context).textTheme.headline1?.color,
     );
-    if (downloading) {
+    if (downloading && !widget.video.downloaded) {
       trailing = CircularProgressIndicator(
         color: Colors.green,
         value: widget.video.progress / 100,
@@ -130,10 +129,12 @@ class DownloadState extends State<Download> {
   }
 
   void openInformationView() {
-    Route route = MaterialPageRoute(
-        builder: (context) =>
-            DownloadScreen(video: widget.video, cache: widget.cache));
-    Navigator.push(context, route).then(widget.state.reload);
+    if(!downloading){
+      Route route = MaterialPageRoute(
+          builder: (context) =>
+              DownloadScreen(video: widget.video, cache: widget.cache));
+      Navigator.push(context, route).then(widget.state.reload);
+    }
   }
 
   void startDownload() {
@@ -175,7 +176,9 @@ class DownloadState extends State<Download> {
       widget.cache.downloaded.add(widget.video);
       FileManager().saveDownloads(widget.cache);
 
-      widget.state.reload(null);
+      setState(() {
+        downloading = false;
+      });
     }
   }
 }
