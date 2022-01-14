@@ -212,9 +212,9 @@ public class Downloader {
     private static final String VIDEO_FORMAT = ".mkv";
     private static final String VIDEO_MIME_TYPE = "video/x-matroska";
     private static final String VIDEO_AUDIO_CODEC = "aac";
-    private static final String AUDIO_FORMAT = ".mp3";
-    private static final String AUDIO_MIME_TYPE = "audio/mpeg";
-    private static final String AUDIO_CODEC = "libmp3lame";
+    private static final String AUDIO_FORMAT = ".flac";
+    private static final String AUDIO_MIME_TYPE = "audio/flac";
+    private static final String AUDIO_CODEC = "flac";
 
     private static final HashMap<Integer, ArrayList<ProgressUpdate>> progressUpdaters = new HashMap<>();
 
@@ -358,7 +358,7 @@ public class Downloader {
                     if(audio){
                         filename += Downloader.AUDIO_FORMAT;
 
-                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + thumbnail + " -map 0:0 -map 1:0 -c:a " + Downloader.AUDIO_CODEC + " -id3v2_version 3 -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover (front)\" " + filename, callback, logCallback, statisticsCallback);
+                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + thumbnail + " -map 0:a -map 1 -c:a " + Downloader.AUDIO_CODEC + " -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover (front)\" -disposition:v attached_pic " + filename, callback, logCallback, statisticsCallback);
                     }else{
                         filename += Downloader.VIDEO_FORMAT;
                         session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -c:v copy -c:a " + Downloader.VIDEO_AUDIO_CODEC + " -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
