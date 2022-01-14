@@ -1,16 +1,15 @@
-# aztube_app
+# AzTube
 
-AzTube Mobile App
+This is the source for the glorious AzTube Azubi project from some awesome guys by *censored*
+Currently only Android is supported, but there maybe will be an IOS Version in the future.
 
-## Getting Started
+## Installation
 
-This project is a starting point for a Flutter application.
+Download the latest version from the release page. [here](https://github.com/NouCake/aztube-app/releases)
+Open it with the Installer on your smartphone, maybe you have to allow unsecured Apps or apps from unsecured locations.
 
-A few resources to get you started if this is your first Flutter project:
+## Build
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+This App is build with flutter for more information about building read [her for Android](https://docs.flutter.dev/deployment/android).
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
