@@ -36,10 +36,14 @@ class DashboardScreenState extends State<DashboardScreen> {
         DownloadData? download = downloadCache.findBy(videoId, downloadId);
         if (download != null && !download.downloaded) {
           download.progress = progress;
-          setState(() {
-            timer?.cancel();
-            timer = polling();
-          });
+          timer?.cancel();
+          if(progress >= 100){
+            reload(null);
+          }else{
+            setState(() {
+              timer = polling();
+            });
+          }
         }
         break;
     }
