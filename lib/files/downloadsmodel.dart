@@ -34,7 +34,7 @@ class DownloadCache{
 
   Map<String, dynamic> toJson() => {
     'queue': convertTo(queue),
-    'downloaded': convertTo(downloaded)
+    'downloaded': convertTo(downloaded),
   };
 
   List<dynamic> convertTo(List<DownloadData> list){

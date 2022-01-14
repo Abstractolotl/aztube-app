@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:aztube/api/apihelper.dart';
 import 'package:aztube/api/downloaddata.dart';
 import 'package:aztube/elements/aztubebar.dart';
+import 'package:aztube/elements/backgroundloading.dart';
 import 'package:aztube/elements/download.dart';
 import 'package:aztube/elements/simplebutton.dart';
 import 'package:aztube/files/downloadsmodel.dart';
@@ -21,7 +22,7 @@ class DashboardScreen extends StatefulWidget {
   State<StatefulWidget> createState() => DashboardScreenState();
 }
 
-class DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObserver{
+class DashboardScreenState extends State<DashboardScreen> {
 
   static const timeout = 2;
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
@@ -57,7 +58,6 @@ class DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObs
   void initState() {
     platform.setMethodCallHandler(nativeMethodCallHandler);
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
     reloadCache();
   }
 
@@ -65,30 +65,13 @@ class DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObs
   void dispose() {
     timer?.cancel();
     loading = true;
-    WidgetsBinding.instance!.removeObserver(this);
     super.dispose();
   }
 
   @override
   void reassemble() {
     super.reassemble();
-    WidgetsBinding.instance!.addObserver(this);
     reloadCache();
-  }
-
-
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if(lastState != state){
-      lastState = state;
-      if(state == AppLifecycleState.detached || state == AppLifecycleState.paused){
-        timer?.cancel();
-        loading = true;
-      }else if(state == AppLifecycleState.resumed){
-        reloadCache();
-      }
-    }
   }
 
   @override
@@ -221,6 +204,9 @@ class DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObs
                 .invokeMethod("getThumbnailUrl", {"videoId": video.videoId});
             video.thumbnail = thumbnail;
             downloadCache.queue.add(video);
+            if(currentSettings.backgroundLoading){
+              BackgroundLoading().startBackground(video, downloadCache, this);
+            }
           }
           FileManager().saveDownloads(downloadCache);
           setState(() {});
