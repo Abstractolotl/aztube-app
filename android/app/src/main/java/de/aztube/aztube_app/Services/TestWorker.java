@@ -14,6 +14,7 @@ import de.aztube.aztube_app.Downloader;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static de.aztube.aztube_app.Services.ServiceUtil.*;
@@ -26,16 +27,45 @@ public class TestWorker extends Worker {
         super(context, workerParams);
     }
 
+    @NonNull
+    @NotNull
+    @Override
+    public Result doWork() {
+        Settings settings = readSettings(getApplicationContext());
+        if(settings.isShowNotifications()) NotificationUtil.ShowSomething(getApplicationContext(), "Working", "");
+
+        for(int i = 0; i < 25; i++) {
+            Log.d("AzTube", "Working");
+            if(canceled) {
+                if(settings.isShowNotifications()) NotificationUtil.ShowSomething(getApplicationContext(), "Worker", "Worker was canceled");
+                Log.d("AzTube", "Worker canceled");
+                return Result.failure();
+            }
+
+            poll(settings);
+
+            try {
+                Thread.sleep(30 * 1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return Result.success();
+    }
+
     private void startDownload(DownloadRequest req, int notifId) {
         AtomicReference<String> url = new AtomicReference<>();
+        AtomicReference<Long> lastUpdate = new AtomicReference<>();
         new Async<Boolean>().run(() -> {
             url.set(Downloader.downloadVideo(getApplicationContext(), req.getVideoId(), req.getDownloadId(), req.getQuality(), new Downloader.ProgressUpdate() {
                 @Override
                 public void run(Downloader.Download download) {
                     if(download.progress == 100) {
-                        NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Download complete", req.getTitle(), notifId);
-                    } else if (download.progress % 5 == 0) {
-                        NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Downloading - " + download.progress + "%", req.getTitle(), notifId);
+                        if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Download complete", req.getTitle(), notifId);
+                    } else if (if(System.currentTimeMillis() - lastUpdate.get() > 1000) {
+                        lastUpdate.set(System.currentTimeMillis());
+                        if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Downloading - " + download.progress + "%", req.getTitle(), notifId);
                     }
                 }
             }));
@@ -55,15 +85,15 @@ public class TestWorker extends Worker {
             try {
                 saveCache(getApplicationContext(), cache);
             } catch (IOException e) {
-                NotificationUtil.ShowSomething(getApplicationContext(), "Error", "Could not save to Cache");
+                if(notifId != -1) NotificationUtil.ShowSomething(getApplicationContext(), "Error", "Could not save to Cache");
             }
             return null;
         });
     }
 
-    private void poll() {
-        NotificationUtil.ShowSomething(getApplicationContext(), "Polling", "");
-        Settings settings = readSettings(getApplicationContext());
+    private void poll(Settings settings) {
+        if(settings.isShowNotifications()) NotificationUtil.ShowSomething(getApplicationContext(), "Polling", "");
+
         if(settings.getDeviceToken() != null && settings.getDeviceToken().trim().equals("")){
             return;
         }
@@ -82,45 +112,26 @@ public class TestWorker extends Worker {
                     try {
                         saveCache(getApplicationContext(), cache);
                     } catch (IOException e) {
-                        NotificationUtil.ShowSomething(getApplicationContext(), "Error", "Could not save to Cache");
+                        if(settings.isShowNotifications()) NotificationUtil.ShowSomething(getApplicationContext(), "Error", "Could not save to Cache");
                     }
 
                     if (settings.isSettingAutoDownload()) {
                         for(DownloadRequest req : response.getDownloads()) {
-                            int notifId = NotificationUtil.ShowSomething(getApplicationContext(), "Starting Download", req.getTitle());
+                            int notifId = -1;
+                            if(settings.isShowNotifications()) notifId = NotificationUtil.ShowSomething(getApplicationContext(), "Starting Download", req.getTitle());
                             startDownload(req, notifId);
                         }
                     }
                 },
                 error -> {
                     Log.d("AzTube", error.toString(), error);
+                    Log.d("AzTube", "Crashed on Response: " + new String(error.networkResponse.data, StandardCharsets.UTF_8));
                     canceled = true;
                 }
         );
 
 
         queue.add(request);
-    }
-
-    @NonNull
-    @NotNull
-    @Override
-    public Result doWork() {
-        NotificationUtil.ShowSomething(getApplicationContext(), "Working", "");
-
-        for(int i = 0; i < 30; i++) {
-            if(canceled) return Result.failure();
-
-            poll();
-
-            try {
-                Thread.sleep(30 * 1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return Result.success();
     }
 
     @Override

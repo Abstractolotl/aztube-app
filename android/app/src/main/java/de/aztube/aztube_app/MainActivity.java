@@ -27,16 +27,10 @@ public class MainActivity extends FlutterActivity {
     }
 
     @Override
-    protected void onResume() {
-        ServiceUtil.StopBackgroundService(this);
-        ServiceUtil.StartBackgroundService(this, 3);
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
+    protected void onStart() {
+        super.onStart();
+        ServiceUtil.StopWorker(this);
         ServiceUtil.StartBackgroundService(this);
-        super.onPause();
     }
 
     @Override

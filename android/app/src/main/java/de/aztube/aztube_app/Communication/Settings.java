@@ -8,13 +8,24 @@ public class Settings {
     private boolean settingAutoDownload;
     @SerializedName("device")
     private String deviceToken;
+    @SerializedName("notifications")
+    private boolean showNotifications;
 
     public Settings() {
     }
 
-    public Settings(boolean settingAutoDownload, String deviceToken) {
+    public Settings(boolean settingAutoDownload, String deviceToken, boolean showNotifications) {
         this.settingAutoDownload = settingAutoDownload;
         this.deviceToken = deviceToken;
+        this.showNotifications = showNotifications;
+    }
+
+    public boolean isShowNotifications() {
+        return showNotifications;
+    }
+
+    public void setShowNotifications(boolean showNotifications) {
+        this.showNotifications = showNotifications;
     }
 
     public boolean isSettingAutoDownload() {

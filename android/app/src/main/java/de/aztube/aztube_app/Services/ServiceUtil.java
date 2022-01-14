@@ -1,6 +1,7 @@
 package de.aztube.aztube_app.Services;
 
 import android.content.Context;
+import android.content.Intent;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
@@ -16,20 +17,27 @@ import java.util.concurrent.TimeUnit;
 
 public class ServiceUtil {
 
-    public static void StartBackgroundService(Context context){
+    public static void StartWorker(Context context) {
         WorkManager wm = WorkManager.getInstance(context);
         PeriodicWorkRequest.Builder builder = new PeriodicWorkRequest.Builder(TestWorker.class, 15, TimeUnit.MINUTES);
         wm.enqueueUniquePeriodicWork("downloadPoll", ExistingPeriodicWorkPolicy.REPLACE, builder.build());
     }
 
+    public static void StartBackgroundService(Context context){
+        Intent intent = new Intent(context, WorkerStarterService.class);
+        context.startService(intent);
+    }
+
+    /*
     public static void StartBackgroundService(Context context, long delay){
         WorkManager wm = WorkManager.getInstance(context);
         PeriodicWorkRequest.Builder builder = new PeriodicWorkRequest.Builder(TestWorker.class, 15, TimeUnit.MINUTES);
         builder.setInitialDelay(delay, TimeUnit.MINUTES);
         wm.enqueueUniquePeriodicWork("downloadPoll", ExistingPeriodicWorkPolicy.REPLACE, builder.build());
     }
+    */
 
-    public static void StopBackgroundService(Context context){
+    public static void StopWorker(Context context){
         WorkManager wm = WorkManager.getInstance(context);
         wm.cancelUniqueWork("downloadPoll");
     }
