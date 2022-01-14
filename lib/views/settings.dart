@@ -79,35 +79,6 @@ class SettingsScreenState extends State<SettingsScreen> {
               },
             ),
           ),
-          const Divider(),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
-            child: SimpleButton(
-              child: const Text('trigger settings changed'),
-              color: (widget.settings.deviceHash.length >= 10)
-                  ? Colors.red
-                  : Colors.grey,
-              onPressed: () {
-                platform.invokeMethod("settingsChanged");
-              },
-            ),
-          ),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
-            child: SimpleButton(
-              child: const Text('set device hash'),
-              color: (widget.settings.deviceHash.length >= 10)
-                  ? Colors.red
-                  : Colors.grey,
-              onPressed: () {
-                widget.settings.deviceHash =
-                    "aade1983-8062-44e4-8237-90eee0f43e4f";
-                FileManager().saveSettings(widget.settings);
-              },
-            ),
-          )
         ]),
       ),
     );
