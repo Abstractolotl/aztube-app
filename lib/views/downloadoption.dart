@@ -1,10 +1,8 @@
 import 'package:aztube/api/downloaddata.dart';
-import 'package:aztube/elements/simplebutton.dart';
 import 'package:aztube/elements/simplecircularbutton.dart';
 import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 class DownloadScreen extends StatefulWidget {
@@ -55,6 +53,10 @@ class DownloadScreenState extends State<DownloadScreen> {
             const Divider(),
             ListTile(
               title: Text('Author: ${widget.video.author}'),
+            ),
+            const Divider(),
+            ListTile(
+              title: Text('DownloadId: ${widget.video.downloadId}'),
             ),
             const Divider(),
             Row(
