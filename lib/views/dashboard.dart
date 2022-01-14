@@ -51,7 +51,7 @@ class DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObs
   ListView downloads = ListView();
   Timer? timer;
 
-  AppLifecycleState? lastState;
+  AppLifecycleState lastState = AppLifecycleState.paused;
 
   @override
   void initState() {
@@ -80,7 +80,7 @@ class DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObs
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if(lastState != null && lastState != state){
+    if(lastState != state){
       lastState = state;
       if(state == AppLifecycleState.detached || state == AppLifecycleState.paused){
         timer?.cancel();
