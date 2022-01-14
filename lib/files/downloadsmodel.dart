@@ -10,8 +10,8 @@ class DownloadCache{
   List<DownloadData> getAll(){
     List<DownloadData> all = [];
 
-    all.addAll(queue);
     all.addAll(downloaded);
+    all.addAll(queue);
 
     return all;
   }

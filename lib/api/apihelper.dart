@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class APIHelper{
 
-  static const api_url = "http://de2.lucaspape.de:4020";
+  static const api_url = "https://aztube.lucaspape.de";
 
   static Future<http.Response> registerDevice(String code, String deviceName){
     var uri = Uri.parse(api_url + "/register");
