@@ -58,8 +58,16 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   @override
+  void dispose() {
+    timer?.cancel();
+    loading = true;
+    super.dispose();
+  }
+
+  @override
   void reassemble() {
     super.reassemble();
+    reloadCache();
   }
 
   @override

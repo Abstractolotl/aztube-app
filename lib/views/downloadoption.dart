@@ -50,7 +50,7 @@ class DownloadScreenState extends State<DownloadScreen> {
         body: ListView(
           children: [
             ListTile(
-              title: Text('Author: ${widget.video.title}'),
+              title: Text('Title: ${widget.video.title}'),
             ),
             const Divider(),
             ListTile(

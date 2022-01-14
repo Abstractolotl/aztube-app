@@ -46,25 +46,23 @@ class DownloadState extends State<Download> {
       color: widget.video.downloaded ? Colors.green : Colors.black,
     );
     if (downloading) {
-      //https://i.imgur.com/Z51QssF.png
       trailing = CircularProgressIndicator(
         color: Colors.green,
         value: widget.video.progress / 100,
       );
     }
+    var typeInfo = 'Audio';
+    if(widget.video.quality != 'audio'){
+      typeInfo = 'Video - ${widget.video.quality}';
+    }
     return Column(children: [
       ListTile(
         contentPadding: const EdgeInsets.all(0),
-        visualDensity: VisualDensity(horizontal: 0, vertical: 0),
+        visualDensity: const VisualDensity(horizontal: 0, vertical: 0),
         dense: true,
         horizontalTitleGap: 5,
         leading: Image.network(
-          /* widget.video.thumbnail.isNotEmpty
-              ? widget.video.thumbnail
-              : */
-          "https://i.ytimg.com/vi/" +
-              widget.video.videoId +
-              "/maxresdefault.jpg",
+          "https://img.youtube.com/vi/${widget.video.videoId}/default.jpg",
           width: 75,
         ),
         title: Column(
@@ -90,11 +88,7 @@ class DownloadState extends State<Download> {
                             color: Colors.black.withOpacity(0.25)),
                       ),
                       Text(
-                        widget.video.downloadId.toString() +
-                            " - " +
-                            widget.video.videoId +
-                            " - " +
-                            widget.video.quality,
+                        typeInfo,
                         style: TextStyle(
                             fontSize: 10.0,
                             color: Colors.black.withOpacity(0.25)),
