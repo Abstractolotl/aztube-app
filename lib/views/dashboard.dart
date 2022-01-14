@@ -21,7 +21,8 @@ class DashboardScreen extends StatefulWidget {
   State<StatefulWidget> createState() => DashboardScreenState();
 }
 
-class DashboardScreenState extends State<DashboardScreen> {
+class DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObserver{
+
   static const timeout = 2;
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
 
@@ -50,10 +51,13 @@ class DashboardScreenState extends State<DashboardScreen> {
   ListView downloads = ListView();
   Timer? timer;
 
+  AppLifecycleState? lastState;
+
   @override
   void initState() {
     platform.setMethodCallHandler(nativeMethodCallHandler);
     super.initState();
+    WidgetsBinding.instance!.addObserver(this);
     reloadCache();
   }
 
@@ -61,13 +65,30 @@ class DashboardScreenState extends State<DashboardScreen> {
   void dispose() {
     timer?.cancel();
     loading = true;
+    WidgetsBinding.instance!.removeObserver(this);
     super.dispose();
   }
 
   @override
   void reassemble() {
     super.reassemble();
+    WidgetsBinding.instance!.addObserver(this);
     reloadCache();
+  }
+
+
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if(lastState != null && lastState != state){
+      lastState = state;
+      if(state == AppLifecycleState.detached || state == AppLifecycleState.paused){
+        timer?.cancel();
+        loading = true;
+      }else if(state == AppLifecycleState.resumed){
+        reloadCache();
+      }
+    }
   }
 
   @override
