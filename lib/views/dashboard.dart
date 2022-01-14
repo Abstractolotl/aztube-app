@@ -36,9 +36,6 @@ class DashboardScreenState extends State<DashboardScreen> {
         DownloadData? download = downloadCache.findBy(videoId, downloadId);
         if (download != null && !download.downloaded) {
           download.progress = progress;
-          if(progress == 100){
-            download.downloaded = true;
-          }
           setState(() {
             timer?.cancel();
             timer = polling();
@@ -208,13 +205,8 @@ class DashboardScreenState extends State<DashboardScreen> {
             video.thumbnail = thumbnail;
             downloadCache.queue.add(video);
             if(currentSettings.backgroundLoading){
-              BackgroundLoading(downloadCache, context, video).startBackground()
-                  .then((value){
-                    setState(() {
-                      timer.cancel();
-                      reloadCache();
-                    });
-                  });
+              BackgroundLoading(downloadCache, context, video, this)
+                  .startBackground();
             }
           }
           FileManager().saveDownloads(downloadCache);

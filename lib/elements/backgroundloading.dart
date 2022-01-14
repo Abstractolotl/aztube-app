@@ -1,6 +1,7 @@
 import 'package:aztube/api/downloaddata.dart';
 import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
+import 'package:aztube/views/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -9,10 +10,11 @@ class BackgroundLoading{
   final DownloadData data;
   final DownloadCache cache;
   final BuildContext context;
+  final DashboardScreenState state;
 
-  const BackgroundLoading(this.cache, this.context, this.data) : super();
+  const BackgroundLoading(this.cache, this.context, this.data, this.state) : super();
 
-  Future<void> startBackground() async{
+  void startBackground() async{
       if(!data.downloaded && data.progress <= 0){
         const platform = MethodChannel("de.aztube.aztube_app/youtube");
         Map<String, dynamic> args = {
@@ -34,11 +36,14 @@ class BackgroundLoading{
         } catch (e) {
           cache.queue.remove(data);
 
+          data.progress = 0;
           data.downloaded = true;
           data.savedTo = result;
 
           cache.downloaded.add(data);
           FileManager().saveDownloads(cache);
+
+          state.reload(null);
         }
       }
   }

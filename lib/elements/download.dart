@@ -33,7 +33,7 @@ class DownloadState extends State<Download> {
   @override
   Widget build(BuildContext context) {
     if (widget.video.progress > 0 && !widget.video.downloaded) {
-      downloading = true;
+        downloading = true;
     }
     Widget trailing = IconButton(
       enableFeedback: !(!widget.video.downloaded && !downloading),
