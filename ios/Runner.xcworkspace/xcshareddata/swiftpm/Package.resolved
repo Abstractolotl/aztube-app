@@ -1,0 +1,70 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "FFmpeg-iOS",
+        "repositoryURL": "https://github.com/kewlbear/FFmpeg-iOS.git",
+        "state": {
+          "branch": "main",
+          "revision": "d69fb2d25e94b5fe27bc7db7493fd2c7778eaea0",
+          "version": null
+        }
+      },
+      {
+        "package": "LoggerKit",
+        "repositoryURL": "https://github.com/pvieito/LoggerKit.git",
+        "state": {
+          "branch": "master",
+          "revision": "02487bf1d5b0dcec1fd6ffed750386d617051020",
+          "version": null
+        }
+      },
+      {
+        "package": "Python-iOS",
+        "repositoryURL": "https://github.com/kewlbear/Python-iOS.git",
+        "state": {
+          "branch": "kivy-ios",
+          "revision": "1fa595f162b6df0dd729304ac284de8cc31b84f5",
+          "version": null
+        }
+      },
+      {
+        "package": "PythonKit",
+        "repositoryURL": "https://github.com/kewlbear/PythonKit.git",
+        "state": {
+          "branch": "master",
+          "revision": "6caffb495e6315a00413f52cb034575965d40989",
+          "version": null
+        }
+      },
+      {
+        "package": "Rainbow",
+        "repositoryURL": "https://github.com/onevcat/Rainbow",
+        "state": {
+          "branch": null,
+          "revision": "626c3d4b6b55354b4af3aa309f998fae9b31a3d9",
+          "version": "3.2.0"
+        }
+      },
+      {
+        "package": "swift-argument-parser",
+        "repositoryURL": "https://github.com/apple/swift-argument-parser",
+        "state": {
+          "branch": "main",
+          "revision": "403d34dfe671b28502fa0d62a926ae7aa748dcd3",
+          "version": null
+        }
+      },
+      {
+        "package": "YoutubeDL-iOS",
+        "repositoryURL": "https://github.com/kewlbear/YoutubeDL-iOS",
+        "state": {
+          "branch": "main",
+          "revision": "811ea597014bc483f44737a1d80c54d0896c36b0",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
