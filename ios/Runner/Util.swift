@@ -17,9 +17,20 @@ struct Download {
     let progress: Int
     let downloadId: Int
     let videoId: String
+    
+    func toMap() -> [String: Any] {
+        var map = [String: Any]()
+        
+        map["done"] = done
+        map["progress"] = progress
+        map["downloadId"] = downloadId
+        map["videoId"] = videoId
+        
+        return map
+    }
 }
 
-class ProgressUpdate: NSObject, URLSessionDownloadDelegate, URLSessionDelegate {
+class ProgressUpdate {
     private let progressUpdate: ((Download) -> Void)
     private let didFinishDownloadingTo: ((URL) -> Void)
     private let downloadId: Int
@@ -30,16 +41,6 @@ class ProgressUpdate: NSObject, URLSessionDownloadDelegate, URLSessionDelegate {
         self.videoId = videoId
         self.progressUpdate = progressUpdate
         self.didFinishDownloadingTo = didFinishDownloadingTo
-    }
-    
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        didFinishDownloadingTo(location)
-        
-        progressUpdate(Download(done: true, progress: 100, downloadId: downloadId, videoId: videoId))
-    }
-    
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-        print(totalBytesExpectedToWrite/totalBytesWritten)
     }
 }
 
@@ -59,7 +60,9 @@ class Util {
                     if(formats != nil){
                         let formats = formats!
                         
-                        downloadFormat(format: formats[0], downloadId: downloadId, videoId: videoId, progressUpdate: progressUpdate) { audioTempUrl in
+                        let duration = formatAndInfo?.1?["duration"]
+                        
+                        downloadFormat(format: formats[0], downloadId: downloadId, videoId: videoId, progressStart: 0, progressFactor: formats.count > 1 ? 0.1 : 0.5, progressUpdate: progressUpdate) { audioTempUrl in
                             if(audioTempUrl != nil){
                                 do {
                                     let audioFilename = String(downloadId) + "-temp.m4a"
@@ -70,7 +73,7 @@ class Util {
                                     try audioData.write(to: audioFilepath)
                                     
                                     if(formats.count > 1){
-                                        downloadFormat(format: formats[1], downloadId: downloadId, videoId: videoId, progressUpdate: progressUpdate) { videoTempUrl in
+                                        downloadFormat(format: formats[1], downloadId: downloadId, videoId: videoId, progressStart: 10, progressFactor: 0.4, progressUpdate: progressUpdate) { videoTempUrl in
                                             do {
                                                 if(videoTempUrl != nil){
                                                     let videoFilename = String(downloadId) + "-temp.mp4"
@@ -80,7 +83,7 @@ class Util {
                                                     let videoData = try Data(contentsOf: videoTempUrl!)
                                                     try videoData.write(to: videoFilepath)
                                                     
-                                                    combineVideoAndAudio(audioUrl: audioFilepath, videoURL: videoFilepath, downloadId: downloadId, callback: callback)
+                                                    combineVideoAndAudio(audioUrl: audioFilepath, videoURL: videoFilepath, videoId: videoId, downloadId: downloadId, progressUpdate: progressUpdate, callback: callback)
                                                 }else{
                                                     print("Failed to download video")
                                                 }
@@ -89,7 +92,7 @@ class Util {
                                             }
                                         }
                                     }else{
-                                        saveAudio(url: audioFilepath, downloadId: downloadId, callback: callback)
+                                        saveAudio(url: audioFilepath, downloadId: downloadId, videoId: videoId, progressUpdate: progressUpdate, callback: callback)
                                     }
                                     
                                 } catch {
@@ -112,29 +115,51 @@ class Util {
         }
     }
     
-    private static func saveAudio(url: URL, downloadId: Int, callback: @escaping ((String?) -> Void)){
+    private static func saveAudio(url: URL, downloadId: Int, videoId: String, progressUpdate: @escaping ((Download) -> Void), callback: @escaping ((String?) -> Void)){
         let filename = String(downloadId) + ".mp3"
         
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let filepath = documentDirectory.appendingPathComponent(filename)
         
-        FFmpegKit.executeAsync("-i " + URLComponents(url: url, resolvingAgainstBaseURL: false)!.path + " " + URLComponents(url: filepath, resolvingAgainstBaseURL: false)!.path, withCompleteCallback: { ffmpegSession in
+        let audioAsset = AVAsset(url: url)
+        
+        FFmpegKit.executeAsync("-y -i " + URLComponents(url: url, resolvingAgainstBaseURL: false)!.path + " " + URLComponents(url: filepath, resolvingAgainstBaseURL: false)!.path, withCompleteCallback: { ffmpegSession in
             do {
                 try FileManager.default.removeItem(atPath: URLComponents(string: url.absoluteString)!.path)
             }catch{
                 print("Could not delete temp file")
             }
             callback(filename)
+        }, withLogCallback: { log in
+        }, withStatisticsCallback: { statistics in
+            if(statistics != nil){
+                let total = Double(CMTimeGetSeconds(audioAsset.duration))
+                let doneTime = (Double(statistics!.getTime()))
+                
+                var progress = (doneTime /  total) * 100
+                
+                if(progress.isNaN || progress.isInfinite){
+                    progress = 0
+                }
+                
+                print(progress)
+                print(total)
+                print(doneTime)
+                
+                progressUpdate(Download(done: false, progress: (50 + Int((progress * 0.5))), downloadId: downloadId, videoId: videoId))
+            }
         })
     }
     
-    private static func combineVideoAndAudio(audioUrl: URL, videoURL: URL, downloadId: Int, callback: @escaping ((String?) -> Void)){
+    private static func combineVideoAndAudio(audioUrl: URL, videoURL: URL, videoId:String, downloadId: Int, progressUpdate: @escaping ((Download) -> Void), callback: @escaping ((String?) -> Void)){
         let filename = String(downloadId) + ".mp4"
         
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let filepath = documentDirectory.appendingPathComponent(filename)
         
-        FFmpegKit.executeAsync("-i " + URLComponents(url: videoURL, resolvingAgainstBaseURL: false)!.path + " -i " + URLComponents(url: audioUrl, resolvingAgainstBaseURL: false)!.path + " -c:v mpeg4 -c:a aac " + URLComponents(url: filepath, resolvingAgainstBaseURL: false)!.path, withCompleteCallback: { ffmpegSession in
+        let audioAsset = AVAsset(url: audioUrl)
+        
+        FFmpegKit.executeAsync("-y -i " + URLComponents(url: videoURL, resolvingAgainstBaseURL: false)!.path + " -i " + URLComponents(url: audioUrl, resolvingAgainstBaseURL: false)!.path + " -c:v mpeg4 -c:a aac " + URLComponents(url: filepath, resolvingAgainstBaseURL: false)!.path,  withCompleteCallback: { ffmpegSession in
             do {
                 try FileManager.default.removeItem(atPath: URLComponents(string: audioUrl.absoluteString)!.path)
                 try FileManager.default.removeItem(atPath: URLComponents(string: videoURL.absoluteString)!.path)
@@ -143,30 +168,71 @@ class Util {
             }
             
             callback(filename)
+        }, withLogCallback: { log in
+        }, withStatisticsCallback: { statistics in
+            if(statistics != nil){
+                let total = Double(CMTimeGetSeconds(audioAsset.duration))
+                let doneTime = (Double(statistics!.getTime()))
+                
+                var progress = (doneTime /  total) * 100
+                
+                if(progress.isNaN || progress.isInfinite){
+                    progress = 0
+                }
+                
+                print(progress)
+                
+                print(total)
+                print(doneTime)
+                
+                progressUpdate(Download(done: false, progress: (50 + Int((progress * 0.5))), downloadId: downloadId, videoId: videoId))
+            }
         })
     }
     
-    private static func downloadFormat(format:Format, downloadId: Int, videoId: String, progressUpdate: @escaping ((Download) -> Void), callback: @escaping ((URL?) -> Void)) {
+    private static func downloadFormat(format:Format, downloadId: Int, videoId: String, progressStart: Int, progressFactor: Double, progressUpdate: @escaping ((Download) -> Void), callback: @escaping ((URL?) -> Void)) {
         print("Downloading format...")
+        
+        let mockId = UUID().uuidString
         
         let delegateQueue = OperationQueue()
         
         let config = URLSessionConfiguration.default
-        config.httpAdditionalHeaders = ["User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:95.0) Gecko/20100101 Firefox/95.0"]
+        config.httpAdditionalHeaders = format.urlRequest!.allHTTPHeaderFields
         
-        let urlSession = URLSession(configuration: config, delegate: ProgressUpdate(downloadId: downloadId, videoId: videoId, progressUpdate: progressUpdate, didFinishDownloadingTo: { url in
-            print("Download done!")
-        }), delegateQueue: delegateQueue)
+        let urlSession = URLSession(configuration: config, delegate: nil, delegateQueue: delegateQueue)
         
         let task = urlSession.downloadTask(with: (format.urlRequest?.url!)!) { localURL, urlResponse, error in
             if(error != nil){
+                mockProgress[mockId] = 100
                 callback(nil)
             }else{
+                mockProgress[mockId] = 100
                 callback(localURL)
             }
         }
         
         task.resume()
+        
+        runMockProgress(id: mockId, downloadId: downloadId, videoId: videoId, progressStart: progressStart, progressFactor: progressFactor, progressUpdate: progressUpdate)
+    }
+    
+    private static var mockProgress = [String: Int]()
+    
+    private static func runMockProgress(id: String, downloadId: Int, videoId: String, progressStart: Int, progressFactor: Double, progressUpdate: @escaping ((Download) -> Void)){
+        if(mockProgress[id] == nil){
+            mockProgress[id] = 1
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            if(mockProgress[id]! < 100){
+                mockProgress[id] = mockProgress[id]! + 1
+                
+                progressUpdate(Download(done: false, progress: (progressStart + Int((Double(mockProgress[id]!) * progressFactor))), downloadId: downloadId, videoId: videoId))
+                
+                runMockProgress(id:id, downloadId: downloadId, videoId: videoId, progressStart: progressStart, progressFactor: progressFactor, progressUpdate: progressUpdate)
+            }
+        }
     }
     
     private static func getInfo(videoId: String) -> ([Format], Info?)? {

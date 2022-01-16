@@ -34,7 +34,7 @@ import PythonSupport
                    let downloadId = args["downloadId"] as? Int {
                     
                     Util.downloadVideo(videoId: videoId, downloadId: downloadId, quality: quality, progressUpdate: { download in
-                        channel.invokeMethod("progress", arguments: download)
+                        channel.invokeMethod("progress", arguments: download.toMap())
                     }) { uri in
                         if(uri != nil){
                             result(uri)
@@ -88,7 +88,7 @@ import PythonSupport
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let downloadId = args["downloadId"] as? Int {
                     result(Util.registerProgressUpdate(downloadId: downloadId){ download in
-                        channel.invokeMethod("progress", arguments: download)
+                        channel.invokeMethod("progress", arguments: download.toMap())
                     })
                 }  else {
                     result(FlutterError.init(code: "bad args", message: nil, details: nil))

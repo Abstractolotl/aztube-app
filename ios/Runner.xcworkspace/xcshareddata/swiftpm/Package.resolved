@@ -57,10 +57,10 @@
       },
       {
         "package": "YoutubeDL-iOS",
-        "repositoryURL": "https://github.com/kewlbear/YoutubeDL-iOS",
+        "repositoryURL": "https://github.com/lucaspape/YoutubeDL-iOS.git",
         "state": {
           "branch": "main",
-          "revision": "811ea597014bc483f44737a1d80c54d0896c36b0",
+          "revision": "81a7ec588c7ebd8f8be53e3b80650bfd27a3d6c6",
           "version": null
         }
       }
