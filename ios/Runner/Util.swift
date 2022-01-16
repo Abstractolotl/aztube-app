@@ -60,7 +60,7 @@ class Util {
                     if(formats != nil){
                         let formats = formats!
                         
-                        let duration = formatAndInfo?.1?["duration"]
+                        let duration = Int((formatAndInfo?.1?.dict?["duration"])!)! * 1000
                         
                         downloadFormat(format: formats[0], downloadId: downloadId, videoId: videoId, progressStart: 0, progressFactor: formats.count > 1 ? 0.1 : 0.5, progressUpdate: progressUpdate) { audioTempUrl in
                             if(audioTempUrl != nil){
@@ -83,7 +83,7 @@ class Util {
                                                     let videoData = try Data(contentsOf: videoTempUrl!)
                                                     try videoData.write(to: videoFilepath)
                                                     
-                                                    combineVideoAndAudio(audioUrl: audioFilepath, videoURL: videoFilepath, videoId: videoId, downloadId: downloadId, progressUpdate: progressUpdate, callback: callback)
+                                                    combineVideoAndAudio(audioUrl: audioFilepath, videoURL: videoFilepath, videoId: videoId, downloadId: downloadId, duration: duration, progressUpdate: progressUpdate, callback: callback)
                                                 }else{
                                                     print("Failed to download video")
                                                 }
@@ -92,7 +92,7 @@ class Util {
                                             }
                                         }
                                     }else{
-                                        saveAudio(url: audioFilepath, downloadId: downloadId, videoId: videoId, progressUpdate: progressUpdate, callback: callback)
+                                        saveAudio(url: audioFilepath, downloadId: downloadId, videoId: videoId, duration: duration, progressUpdate: progressUpdate, callback: callback)
                                     }
                                     
                                 } catch {
@@ -115,13 +115,11 @@ class Util {
         }
     }
     
-    private static func saveAudio(url: URL, downloadId: Int, videoId: String, progressUpdate: @escaping ((Download) -> Void), callback: @escaping ((String?) -> Void)){
+    private static func saveAudio(url: URL, downloadId: Int, videoId: String, duration: Int, progressUpdate: @escaping ((Download) -> Void), callback: @escaping ((String?) -> Void)){
         let filename = String(downloadId) + ".mp3"
         
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let filepath = documentDirectory.appendingPathComponent(filename)
-        
-        let audioAsset = AVAsset(url: url)
         
         FFmpegKit.executeAsync("-y -i " + URLComponents(url: url, resolvingAgainstBaseURL: false)!.path + " " + URLComponents(url: filepath, resolvingAgainstBaseURL: false)!.path, withCompleteCallback: { ffmpegSession in
             do {
@@ -133,7 +131,7 @@ class Util {
         }, withLogCallback: { log in
         }, withStatisticsCallback: { statistics in
             if(statistics != nil){
-                let total = Double(CMTimeGetSeconds(audioAsset.duration))
+                let total = Double(duration)
                 let doneTime = (Double(statistics!.getTime()))
                 
                 var progress = (doneTime /  total) * 100
@@ -142,22 +140,16 @@ class Util {
                     progress = 0
                 }
                 
-                print(progress)
-                print(total)
-                print(doneTime)
-                
                 progressUpdate(Download(done: false, progress: (50 + Int((progress * 0.5))), downloadId: downloadId, videoId: videoId))
             }
         })
     }
     
-    private static func combineVideoAndAudio(audioUrl: URL, videoURL: URL, videoId:String, downloadId: Int, progressUpdate: @escaping ((Download) -> Void), callback: @escaping ((String?) -> Void)){
+    private static func combineVideoAndAudio(audioUrl: URL, videoURL: URL, videoId:String, downloadId: Int, duration: Int, progressUpdate: @escaping ((Download) -> Void), callback: @escaping ((String?) -> Void)){
         let filename = String(downloadId) + ".mp4"
         
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let filepath = documentDirectory.appendingPathComponent(filename)
-        
-        let audioAsset = AVAsset(url: audioUrl)
         
         FFmpegKit.executeAsync("-y -i " + URLComponents(url: videoURL, resolvingAgainstBaseURL: false)!.path + " -i " + URLComponents(url: audioUrl, resolvingAgainstBaseURL: false)!.path + " -c:v mpeg4 -c:a aac " + URLComponents(url: filepath, resolvingAgainstBaseURL: false)!.path,  withCompleteCallback: { ffmpegSession in
             do {
@@ -171,7 +163,7 @@ class Util {
         }, withLogCallback: { log in
         }, withStatisticsCallback: { statistics in
             if(statistics != nil){
-                let total = Double(CMTimeGetSeconds(audioAsset.duration))
+                let total = Double(duration)
                 let doneTime = (Double(statistics!.getTime()))
                 
                 var progress = (doneTime /  total) * 100
@@ -179,11 +171,6 @@ class Util {
                 if(progress.isNaN || progress.isInfinite){
                     progress = 0
                 }
-                
-                print(progress)
-                
-                print(total)
-                print(doneTime)
                 
                 progressUpdate(Download(done: false, progress: (50 + Int((progress * 0.5))), downloadId: downloadId, videoId: videoId))
             }
