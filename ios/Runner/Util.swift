@@ -116,12 +116,12 @@ class Util {
     }
     
     private static func saveAudio(url: URL, downloadId: Int, videoId: String, duration: Int, progressUpdate: @escaping ((Download) -> Void), callback: @escaping ((String?) -> Void)){
-        let filename = String(downloadId) + ".mp3"
+        let filename = String(downloadId) + ".m4a"
         
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let filepath = documentDirectory.appendingPathComponent(filename)
         
-        FFmpegKit.executeAsync("-y -i " + URLComponents(url: url, resolvingAgainstBaseURL: false)!.path + " " + URLComponents(url: filepath, resolvingAgainstBaseURL: false)!.path, withCompleteCallback: { ffmpegSession in
+        FFmpegKit.executeAsync("-y -i " + URLComponents(url: url, resolvingAgainstBaseURL: false)!.path + " -c:a alac " + URLComponents(url: filepath, resolvingAgainstBaseURL: false)!.path, withCompleteCallback: { ffmpegSession in
             do {
                 try FileManager.default.removeItem(atPath: URLComponents(string: url.absoluteString)!.path)
             }catch{
