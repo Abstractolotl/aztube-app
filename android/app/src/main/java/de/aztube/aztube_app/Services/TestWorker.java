@@ -126,6 +126,12 @@ public class TestWorker extends Worker {
                             if(settings.isShowNotifications()) notifId = NotificationUtil.ShowSomething(getApplicationContext(), "Starting Download", req.getTitle());
                             startDownload(req, notifId);
                         }
+                    } else {
+                        if(settings.isShowNotifications()) {
+                            String text;
+                            if(cache.getQueue().size() > 1) text = "You have " + cache.getQueue().size() + " downloads available";
+                            NotificationUtil.ShowSomething(getApplicationContext(), "New Download Requests", cache.getQueue().get(0).getTitle() + " is ready to download!");
+                        }
                     }
                 },
                 error -> {

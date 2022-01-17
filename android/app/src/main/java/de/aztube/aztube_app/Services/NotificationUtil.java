@@ -22,8 +22,8 @@ public class NotificationUtil {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(title)
-                .setContentText(content)
-                //.setStyle(new NotificationCompat.BigTextStyle().bigText("Long Text"))
+                //.setContentText(content)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
                 .setSmallIcon(R.drawable.icon_notification)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(intent)
