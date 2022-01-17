@@ -57,8 +57,10 @@ public class MainActivity extends FlutterActivity {
                                 String videoId = call.argument("videoId");
                                 String quality = call.argument("quality");
                                 Integer downloadId = call.argument("downloadId");
+                                String title = call.argument("title");
+                                String author = call.argument("author");
 
-                                return Downloader.downloadVideo(this, videoId, downloadId, quality, (download) -> channel.invokeMethod("progress", download.toHashMap()));
+                                return Downloader.downloadVideo(this, videoId, downloadId, quality, title, author, (download) -> channel.invokeMethod("progress", download.toHashMap()));
                             }, (uri) -> {
                                 if (uri != null) {
                                     result.success(uri);

@@ -75,7 +75,7 @@ public class Downloader {
 
     private static final HashMap<Integer, Download> downloads = new HashMap<>();
 
-    public static String downloadVideo(Context context, String videoId, Integer downloadId, String quality, ProgressUpdate progressUpdate) {
+    public static String downloadVideo(Context context, String videoId, Integer downloadId, String quality, String title, String author, ProgressUpdate progressUpdate) {
         VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
 
         List<Format> formats = null;
@@ -84,7 +84,7 @@ public class Downloader {
         }
 
         if (formats != null) {
-            return Downloader.downloadVideo(context, formats, videoInfo, videoId, downloadId, quality.equals("audio"), progressUpdate);
+            return Downloader.downloadVideo(context, formats, videoInfo, videoId, downloadId, title, author, quality.equals("audio"), progressUpdate);
         } else {
             return null;
         }
@@ -218,7 +218,7 @@ public class Downloader {
 
     private static final HashMap<Integer, ArrayList<ProgressUpdate>> progressUpdaters = new HashMap<>();
 
-    private static String downloadVideo(Context context, List<Format> formats, VideoInfo videoInfo, String videoId, Integer downloadId, Boolean audio, ProgressUpdate progressUpdate) {
+    private static String downloadVideo(Context context, List<Format> formats, VideoInfo videoInfo, String videoId, Integer downloadId, String title, String author, Boolean audio, ProgressUpdate progressUpdate) {
         boolean success = false;
 
         String thumbnail = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/thumbnail_" + downloadId + ".jpg";
@@ -297,6 +297,8 @@ public class Downloader {
             });
         };
 
+        String metadata = " -metadata \"title=" + title + " author=" + author + "\" ";
+
         if (files.size() > 1) {
             System.out.println("Combining video and audio");
 
@@ -304,9 +306,9 @@ public class Downloader {
 
             synchronized (done){
                 if(thumbnail != null){
-                    session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a " + Downloader.VIDEO_AUDIO_CODEC + " -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
+                    session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a " + Downloader.VIDEO_AUDIO_CODEC + " -attach " + thumbnail + metadata + "-metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
                 }else{
-                    session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a " + Downloader.VIDEO_AUDIO_CODEC + " " + filename, callback, logCallback, statisticsCallback);
+                    session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + files.get(1) + " -c:v copy -c:a " + Downloader.VIDEO_AUDIO_CODEC + metadata + filename, callback, logCallback, statisticsCallback);
                 }
 
                 try {
@@ -358,10 +360,10 @@ public class Downloader {
                     if(audio){
                         filename += Downloader.AUDIO_FORMAT;
 
-                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + thumbnail + " -map 0:a -map 1 -c:a " + Downloader.AUDIO_CODEC + " -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover (front)\" -disposition:v attached_pic " + filename, callback, logCallback, statisticsCallback);
+                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -i " + thumbnail + " -map 0:a -map 1 -c:a " + Downloader.AUDIO_CODEC + metadata + "-metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover (front)\" -disposition:v attached_pic " + filename, callback, logCallback, statisticsCallback);
                     }else{
                         filename += Downloader.VIDEO_FORMAT;
-                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -c:v copy -c:a " + Downloader.VIDEO_AUDIO_CODEC + " -attach " + thumbnail + " -metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
+                        session = FFmpegKit.executeAsync("-y -i " + files.get(0) + " -c:v copy -c:a " + Downloader.VIDEO_AUDIO_CODEC + " -attach " + thumbnail + metadata + "-metadata:s:t mimetype=image/jpeg " + filename, callback, logCallback, statisticsCallback);
                     }
 
                     try {
@@ -417,7 +419,7 @@ public class Downloader {
             contentValues.put(MediaStore.Audio.Media.TITLE, filename);
             contentValues.put(MediaStore.Audio.Media.DISPLAY_NAME, videoInfo.details().title());
             contentValues.put(MediaStore.Audio.Media.MIME_TYPE, Downloader.AUDIO_MIME_TYPE);
-            contentValues.put(MediaStore.Audio.Media.RELATIVE_PATH, "Music/" + "AZTube");
+            contentValues.put(MediaStore.Audio.Media.RELATIVE_PATH, "Music/" + author);
             contentValues.put(MediaStore.Audio.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
             contentValues.put(MediaStore.Audio.Media.DATE_TAKEN, System.currentTimeMillis());
             contentValues.put(MediaStore.Audio.Media.ARTIST, videoInfo.details().author());
@@ -429,7 +431,7 @@ public class Downloader {
             contentValues.put(MediaStore.Video.Media.TITLE, filename);
             contentValues.put(MediaStore.Video.Media.DISPLAY_NAME, videoInfo.details().title());
             contentValues.put(MediaStore.Video.Media.MIME_TYPE, Downloader.VIDEO_MIME_TYPE);
-            contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/" + "AZTube");
+            contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/" + author);
             contentValues.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
             contentValues.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis());
             contentValues.put(MediaStore.Video.Media.ARTIST, videoInfo.details().author());

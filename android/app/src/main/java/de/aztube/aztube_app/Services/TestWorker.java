@@ -57,7 +57,7 @@ public class TestWorker extends Worker {
         AtomicReference<Long> lastUpdate = new AtomicReference<>();
         lastUpdate.set(0L);
         new Async<Boolean>().run(() -> {
-            url.set(Downloader.downloadVideo(getApplicationContext(), req.getVideoId(), req.getDownloadId(), req.getQuality(), new Downloader.ProgressUpdate() {
+            url.set(Downloader.downloadVideo(getApplicationContext(), req.getVideoId(), req.getDownloadId(), req.getQuality(), req.getTitle(), req.getAuthor(), new Downloader.ProgressUpdate() {
                 @Override
                 public void run(Downloader.Download download) {
                     if(download.progress == 100) {

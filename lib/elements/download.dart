@@ -151,7 +151,9 @@ class DownloadState extends State<Download> {
     Map<String, dynamic> args = {
       "videoId": video.videoId,
       "quality": video.quality,
-      "downloadId": video.downloadId
+      "downloadId": video.downloadId,
+      "title": video.title,
+      "author": video.author
     };
 
     final dynamic result = await platform.invokeMethod("downloadVideo", args);
