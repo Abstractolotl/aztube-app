@@ -26,6 +26,7 @@ import com.github.kiulian.downloader.model.videos.formats.AudioFormat;
 import com.github.kiulian.downloader.model.videos.formats.Format;
 import com.github.kiulian.downloader.model.videos.formats.VideoFormat;
 import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
+import de.aztube.aztube_app.Services.Download.VideoDownloader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -76,7 +77,11 @@ public class Downloader {
     private static final HashMap<Integer, Download> downloads = new HashMap<>();
 
     public static String downloadVideo(Context context, String videoId, Integer downloadId, String quality, String title, String author, ProgressUpdate progressUpdate) {
-        VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
+        return new VideoDownloader(context, videoId, downloadId, title, author, quality).startDownload((update -> {
+            progressUpdate.run(new Download(update.done, update.progress, update.downloadId, update.videoId));
+        }));
+
+        /*VideoInfo videoInfo = Downloader.requestVideoInfo(videoId);
 
         List<Format> formats = null;
         if (quality != null) {
@@ -87,7 +92,7 @@ public class Downloader {
             return Downloader.downloadVideo(context, formats, videoInfo, videoId, downloadId, title, author, quality.equals("audio"), progressUpdate);
         } else {
             return null;
-        }
+        }*/
     }
 
     public static String getThumbnailUrl(String videoId) {
@@ -494,6 +499,7 @@ public class Downloader {
         } else {
             return null;
         }
+
     }
 
     private static String downloadFormat(Context context, Format format, String videoId, Integer downloadId, Boolean audio, ProgressUpdate progressUpdate, Double progressStart, Double progressFactor) {
