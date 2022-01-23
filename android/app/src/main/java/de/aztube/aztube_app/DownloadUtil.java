@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -56,32 +55,14 @@ public class DownloadUtil {
         fileOutputStream.close();
     }
 
-    public static Uri saveAlbumCoverToMediaStore(Context context, File toSave, String title, int downloadId) throws IOException {
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(MediaStore.Audio.Albums.ALBUM_ID, downloadId + "_" + title);
-        contentValues.put("_data", toSave.getAbsolutePath());
-
-        Uri uriSaved =  context.getContentResolver().insert(Uri.parse("content://media/external/audio/albumart"), contentValues);
-        Log.d("AzTube", uriSaved.toString());
-
-
-        //writeToFileDescriptor(context, toSave, uriSaved);
-        return uriSaved;
-    }
-
     public static Uri saveToMediaStore(Context context, File toSave, String title, String author, int downloadId) throws IOException {
         String fileExtension = toSave.getName().substring(toSave.getName().lastIndexOf("."));
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(MediaStore.Audio.Media.TITLE, title);
         contentValues.put(MediaStore.Audio.Media.ARTIST, author);
-        contentValues.put(MediaStore.Audio.Media.ARTIST_ID, author);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
             contentValues.put(MediaStore.Audio.Media.ALBUM_ARTIST, author);
-
-        contentValues.put(MediaStore.Audio.Media.ALBUM, downloadId + "_" + title);
-        contentValues.put(MediaStore.Audio.Media.ALBUM_ID, downloadId + "_" + title);
         contentValues.put(MediaStore.Audio.Media.DISPLAY_NAME, title + fileExtension);
         contentValues.put(MediaStore.Audio.Media.MIME_TYPE, getMIMEType(toSave.getName()));
         contentValues.put(MediaStore.Audio.Media.RELATIVE_PATH, "Music");
@@ -112,7 +93,7 @@ public class DownloadUtil {
         return youtubeDownloader.getVideoInfo(request).data();
     }
 
-    public static List<Format> pickVideoFormat(VideoInfo videoInfo, String quality) {
+    public static List<Format> pickVideoFormats(VideoInfo videoInfo, String quality) {
         List<VideoWithAudioFormat> videoWithAudioFormats = videoInfo.videoWithAudioFormats();
         List<VideoFormat> videoFormats = videoInfo.videoFormats();
         List<AudioFormat> audioFormats = videoInfo.audioFormats();

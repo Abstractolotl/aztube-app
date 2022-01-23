@@ -1,13 +1,8 @@
 package de.aztube.aztube_app.Services.Download;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Environment;
-import android.os.ParcelFileDescriptor;
-import android.provider.MediaStore;
 import android.util.Log;
-import android.webkit.MimeTypeMap;
 import com.arthenica.ffmpegkit.FFmpegKit;
 import com.arthenica.ffmpegkit.FFmpegSession;
 import com.github.kiulian.downloader.YoutubeDownloader;
@@ -17,16 +12,10 @@ import com.github.kiulian.downloader.model.videos.VideoInfo;
 import com.github.kiulian.downloader.model.videos.formats.AudioFormat;
 import com.github.kiulian.downloader.model.videos.formats.Format;
 import de.aztube.aztube_app.DownloadUtil;
-import de.aztube.aztube_app.Downloader;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.AudioHeader;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
-import org.jaudiotagger.tag.TagException;
 import org.jaudiotagger.tag.TagOptionSingleton;
 import org.jaudiotagger.tag.images.ArtworkFactory;
 
@@ -49,9 +38,13 @@ public class VideoDownloader {
     private final String author;
     private final String quality;
 
-    private int totalProgress = 100;
-    private int currentProgress = 0;
-    private ProgressUpdater.ProgressUpdateCallback progressCallback;
+    private long videoDuration;
+
+    private float videoInfoProgres;
+    private float thumbnailProgress;
+    private float filesProgress;
+    private float ffmpegProgress;
+    private float mediaStoreProgress;
 
     private List<File> cleanUp;
 
@@ -67,22 +60,42 @@ public class VideoDownloader {
         DOWNLOAD_OUTPUT_DIR = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/";
     }
 
+    private void updateProgress(){
+        float totalProgress =
+                0.05f * videoInfoProgres +
+                0.05f * thumbnailProgress +
+                0.40f * filesProgress +
+                0.45f * ffmpegProgress +
+                0.05f * mediaStoreProgress;
+
+        ProgressUpdater.publishUpdate(downloadId, new ProgressUpdater.ProgressUpdate(false, (int) totalProgress, downloadId, videoId));
+    }
+
     public String startDownload(ProgressUpdater.ProgressUpdateCallback progressCallback) {
-        this.progressCallback = progressCallback;
+        ProgressUpdater.registerProgressUpdateCallback(downloadId, progressCallback);
 
         VideoInfo videoInfo = DownloadUtil.requestVideoInfo(videoId);
-        List<Format> formats = DownloadUtil.pickVideoFormat(videoInfo, quality);
+        List<Format> formats = DownloadUtil.pickVideoFormats(videoInfo, quality);
+        videoDuration = formats.get(0).duration();
+        videoInfoProgres = 100;
+        updateProgress();
 
         String thumbnailoLcation = DOWNLOAD_OUTPUT_DIR + downloadId + "_thumbnail.jpg";
         DownloadUtil.downloadThumbnail(context, videoId, downloadId, thumbnailoLcation);
+        thumbnailProgress = 100;
+        updateProgress();
 
         File thumbnail = new File(thumbnailoLcation);
         List<File> downloadedFiles = downloadFormats(formats);
+        filesProgress = 100;
+        updateProgress();
+
         cleanUp.addAll(downloadedFiles);
         cleanUp.add(thumbnail);
 
         String outputFile = mergeFiles(downloadedFiles, thumbnail);
-        //cleanUpTmpFiles();
+        cleanUpTmpFiles();
+        updateProgress();
 
         return outputFile;
     }
@@ -94,23 +107,41 @@ public class VideoDownloader {
             File audioFile = files.get(0);
 
             String tmp = DOWNLOAD_OUTPUT_DIR + title + "_ffmpeg.m4a";
-            FFmpegKit.execute("-i " + audioFile.getAbsolutePath() + " " + tmp);
-            cleanUp.add(new File(tmp));
+
+            AtomicBoolean done = new AtomicBoolean();
+            FFmpegKit.executeAsync("-i " + audioFile.getAbsolutePath() + " " + tmp,
+                    (session) -> done.set(true),
+                    null,
+                    (statistics) -> {
+                        ffmpegProgress = 100 * (statistics.getTime() / (float) videoDuration);
+                        updateProgress();
+                    });
+
+            while(!done.get());
+            ffmpegProgress = 100;
+            updateProgress();
+
+
+            File tmpFile = new File(tmp);
+            cleanUp.add(tmpFile);
 
             TagOptionSingleton.getInstance().setAndroid(true);
             try {
-                DownloadUtil.saveAlbumCoverToMediaStore(context, thumbnail, title, downloadId);
-
-                AudioFile f = AudioFileIO.read(new File(tmp));
+                AudioFile f = AudioFileIO.read(tmpFile);
                 Tag tag = f.getTag();
                 tag.setField(FieldKey.TITLE, title);
                 tag.setField(FieldKey.ARTIST, author);
                 tag.setField(FieldKey.ALBUM_ARTIST, author);
-                tag.setField(FieldKey.ALBUM, author + title);
+                tag.setField(FieldKey.ALBUM, author + " - " + title);
                 tag.setField(FieldKey.TRACK, "0");
                 tag.setField(ArtworkFactory.createArtworkFromFile(thumbnail));
                 AudioFileIO.write(f);
-                return DownloadUtil.saveToMediaStore(context, audioFile, title, author, downloadId).toString();
+
+                String mediaStoreAdress = DownloadUtil.saveToMediaStore(context, tmpFile, title, author, downloadId).toString();
+                mediaStoreProgress = 100;
+                updateProgress();
+
+                return mediaStoreAdress;
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -129,10 +160,9 @@ public class VideoDownloader {
 
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
 
-        final int[] progresses = new int[formats.size()];
+        final float[] progresses = new float[formats.size()];
         for(int i = 0; i < formats.size(); i++) {
             Format format = formats.get(i);
-            ProgressUpdater.registerProgressUpdateCallback(downloadId, progressCallback);
 
             boolean isAudio = format instanceof AudioFormat;
             String filename = downloadId + (isAudio ? "_audio" : "_video");
@@ -142,30 +172,23 @@ public class VideoDownloader {
                 @Override
                 public void onDownloading(int progress) {
                     progresses[finalI] = progress;
-                    int percent = 0; //(int) (progressStart + (progress * progressFactor));
-                    ProgressUpdater.ProgressUpdate update = new ProgressUpdater.ProgressUpdate(false, getTotalProgress(progresses), downloadId, videoId);
-                    ProgressUpdater.publishUpdate(downloadId, update);
-
+                    filesProgress = getTotalProgress(progresses);
+                    updateProgress();
                 }
 
                 @Override
                 public void onFinished(File data) {
-                    int percent = 100; //(int) (progressStart + (100 * progressFactor)
-                    ProgressUpdater.ProgressUpdate update = new ProgressUpdater.ProgressUpdate(true, getTotalProgress(progresses), downloadId, videoId);
-                    ProgressUpdater.publishUpdate(downloadId, update);
+                    progresses[finalI] = 100;
+                    filesProgress = getTotalProgress(progresses);
+                    updateProgress();
                 }
 
                 @Override
                 public void onError(Throwable throwable) {
-                    progresses[finalI] = -1;
-                    ProgressUpdater.ProgressUpdate update = new ProgressUpdater.ProgressUpdate(true, -1, downloadId, videoId);
-                    ProgressUpdater.publishUpdate(downloadId, update);
-
                     System.out.println("Error downloading video");
                     failed.set(true);
                 }
-            })
-                    .saveTo(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)).renameTo(filename);
+            }).saveTo(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)).renameTo(filename);
 
             if(failed.get()) {
                 throw new DownloadException("Error while Downloading");
@@ -175,15 +198,16 @@ public class VideoDownloader {
             downloadedFiles.add(data);
         }
 
-
         return downloadedFiles;
     }
 
-    private static int getTotalProgress(int[] progresses) {
+    private static float getTotalProgress(float[] progresses) {
         if(progresses.length == 1) return progresses[0];
         int total = 0;
-        for(int p : progresses) total += p;
-        return (int)(total / 3.0f);
+        for(float p : progresses) total += p;
+        int progress = total / progresses.length;
+        Log.d("AzTube", "PROGRESS " + progresses.length + " " + progress);
+        return progress;
     }
 
 }
