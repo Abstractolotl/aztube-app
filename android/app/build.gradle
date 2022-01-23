@@ -68,4 +68,6 @@ dependencies {
     implementation "androidx.core:core-ktx:1.7.0"
     implementation 'com.google.guava:guava:31.0.1-jre'
     implementation 'androidx.work:work-runtime:2.7.1'
+
+    implementation 'net.jthink:jaudiotagger:3.0.1'
 }

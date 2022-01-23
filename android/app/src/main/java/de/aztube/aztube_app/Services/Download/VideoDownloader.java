@@ -6,7 +6,10 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
+import com.arthenica.ffmpegkit.FFmpegKit;
+import com.arthenica.ffmpegkit.FFmpegSession;
 import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.downloader.YoutubeProgressCallback;
 import com.github.kiulian.downloader.downloader.request.RequestVideoFileDownload;
@@ -15,13 +18,27 @@ import com.github.kiulian.downloader.model.videos.formats.AudioFormat;
 import com.github.kiulian.downloader.model.videos.formats.Format;
 import de.aztube.aztube_app.DownloadUtil;
 import de.aztube.aztube_app.Downloader;
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.AudioHeader;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagException;
+import org.jaudiotagger.tag.TagOptionSingleton;
+import org.jaudiotagger.tag.images.ArtworkFactory;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class VideoDownloader {
+
+    private final String DOWNLOAD_OUTPUT_DIR;
 
     private Context context;
 
@@ -36,6 +53,8 @@ public class VideoDownloader {
     private int currentProgress = 0;
     private ProgressUpdater.ProgressUpdateCallback progressCallback;
 
+    private List<File> cleanUp;
+
     public VideoDownloader(Context context, String videoId, int downloadId, String title, String author, String quality) {
         this.context = context;
         this.videoId = videoId;
@@ -43,64 +62,70 @@ public class VideoDownloader {
         this.title = title;
         this.author = author;
         this.quality = quality;
+        cleanUp = new LinkedList<>();
+
+        DOWNLOAD_OUTPUT_DIR = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/";
     }
 
     public String startDownload(ProgressUpdater.ProgressUpdateCallback progressCallback) {
         this.progressCallback = progressCallback;
+
         VideoInfo videoInfo = DownloadUtil.requestVideoInfo(videoId);
         List<Format> formats = DownloadUtil.pickVideoFormat(videoInfo, quality);
 
-        String thumbnailoLcation = DownloadUtil.downloadThumbnail(context, videoId, downloadId);
-        List<String> downloadedFiles = downloadFormats(formats);
+        String thumbnailoLcation = DOWNLOAD_OUTPUT_DIR + downloadId + "_thumbnail.jpg";
+        DownloadUtil.downloadThumbnail(context, videoId, downloadId, thumbnailoLcation);
 
-        if(downloadedFiles.size() == 1) {
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(MediaStore.Audio.Media.TITLE, downloadedFiles.get(0));
-            contentValues.put(MediaStore.Audio.Media.DISPLAY_NAME, videoInfo.details().title());
-            contentValues.put(MediaStore.Audio.Media.MIME_TYPE, getMIMEType(downloadedFiles.get(0)));
-            contentValues.put(MediaStore.Audio.Media.RELATIVE_PATH, "Music/" + author);
-            contentValues.put(MediaStore.Audio.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
-            contentValues.put(MediaStore.Audio.Media.DATE_TAKEN, System.currentTimeMillis());
-            contentValues.put(MediaStore.Audio.Media.ARTIST, videoInfo.details().author());
-            contentValues.put(MediaStore.Audio.Media.IS_PENDING, 1);
+        File thumbnail = new File(thumbnailoLcation);
+        List<File> downloadedFiles = downloadFormats(formats);
+        cleanUp.addAll(downloadedFiles);
+        cleanUp.add(thumbnail);
 
-            Uri collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-            Uri uriSaved =  context.getContentResolver().insert(collection, contentValues);
+        String outputFile = mergeFiles(downloadedFiles, thumbnail);
+        //cleanUpTmpFiles();
 
+        return outputFile;
+    }
+
+    private String mergeFiles(List<File> files, File thumbnail) {
+        if(quality.equals("audio")) {
+            if(files.size() > 1) throw new DownloadException("What the hell is going on?");
+
+            File audioFile = files.get(0);
+
+            String tmp = DOWNLOAD_OUTPUT_DIR + title + "_ffmpeg.m4a";
+            FFmpegKit.execute("-i " + audioFile.getAbsolutePath() + " " + tmp);
+            cleanUp.add(new File(tmp));
+
+            TagOptionSingleton.getInstance().setAndroid(true);
             try {
-                ParcelFileDescriptor parcelFileDescriptor = context.getContentResolver().openFileDescriptor(uriSaved, "w");
-                FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
-                FileInputStream fileInputStream = new FileInputStream(downloadedFiles.get(0));
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = fileInputStream.read(buffer)) > 0) {
-                    fileOutputStream.write(buffer, 0, length);
-                }
-                fileInputStream.close();
-                fileOutputStream.close();
-                contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0);
-                context.getContentResolver().update(uriSaved, contentValues, null, null);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                DownloadUtil.saveAlbumCoverToMediaStore(context, thumbnail, title, downloadId);
 
-            return uriSaved.toString();
+                AudioFile f = AudioFileIO.read(new File(tmp));
+                Tag tag = f.getTag();
+                tag.setField(FieldKey.TITLE, title);
+                tag.setField(FieldKey.ARTIST, author);
+                tag.setField(FieldKey.ALBUM_ARTIST, author);
+                tag.setField(FieldKey.ALBUM, author + title);
+                tag.setField(FieldKey.TRACK, "0");
+                tag.setField(ArtworkFactory.createArtworkFromFile(thumbnail));
+                AudioFileIO.write(f);
+                return DownloadUtil.saveToMediaStore(context, audioFile, title, author, downloadId).toString();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         return null;
     }
 
-    public static String getMIMEType(String url) {
-        String mType = null;
-        String mExtension = MimeTypeMap.getFileExtensionFromUrl(url);
-        if (mExtension != null) {
-            mType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(mExtension);
-        }
-        return mType;
+    private void cleanUpTmpFiles(){
+        cleanUp.forEach(File::delete);
     }
 
-    private List<String> downloadFormats(List<Format> formats) {
-        List<String> downloadedFiles = new ArrayList<>(formats.size());
+    private List<File> downloadFormats(List<Format> formats) {
+        List<File> downloadedFiles = new ArrayList<>(formats.size());
 
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
 
@@ -110,7 +135,7 @@ public class VideoDownloader {
             ProgressUpdater.registerProgressUpdateCallback(downloadId, progressCallback);
 
             boolean isAudio = format instanceof AudioFormat;
-            String filename = (isAudio ? "audio_" : "video_") + downloadId;
+            String filename = downloadId + (isAudio ? "_audio" : "_video");
             int finalI = i;
             AtomicBoolean failed = new AtomicBoolean(false);
             RequestVideoFileDownload videoFileDownload = new RequestVideoFileDownload(format).callback(new YoutubeProgressCallback<File>() {
@@ -139,14 +164,15 @@ public class VideoDownloader {
                     System.out.println("Error downloading video");
                     failed.set(true);
                 }
-            }).saveTo(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)).renameTo(filename);
+            })
+                    .saveTo(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)).renameTo(filename);
 
             if(failed.get()) {
                 throw new DownloadException("Error while Downloading");
             }
 
             File data = youtubeDownloader.downloadVideoFile(videoFileDownload).data();
-            downloadedFiles.add(data.getAbsolutePath());
+            downloadedFiles.add(data);
         }
 
 
