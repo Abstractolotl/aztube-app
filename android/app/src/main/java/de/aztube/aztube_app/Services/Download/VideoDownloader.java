@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 import com.arthenica.ffmpegkit.FFmpegKit;
-import com.arthenica.ffmpegkit.FFmpegSession;
 import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.downloader.YoutubeProgressCallback;
 import com.github.kiulian.downloader.downloader.request.RequestVideoFileDownload;
@@ -127,15 +126,7 @@ public class VideoDownloader {
 
             TagOptionSingleton.getInstance().setAndroid(true);
             try {
-                AudioFile f = AudioFileIO.read(tmpFile);
-                Tag tag = f.getTag();
-                tag.setField(FieldKey.TITLE, title);
-                tag.setField(FieldKey.ARTIST, author);
-                tag.setField(FieldKey.ALBUM_ARTIST, author);
-                tag.setField(FieldKey.ALBUM, author + " - " + title);
-                tag.setField(FieldKey.TRACK, "0");
-                tag.setField(ArtworkFactory.createArtworkFromFile(thumbnail));
-                AudioFileIO.write(f);
+                writeMetaInfoToAudioFile(tmpFile, thumbnail);
 
                 String mediaStoreAdress = DownloadUtil.saveToMediaStore(context, tmpFile, title, author, downloadId).toString();
                 mediaStoreProgress = 100;
@@ -149,6 +140,18 @@ public class VideoDownloader {
         }
 
         return null;
+    }
+
+    private void writeMetaInfoToAudioFile(File file, File thumbnail) throws Exception {
+        AudioFile f = AudioFileIO.read(file);
+        Tag tag = f.getTag();
+        tag.setField(FieldKey.TITLE, title);
+        tag.setField(FieldKey.ARTIST, author);
+        tag.setField(FieldKey.ALBUM_ARTIST, author);
+        tag.setField(FieldKey.ALBUM, author + " - " + title);
+        tag.setField(FieldKey.TRACK, "0");
+        tag.setField(ArtworkFactory.createArtworkFromFile(thumbnail));
+        AudioFileIO.write(f);
     }
 
     private void cleanUpTmpFiles(){
