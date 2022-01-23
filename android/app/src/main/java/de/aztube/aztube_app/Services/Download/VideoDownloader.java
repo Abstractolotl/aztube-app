@@ -63,8 +63,8 @@ public class VideoDownloader {
         float totalProgress =
                 0.05f * videoInfoProgres +
                 0.05f * thumbnailProgress +
-                0.40f * filesProgress +
-                0.45f * ffmpegProgress +
+                0.30f * filesProgress +
+                0.55f * ffmpegProgress +
                 0.05f * mediaStoreProgress;
 
         ProgressUpdater.publishUpdate(downloadId, new ProgressUpdater.ProgressUpdate(false, (int) totalProgress, downloadId, videoId));
@@ -104,7 +104,6 @@ public class VideoDownloader {
             if(files.size() > 1) throw new DownloadException("What the hell is going on?");
 
             File audioFile = files.get(0);
-
             String tmp = DOWNLOAD_OUTPUT_DIR + title + "_ffmpeg.m4a";
 
             AtomicBoolean done = new AtomicBoolean();
