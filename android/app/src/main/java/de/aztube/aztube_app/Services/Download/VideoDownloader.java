@@ -105,9 +105,10 @@ public class VideoDownloader {
 
             File audioFile = files.get(0);
             String tmp = DOWNLOAD_OUTPUT_DIR + title + "_ffmpeg.m4a";
+            File tmpFile = new File(tmp);
 
             AtomicBoolean done = new AtomicBoolean();
-            FFmpegKit.executeAsync("-i " + audioFile.getAbsolutePath() + " " + tmp,
+            FFmpegKit.executeAsync("-i " + audioFile.getAbsolutePath() + " \"" + tmpFile.getAbsolutePath() + "\"",
                     (session) -> done.set(true),
                     null,
                     (statistics) -> {
@@ -120,7 +121,6 @@ public class VideoDownloader {
             updateProgress();
 
 
-            File tmpFile = new File(tmp);
             cleanUp.add(tmpFile);
 
             TagOptionSingleton.getInstance().setAndroid(true);
