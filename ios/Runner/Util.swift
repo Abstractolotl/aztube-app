@@ -7,7 +7,6 @@
 
 import AVKit
 import AVFoundation
-import ffmpegkit
 
 struct Download {
     let done: Bool
@@ -42,11 +41,9 @@ class Downloader {
         } callback: { downloadUUID in
             startDownloadWatcher(downloadUUID: downloadUUID, downloadId: downloadId, videoId: videoId) { result, duration in
                 if(result != nil && duration != nil){
-                    downloadFile(downloadResult: result!, downloadId: downloadId, videoId: videoId) { filepath in
+                    downloadFile(downloadResult: result!, downloadId: downloadId, videoId: videoId, quality: quality) { filepath in
                         if(filepath != nil){
-                            convert(url: filepath!, duration: duration!, downloadId: downloadId, quality: quality, videoId: videoId) { convertedPath in
-                                callback(convertedPath)
-                            }
+                            callback(filepath)
                         }else{
                             callback(nil)
                         }
@@ -65,18 +62,18 @@ class Downloader {
             getProgress(downloadId: downloadUUID) {
                 downloadFinished(nil, nil)
             } callback: { progress in
-                runProgressUpdaters(download: Download(done: false, progress: Int((Double(progress) * (0.2))), downloadId: downloadId, videoId: videoId))
+                runProgressUpdaters(download: Download(done: false, progress: Int((Double(progress) * (0.5))), downloadId: downloadId, videoId: videoId))
                 
                 startDownloadWatcher(downloadUUID: downloadUUID, downloadId: downloadId, videoId: videoId, downloadFinished: downloadFinished)
             } finalCallback: { result, duration in
-                runProgressUpdaters(download: Download(done: false, progress: Int((Double(100) * (0.2))), downloadId: downloadId, videoId: videoId))
+                runProgressUpdaters(download: Download(done: false, progress: Int((Double(100) * (0.5))), downloadId: downloadId, videoId: videoId))
                 
                 downloadFinished(result, duration)
             }
         }
     }
     
-    private static func downloadFile(downloadResult: String, downloadId: Int, videoId: String, downloadFinished: @escaping ((URL?) -> Void)){
+    private static func downloadFile(downloadResult: String, downloadId: Int, videoId: String, quality:String, downloadFinished: @escaping ((String?) -> Void)){
         print("https://api.lucaspape.de/youtube/static/" + downloadResult)
         
         let configuration = URLSessionConfiguration.default
@@ -87,7 +84,14 @@ class Downloader {
         let downloadTask = session.downloadTask(with: URL(string: "https://api.lucaspape.de/youtube/static/" + downloadResult)!) { localURL, urlResponse, error in
             observation?.invalidate()
             
-            let filename = String(downloadId) + "_orig"
+            var filename = String(downloadId)
+            
+            if(quality == "audio"){
+                filename += ".m4a"
+            }else{
+                filename += ".mp4"
+            }
+            
             let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             let filepath = documentDirectory.appendingPathComponent(filename)
             
@@ -96,7 +100,7 @@ class Downloader {
                     let data = try Data(contentsOf: localURL!)
                     try data.write(to: filepath)
                     
-                    downloadFinished(filepath)
+                    downloadFinished(filename)
                 }else{
                     print("Could not find download")
                     
@@ -110,57 +114,10 @@ class Downloader {
         }
         
         observation = downloadTask.progress.observe(\.fractionCompleted) { progress, _ in
-           runProgressUpdaters(download: Download(done: false, progress: (20 + Int((Double(progress.fractionCompleted) * 0.3))), downloadId: downloadId, videoId: videoId))
+           runProgressUpdaters(download: Download(done: false, progress: (50 + Int((Double(progress.fractionCompleted) * 0.5))), downloadId: downloadId, videoId: videoId))
         }
         
         downloadTask.resume()
-    }
-    
-    private static func convert(url: URL, duration: Int, downloadId: Int, quality: String, videoId: String, convertFinished: @escaping ((String?) -> Void)){
-        var filename = String(downloadId)
-        
-        var ffmpegCommand = ""
-        
-        if(quality == "audio"){
-            filename += ".m4a"
-            
-            let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let filepath = documentDirectory.appendingPathComponent(filename)
-            
-            ffmpegCommand = "-y -i " + URLComponents(url: url, resolvingAgainstBaseURL: false)!.path + " -c:a aac " + URLComponents(url: filepath, resolvingAgainstBaseURL: false)!.path
-        }else{
-            filename += ".mp4"
-            
-            let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let filepath = documentDirectory.appendingPathComponent(filename)
-            
-            ffmpegCommand = "-y -i " + URLComponents(url: url, resolvingAgainstBaseURL: false)!.path + " -c:v mpeg4 -c:a aac " + URLComponents(url: filepath, resolvingAgainstBaseURL: false)!.path
-        }
-        
-        FFmpegKit.executeAsync(ffmpegCommand, withCompleteCallback: { ffmpegSession in
-            do {
-                try FileManager.default.removeItem(atPath: URLComponents(string: url.absoluteString)!.path)
-            }catch{
-                print("Could not delete temp files")
-            }
-            
-            convertFinished(filename)
-        }, withLogCallback: { log in
-            
-        }, withStatisticsCallback: { statistics in
-            if(statistics != nil){
-                let total = Double(duration*1000)
-                let doneTime = (Double(statistics!.getTime()))
-               
-                var progress = (doneTime / total) * 100
-                
-                if(progress.isNaN || progress.isInfinite){
-                    progress = 0
-                }
-                
-                runProgressUpdaters(download: Download(done: false, progress: (50 + Int((progress * 0.5))), downloadId: downloadId, videoId: videoId))
-            }
-        })
     }
     
     public static func getThumbnailUrl(videoId: String) -> String {

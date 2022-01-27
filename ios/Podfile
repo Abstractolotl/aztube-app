@@ -38,4 +38,3 @@ post_install do |installer|
   end
 end
 
-pod 'ffmpeg-kit-ios-full', '~> 4.5.1'
