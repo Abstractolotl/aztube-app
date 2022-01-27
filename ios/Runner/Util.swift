@@ -36,7 +36,7 @@ class Downloader {
         
         registerProgressUpdate(downloadId: downloadId, progressUpdate: progressUpdate)
         
-        startDownload(videoId: videoId, quality: quality.replacingOccurrences(of: "p", with: "")) {
+        startDownload(videoId: videoId, quality: quality) {
             callback(nil)
         } callback: { downloadUUID in
             startDownloadWatcher(downloadUUID: downloadUUID, downloadId: downloadId, videoId: videoId) { result, duration in
