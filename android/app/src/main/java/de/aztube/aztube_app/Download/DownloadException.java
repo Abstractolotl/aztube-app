@@ -1,4 +1,4 @@
-package de.aztube.aztube_app.Services.Download;
+package de.aztube.aztube_app.Download;
 
 public class DownloadException extends RuntimeException{
 

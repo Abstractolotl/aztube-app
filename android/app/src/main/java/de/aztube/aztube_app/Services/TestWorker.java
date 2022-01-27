@@ -11,7 +11,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import de.aztube.aztube_app.Async;
 import de.aztube.aztube_app.Communication.*;
-import de.aztube.aztube_app.Downloader;
+import de.aztube.aztube_app.Download.VideoDownloader;
 import de.aztube.aztube_app.MainActivity;
 import org.jetbrains.annotations.NotNull;
 
@@ -57,18 +57,16 @@ public class TestWorker extends Worker {
         AtomicReference<Long> lastUpdate = new AtomicReference<>();
         lastUpdate.set(0L);
         new Async<Boolean>().run(() -> {
-            url.set(Downloader.downloadVideo(getApplicationContext(), req.getVideoId(), req.getDownloadId(), req.getQuality(), req.getTitle(), req.getAuthor(), new Downloader.ProgressUpdate() {
-                @Override
-                public void run(Downloader.Download download) {
-                    if(download.progress == 100) {
-                        if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Download complete", req.getTitle(), notifId);
-                    } else if (System.currentTimeMillis() - lastUpdate.get() > 1000) {
-                        lastUpdate.set(System.currentTimeMillis());
-                        if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Downloading - " + download.progress + "%", req.getTitle(), notifId);
-                    }
-                }
-            }));
-
+            String fileLocation = new VideoDownloader(getApplicationContext(), req.getVideoId(), req.getDownloadId(), req.getTitle(), req.getAuthor(), req.getQuality())
+                    .startDownload(download -> {
+                        if(download.progress >= 100) {
+                            if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Download complete", req.getTitle(), notifId);
+                        } else if (System.currentTimeMillis() - lastUpdate.get() > 1000) {
+                            lastUpdate.set(System.currentTimeMillis());
+                            if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Downloading - " + download.progress + "%", req.getTitle(), notifId);
+                        }
+                    });
+            url.set(fileLocation);
             return true;
         }, (success) -> {
             Cache cache = readCache(getApplicationContext());
@@ -88,7 +86,7 @@ public class TestWorker extends Worker {
                 return null;
             }
 
-            if(canceled) {
+            if(canceled) { //if ui is open
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 intent.putExtra("reloadUI", true);
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);

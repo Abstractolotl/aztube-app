@@ -1,14 +1,14 @@
-package de.aztube.aztube_app;
+package de.aztube.aztube_app.Download;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.downloader.request.RequestVideoInfo;
@@ -17,7 +17,6 @@ import com.github.kiulian.downloader.model.videos.formats.AudioFormat;
 import com.github.kiulian.downloader.model.videos.formats.Format;
 import com.github.kiulian.downloader.model.videos.formats.VideoFormat;
 import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
-import de.aztube.aztube_app.Services.Download.DownloadException;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -91,6 +90,32 @@ public class DownloadUtil {
         YoutubeDownloader youtubeDownloader = new YoutubeDownloader();
         RequestVideoInfo request = new RequestVideoInfo(videoId);
         return youtubeDownloader.getVideoInfo(request).data();
+    }
+
+
+    public static boolean fileExists(Context context, String uri) {
+        try {
+            InputStream inputStream = context.getContentResolver().openInputStream(Uri.parse(uri));
+            inputStream.close();
+
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    public static void openFile(Context context, String uri) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(uri));
+        context.startActivity(intent);
+    }
+
+    public static boolean deleteFile(Context context, String uri) {
+        try {
+            return context.getContentResolver().delete(Uri.parse(uri), null, null) > 0;
+        } catch (SecurityException e) {
+            return false;
+        }
     }
 
     public static List<Format> pickVideoFormats(VideoInfo videoInfo, String quality) {

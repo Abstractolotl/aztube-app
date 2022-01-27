@@ -1,4 +1,4 @@
-package de.aztube.aztube_app.Services.Download;
+package de.aztube.aztube_app.Download;
 
 import android.content.Context;
 import android.os.Environment;
@@ -10,7 +10,6 @@ import com.github.kiulian.downloader.downloader.request.RequestVideoFileDownload
 import com.github.kiulian.downloader.model.videos.VideoInfo;
 import com.github.kiulian.downloader.model.videos.formats.AudioFormat;
 import com.github.kiulian.downloader.model.videos.formats.Format;
-import de.aztube.aztube_app.DownloadUtil;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
@@ -59,18 +58,11 @@ public class VideoDownloader {
         DOWNLOAD_OUTPUT_DIR = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) + "/";
     }
 
-    private void updateProgress(){
-        float totalProgress =
-                0.05f * videoInfoProgres +
-                0.05f * thumbnailProgress +
-                0.30f * filesProgress +
-                0.55f * ffmpegProgress +
-                0.05f * mediaStoreProgress;
-
-        ProgressUpdater.publishUpdate(downloadId, new ProgressUpdater.ProgressUpdate(false, (int) totalProgress, downloadId, videoId));
-    }
-
     public String startDownload(ProgressUpdater.ProgressUpdateCallback progressCallback) {
+        if(title == null) {
+            Log.d("AzTube", "Title was null");
+            return null;
+        }
         ProgressUpdater.registerProgressUpdateCallback(downloadId, progressCallback);
 
         VideoInfo videoInfo = DownloadUtil.requestVideoInfo(videoId);
@@ -93,10 +85,21 @@ public class VideoDownloader {
         cleanUp.add(thumbnail);
 
         String outputFile = mergeFiles(downloadedFiles, thumbnail);
-        cleanUpTmpFiles();
+        cleanUp();
         updateProgress();
 
         return outputFile;
+    }
+
+    private void updateProgress(){
+        float totalProgress =
+                0.05f * videoInfoProgres +
+                        0.05f * thumbnailProgress +
+                        0.30f * filesProgress +
+                        0.55f * ffmpegProgress +
+                        0.05f * mediaStoreProgress;
+
+        ProgressUpdater.publishUpdate(downloadId, new ProgressUpdater.ProgressUpdate(false, (int) totalProgress, downloadId, videoId));
     }
 
     private String mergeFiles(List<File> files, File thumbnail) {
@@ -116,7 +119,13 @@ public class VideoDownloader {
                         updateProgress();
                     });
 
-            while(!done.get());
+            try {
+                //TODO: https://josephmate.wordpress.com/2016/02/04/how-to-avoid-busy-waiting/
+                while(!done.get()) Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             ffmpegProgress = 100;
             updateProgress();
 
@@ -153,8 +162,9 @@ public class VideoDownloader {
         AudioFileIO.write(f);
     }
 
-    private void cleanUpTmpFiles(){
+    private void cleanUp(){
         cleanUp.forEach(File::delete);
+        ProgressUpdater.unregisterAllCallbacks(downloadId);
     }
 
     private List<File> downloadFormats(List<Format> formats) {
@@ -208,7 +218,6 @@ public class VideoDownloader {
         int total = 0;
         for(float p : progresses) total += p;
         int progress = total / progresses.length;
-        Log.d("AzTube", "PROGRESS " + progresses.length + " " + progress);
         return progress;
     }
 

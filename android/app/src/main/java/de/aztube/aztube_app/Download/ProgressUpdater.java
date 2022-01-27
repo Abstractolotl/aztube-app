@@ -1,9 +1,13 @@
-package de.aztube.aztube_app.Services.Download;
+package de.aztube.aztube_app.Download;
 
+import android.util.Log;
 import de.aztube.aztube_app.Async;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ProgressUpdater {
 
@@ -20,7 +24,7 @@ public class ProgressUpdater {
             this.videoId = videoId;
         }
 
-        private HashMap<String, Object> toHashMap() {
+        public HashMap<String, Object> toHashMap() {
             HashMap<String, Object> map = new HashMap<>();
 
             if(progress > 100){
@@ -43,21 +47,24 @@ public class ProgressUpdater {
     private final static HashMap<Integer, ArrayList<ProgressUpdateCallback>> callbackRegister = new HashMap<>();
     private final static HashMap<Integer, ProgressUpdate> latestUpdates = new HashMap<>();
 
+    public static List<Map<String, Object>> getActiveDownloads(){
+        return latestUpdates.values().stream().filter(update -> !update.done).map(ProgressUpdate::toHashMap).collect(Collectors.toList());
+    }
+
     public static void registerProgressUpdateCallback(int downloadId, ProgressUpdateCallback callback) {
         if(callback == null)
             return;
+
         new Async<Void>().runOnMain(() -> {
-            ArrayList<ProgressUpdateCallback> progressUpdateArrayList = callbackRegister.get(downloadId);
-
-            if (progressUpdateArrayList == null) {
-                progressUpdateArrayList = new ArrayList<>();
-                progressUpdateArrayList.add(callback);
-            }
-
-            callbackRegister.put(downloadId, progressUpdateArrayList);
+            ArrayList<ProgressUpdateCallback> progressUpdateArrayList = callbackRegister.computeIfAbsent(downloadId, k -> new ArrayList<>());
+            progressUpdateArrayList.add(callback);
             return null;
         });
+    }
 
+    public static void unregisterAllCallbacks(int downloadId) {
+        callbackRegister.remove(downloadId);
+        latestUpdates.remove(downloadId);
     }
 
     public static void publishUpdate(int downloadId, ProgressUpdate update) {
