@@ -38,10 +38,16 @@ public class VideoDownloader {
 
     private long videoDuration;
 
+
+    private float videoInfoProgresFactor = 0.05f;
     private float videoInfoProgres;
+    private float thumbnailProgressFactor = 0.05f;
     private float thumbnailProgress;
+    private float filesProgressFactor = 0.30f;
     private float filesProgress;
+    private float ffmpegProgressFactor = 0.55f;
     private float ffmpegProgress;
+    private float mediaStoreProgressFactor = 0.05f;
     private float mediaStoreProgress;
 
     private List<File> cleanUp;
@@ -84,73 +90,138 @@ public class VideoDownloader {
         cleanUp.addAll(downloadedFiles);
         cleanUp.add(thumbnail);
 
-        String outputFile = mergeFiles(downloadedFiles, thumbnail);
-        cleanUp();
+        String outputFile;
+        try {
+            outputFile = mergeFiles(downloadedFiles, thumbnail);
+        } finally {
+            cleanUp();
+        }
         updateProgress();
-
         return outputFile;
     }
 
     private void updateProgress(){
-        float totalProgress =
-                0.05f * videoInfoProgres +
-                        0.05f * thumbnailProgress +
-                        0.30f * filesProgress +
-                        0.55f * ffmpegProgress +
-                        0.05f * mediaStoreProgress;
+        float totalProgress = videoInfoProgresFactor * videoInfoProgres +
+                        thumbnailProgressFactor * thumbnailProgress +
+                        filesProgressFactor * filesProgress +
+                        ffmpegProgressFactor * ffmpegProgress +
+                        mediaStoreProgressFactor * mediaStoreProgress;
 
         ProgressUpdater.publishUpdate(downloadId, new ProgressUpdater.ProgressUpdate(false, (int) totalProgress, downloadId, videoId));
     }
 
     private String mergeFiles(List<File> files, File thumbnail) {
         if(quality.equals("audio")) {
-            if(files.size() > 1) throw new DownloadException("What the hell is going on?");
+            if(files.size() > 1) throw new DownloadException("What the hell is going on? Too many files");
+            return mergeAudio(files.get(0), thumbnail);
+        }
 
-            File audioFile = files.get(0);
-            String tmp = DOWNLOAD_OUTPUT_DIR + title + "_ffmpeg.m4a";
-            File tmpFile = new File(tmp);
+        if(files.size() > 2) throw new DownloadException("What the hell is going on? Too many files");
+        return mergeVideo(files);
+    }
 
-            AtomicBoolean done = new AtomicBoolean();
-            FFmpegKit.executeAsync("-i " + audioFile.getAbsolutePath() + " \"" + tmpFile.getAbsolutePath() + "\"",
-                    (session) -> done.set(true),
-                    null,
-                    (statistics) -> {
-                        ffmpegProgress = 100 * (statistics.getTime() / (float) videoDuration);
-                        updateProgress();
-                    });
+    private String mergeVideo(List<File> files){
+        if(files.size() == 1) {
+            filesProgressFactor += ffmpegProgressFactor;
+            ffmpegProgressFactor = 0;
 
+            File videoFile = files.get(0);
             try {
-                //TODO: https://josephmate.wordpress.com/2016/02/04/how-to-avoid-busy-waiting/
-                while(!done.get()) Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            ffmpegProgress = 100;
-            updateProgress();
-
-
-            cleanUp.add(tmpFile);
-
-            TagOptionSingleton.getInstance().setAndroid(true);
-            try {
-                writeMetaInfoToAudioFile(tmpFile, thumbnail);
-
-                String mediaStoreAdress = DownloadUtil.saveToMediaStore(context, tmpFile, title, author, downloadId).toString();
+                String mediaStoreAdress = DownloadUtil.saveVideoToMediaStore(context, videoFile, title, author).toString();
                 mediaStoreProgress = 100;
                 updateProgress();
-
                 return mediaStoreAdress;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+            } catch (IOException e) {
+                throw new DownloadException("Could now save to MediaStore", e);
             }
         }
 
-        return null;
+        String tmp = DOWNLOAD_OUTPUT_DIR + downloadId + "_ffmpeg.mp4";
+        File tmpFile = new File(tmp);
+        cleanUp.add(tmpFile);
+
+        int audioFileIndex;
+        int videoFileIndex;
+        if(DownloadUtil.getMIMEType(files.get(0)).toLowerCase().startsWith("audio")){
+            audioFileIndex = 0;
+            videoFileIndex = 1;
+        } else {
+            audioFileIndex = 1;
+            videoFileIndex = 0;
+        }
+
+        AtomicBoolean done = new AtomicBoolean();
+        String command = "-i \"" + files.get(audioFileIndex).getAbsolutePath() + "\" -i \"" + files.get(videoFileIndex).getAbsolutePath() + "\" -qscale:v 1 \"" + tmpFile.getAbsolutePath() + "\"";
+        Log.d("AzTube", "FFMPEG COMMAND: " + command);
+        FFmpegKit.executeAsync(command,
+                (session) -> done.set(true),
+                null,
+                (statistics) -> {
+                    ffmpegProgress = 100 * (statistics.getTime() / (float) videoDuration);
+                    updateProgress();
+                });
+
+        try {
+            //TODO: https://josephmate.wordpress.com/2016/02/04/how-to-avoid-busy-waiting/
+            while(!done.get()) Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ffmpegProgress = 100;
+        updateProgress();
+
+        try {
+            String mediaStoreAdress = DownloadUtil.saveVideoToMediaStore(context, tmpFile, title, author).toString();
+            mediaStoreProgress = 100;
+            updateProgress();
+            return mediaStoreAdress;
+        } catch (IOException e) {
+            throw new DownloadException("Could now save to MediaStore", e);
+        }
+    }
+
+    private String mergeAudio(File audioFile, File thumbnail){
+
+        String tmp = DOWNLOAD_OUTPUT_DIR + downloadId + "_ffmpeg.m4a";
+        File tmpFile = new File(tmp);
+        cleanUp.add(tmpFile);
+
+        AtomicBoolean done = new AtomicBoolean();
+        FFmpegKit.executeAsync("-i \"" + audioFile.getAbsolutePath() + "\" \"" + tmpFile.getAbsolutePath() + "\"",
+                (session) -> done.set(true),
+                null,
+                (statistics) -> {
+                    ffmpegProgress = 100 * (statistics.getTime() / (float) videoDuration);
+                    updateProgress();
+                });
+
+        try {
+            //TODO: https://josephmate.wordpress.com/2016/02/04/how-to-avoid-busy-waiting/
+            while(!done.get()) Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ffmpegProgress = 100;
+        updateProgress();
+
+
+        try {
+            writeMetaInfoToAudioFile(tmpFile, thumbnail);
+
+            String mediaStoreAdress = DownloadUtil.saveAudioToMediaStore(context, tmpFile, title, author).toString();
+            mediaStoreProgress = 100;
+            updateProgress();
+
+            return mediaStoreAdress;
+        } catch (Exception e) {
+            throw new DownloadException("Could now save to MediaStore or write MetaInfo", e);
+        }
     }
 
     private void writeMetaInfoToAudioFile(File file, File thumbnail) throws Exception {
+        TagOptionSingleton.getInstance().setAndroid(true);
         AudioFile f = AudioFileIO.read(file);
         Tag tag = f.getTag();
         tag.setField(FieldKey.TITLE, title);
@@ -215,10 +286,10 @@ public class VideoDownloader {
 
     private static float getTotalProgress(float[] progresses) {
         if(progresses.length == 1) return progresses[0];
-        int total = 0;
-        for(float p : progresses) total += p;
-        int progress = total / progresses.length;
-        return progress;
+        float minProg = 100;
+        for(float p : progresses) if(p < minProg) minProg = p;
+        //int progress = total / progresses.length;
+        return minProg;
     }
 
 }

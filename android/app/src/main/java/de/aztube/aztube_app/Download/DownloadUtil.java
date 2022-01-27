@@ -54,7 +54,17 @@ public class DownloadUtil {
         fileOutputStream.close();
     }
 
-    public static Uri saveToMediaStore(Context context, File toSave, String title, String author, int downloadId) throws IOException {
+    private static Uri saveToMediaStore(Context context, Uri collection, ContentValues contentValues, File toSave) throws IOException {
+        Uri uriSaved =  context.getContentResolver().insert(collection, contentValues);
+
+        writeToFileDescriptor(context, toSave, uriSaved);
+
+        contentValues.put("is_pending", 0);
+        context.getContentResolver().update(uriSaved, contentValues, null, null);
+        return uriSaved;
+    }
+
+    public static Uri saveAudioToMediaStore(Context context, File toSave, String title, String author) throws IOException {
         String fileExtension = toSave.getName().substring(toSave.getName().lastIndexOf("."));
 
         ContentValues contentValues = new ContentValues();
@@ -63,23 +73,33 @@ public class DownloadUtil {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
             contentValues.put(MediaStore.Audio.Media.ALBUM_ARTIST, author);
         contentValues.put(MediaStore.Audio.Media.DISPLAY_NAME, title + fileExtension);
-        contentValues.put(MediaStore.Audio.Media.MIME_TYPE, getMIMEType(toSave.getName()));
+        contentValues.put(MediaStore.Audio.Media.MIME_TYPE, getMIMEType(toSave));
         contentValues.put(MediaStore.Audio.Media.RELATIVE_PATH, "Music");
         contentValues.put(MediaStore.Audio.Media.IS_PENDING, 1);
 
         Uri collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-        Uri uriSaved =  context.getContentResolver().insert(collection, contentValues);
-
-        writeToFileDescriptor(context, toSave, uriSaved);
-
-        contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0);
-        context.getContentResolver().update(uriSaved, contentValues, null, null);
-        return uriSaved;
+        return saveToMediaStore(context, collection, contentValues, toSave);
     }
 
-    private static String getMIMEType(String url) {
+    public static Uri saveVideoToMediaStore(Context context, File toSave, String title, String author) throws IOException {
+        String fileExtension = toSave.getName().substring(toSave.getName().lastIndexOf("."));
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.Video.Media.TITLE, title);
+        contentValues.put(MediaStore.Video.Media.ARTIST, author);
+        contentValues.put(MediaStore.Video.Media.DISPLAY_NAME, title + fileExtension);
+        contentValues.put(MediaStore.Video.Media.MIME_TYPE, getMIMEType(toSave));
+        contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies");
+        contentValues.put(MediaStore.Video.Media.IS_PENDING, 1);
+
+        Uri collection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        return saveToMediaStore(context, collection, contentValues, toSave);
+    }
+
+
+    public static String getMIMEType(File file) {
         String mType = null;
-        String mExtension = MimeTypeMap.getFileExtensionFromUrl(url);
+        String mExtension = MimeTypeMap.getFileExtensionFromUrl(file.getName());
         if (mExtension != null) {
             mType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(mExtension);
         }

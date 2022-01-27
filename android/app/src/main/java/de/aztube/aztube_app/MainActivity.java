@@ -63,6 +63,7 @@ public class MainActivity extends FlutterActivity {
                                 String title = call.argument("title");
                                 String author = call.argument("author");
 
+                                if(downloadId == null) return null;
                                 return new VideoDownloader(this, videoId, downloadId, title, author, quality)
                                         .startDownload((update -> {
                                             channel.invokeMethod("progress", update.toHashMap());
@@ -103,6 +104,7 @@ public class MainActivity extends FlutterActivity {
                             break;
                         case "registerDownloadProgressUpdate":
                             Integer downloadId = call.argument("downloadId");
+                            if(downloadId == null) return;
                             ProgressUpdater.registerProgressUpdateCallback(downloadId, (download) -> channel.invokeMethod("progress", download.toHashMap()));
                             break;
                     }
