@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,11 +11,12 @@
 		1695E9B852E1182E6CC771E4 /* libPods-Runner.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AB6F5A3D9DD3DBEB425C4A1 /* libPods-Runner.a */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
-		C23382F12794AC1B00C5EB9C /* YoutubeDL in Frameworks */ = {isa = PBXBuildFile; productRef = C23382F02794AC1B00C5EB9C /* YoutubeDL */; };
 		C23EC30F279386EC001D24A1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23EC30E279386EC001D24A1 /* AppDelegate.swift */; };
 		C23EC311279389A9001D24A1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C23EC310279389A9001D24A1 /* Main.storyboard */; };
 		C23EC313279389F5001D24A1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C23EC312279389F5001D24A1 /* LaunchScreen.storyboard */; };
 		C23EC31727939391001D24A1 /* Util.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23EC31627939391001D24A1 /* Util.swift */; };
+		C2F6992927A2B918003F343A /* Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F6992827A2B918003F343A /* Requests.swift */; };
+		C2F6992B27A2B957003F343A /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F6992A27A2B957003F343A /* Error.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -50,6 +51,8 @@
 		C23EC310279389A9001D24A1 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		C23EC312279389F5001D24A1 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C23EC31627939391001D24A1 /* Util.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Util.swift; sourceTree = "<group>"; };
+		C2F6992827A2B918003F343A /* Requests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Requests.swift; sourceTree = "<group>"; };
+		C2F6992A27A2B957003F343A /* Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +60,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C23382F12794AC1B00C5EB9C /* YoutubeDL in Frameworks */,
 				1695E9B852E1182E6CC771E4 /* libPods-Runner.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -125,6 +127,8 @@
 				C23EC310279389A9001D24A1 /* Main.storyboard */,
 				C23EC312279389F5001D24A1 /* LaunchScreen.storyboard */,
 				C23EC31627939391001D24A1 /* Util.swift */,
+				C2F6992827A2B918003F343A /* Requests.swift */,
+				C2F6992A27A2B957003F343A /* Error.swift */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -151,7 +155,6 @@
 			);
 			name = Runner;
 			packageProductDependencies = (
-				C23382F02794AC1B00C5EB9C /* YoutubeDL */,
 			);
 			productName = Runner;
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
@@ -182,7 +185,6 @@
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			packageReferences = (
-				C23382EF2794AC1B00C5EB9C /* XCRemoteSwiftPackageReference "YoutubeDL-iOS" */,
 			);
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
 			projectDirPath = "";
@@ -283,7 +285,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				C23EC30F279386EC001D24A1 /* AppDelegate.swift in Sources */,
+				C2F6992927A2B918003F343A /* Requests.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				C2F6992B27A2B957003F343A /* Error.swift in Sources */,
 				C23EC31727939391001D24A1 /* Util.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -347,7 +351,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = RCK97TRSW5;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -475,7 +479,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = RCK97TRSW5;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -499,7 +503,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = RCK97TRSW5;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -540,25 +544,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		C23382EF2794AC1B00C5EB9C /* XCRemoteSwiftPackageReference "YoutubeDL-iOS" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/lucaspape/YoutubeDL-iOS.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		C23382F02794AC1B00C5EB9C /* YoutubeDL */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C23382EF2794AC1B00C5EB9C /* XCRemoteSwiftPackageReference "YoutubeDL-iOS" */;
-			productName = YoutubeDL;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 97C146E61CF9000F007C117D /* Project object */;
 }

@@ -7,8 +7,6 @@
 
 import UIKit
 import Flutter
-import YoutubeDL
-import PythonSupport
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate, UIDocumentInteractionControllerDelegate {
@@ -16,10 +14,6 @@ import PythonSupport
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        
-        PythonSupport.initialize()
-        
-        _ = Downloader.shared
         
         let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
         let channel = FlutterMethodChannel(name: "de.aztube.aztube_app/youtube",
@@ -33,7 +27,7 @@ import PythonSupport
                    let quality = args["quality"] as? String,
                    let downloadId = args["downloadId"] as? Int {
                     
-                    Util.downloadVideo(videoId: videoId, downloadId: downloadId, quality: quality, progressUpdate: { download in
+                    Downloader.downloadVideo(videoId: videoId, downloadId: downloadId, quality: quality, progressUpdate: { download in
                         channel.invokeMethod("progress", arguments: download.toMap())
                     }) { uri in
                         if(uri != nil){
@@ -51,18 +45,18 @@ import PythonSupport
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let videoId = args["videoId"] as? String {
                     
-                    result(Util.getThumbnailUrl(videoId:videoId))
+                    result(Downloader.getThumbnailUrl(videoId:videoId))
                 } else {
                     result(FlutterError.init(code: "bad args", message: nil, details: nil))
                 }
                 break
             case "getActiveDownloads":
-                result(Util.getActiveDownloads())
+                result(Downloader.getActiveDownloads())
                 break
             case "openDownload":
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let uri = args["uri"] as? String {
-                    Util.openDownload(uri: uri, delegate: self)
+                    Downloader.openDownload(uri: uri, delegate: self)
                     result(true)
                 }  else {
                     result(FlutterError.init(code: "bad args", message: nil, details: nil))
@@ -71,7 +65,7 @@ import PythonSupport
             case "deleteDownload":
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let uri = args["uri"] as? String {
-                    result(Util.deleteDownload(uri: uri))
+                    result(Downloader.deleteDownload(uri: uri))
                 }  else {
                     result(FlutterError.init(code: "bad args", message: nil, details: nil))
                 }
@@ -79,7 +73,7 @@ import PythonSupport
             case "downloadExists":
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let uri = args["uri"] as? String {
-                    result(Util.downloadExists(uri: uri))
+                    result(Downloader.downloadExists(uri: uri))
                 }  else {
                     result(FlutterError.init(code: "bad args", message: nil, details: nil))
                 }
@@ -87,7 +81,7 @@ import PythonSupport
             case "registerDownloadProgressUpdate":
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let downloadId = args["downloadId"] as? Int {
-                    result(Util.registerProgressUpdate(downloadId: downloadId){ download in
+                    result(Downloader.registerProgressUpdate(downloadId: downloadId){ download in
                         channel.invokeMethod("progress", arguments: download.toMap())
                     })
                 }  else {
