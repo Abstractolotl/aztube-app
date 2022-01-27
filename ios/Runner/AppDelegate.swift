@@ -10,6 +10,8 @@ import Flutter
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate, UIDocumentInteractionControllerDelegate {
+    let downloader = Downloader()
+    
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -27,7 +29,7 @@ import Flutter
                    let quality = args["quality"] as? String,
                    let downloadId = args["downloadId"] as? Int {
                     
-                    Downloader.downloadVideo(videoId: videoId, downloadId: downloadId, quality: quality, progressUpdate: { download in
+                    self.downloader.downloadVideo(videoId: videoId, downloadId: downloadId, quality: quality, progressUpdate: { download in
                         channel.invokeMethod("progress", arguments: download.toMap())
                     }) { uri in
                         if(uri != nil){
@@ -45,18 +47,18 @@ import Flutter
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let videoId = args["videoId"] as? String {
                     
-                    result(Downloader.getThumbnailUrl(videoId:videoId))
+                    result(self.downloader.getThumbnailUrl(videoId:videoId))
                 } else {
                     result(FlutterError.init(code: "bad args", message: nil, details: nil))
                 }
                 break
             case "getActiveDownloads":
-                result(Downloader.getActiveDownloads())
+                result(self.downloader.getActiveDownloads())
                 break
             case "openDownload":
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let uri = args["uri"] as? String {
-                    Downloader.openDownload(uri: uri, delegate: self)
+                    self.downloader.openDownload(uri: uri, delegate: self)
                     result(true)
                 }  else {
                     result(FlutterError.init(code: "bad args", message: nil, details: nil))
@@ -65,7 +67,7 @@ import Flutter
             case "deleteDownload":
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let uri = args["uri"] as? String {
-                    result(Downloader.deleteDownload(uri: uri))
+                    result(self.downloader.deleteDownload(uri: uri))
                 }  else {
                     result(FlutterError.init(code: "bad args", message: nil, details: nil))
                 }
@@ -73,7 +75,7 @@ import Flutter
             case "downloadExists":
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let uri = args["uri"] as? String {
-                    result(Downloader.downloadExists(uri: uri))
+                    result(self.downloader.downloadExists(uri: uri))
                 }  else {
                     result(FlutterError.init(code: "bad args", message: nil, details: nil))
                 }
@@ -81,7 +83,7 @@ import Flutter
             case "registerDownloadProgressUpdate":
                 if let args = call.arguments as? Dictionary<String, Any>,
                    let downloadId = args["downloadId"] as? Int {
-                    result(Downloader.registerProgressUpdate(downloadId: downloadId){ download in
+                    result(self.downloader.registerProgressUpdate(downloadId: downloadId){ download in
                         channel.invokeMethod("progress", arguments: download.toMap())
                     })
                 }  else {
