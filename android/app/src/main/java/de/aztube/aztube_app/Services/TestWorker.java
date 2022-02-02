@@ -134,7 +134,6 @@ public class TestWorker extends Worker {
                 },
                 error -> {
                     Log.d("AzTube", error.toString(), error);
-                    Log.d("AzTube", "Crashed on Response: " + new String(error.networkResponse.data, StandardCharsets.UTF_8));
                     canceled = true;
                 }
         );

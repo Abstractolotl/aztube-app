@@ -96,18 +96,24 @@ public class VideoDownloader {
         } finally {
             cleanUp();
         }
-        updateProgress();
+
+        updateProgress(true);
         return outputFile;
     }
 
     private void updateProgress(){
+        updateProgress(false);
+    }
+
+    private void updateProgress(boolean done){
         float totalProgress = videoInfoProgresFactor * videoInfoProgres +
                         thumbnailProgressFactor * thumbnailProgress +
                         filesProgressFactor * filesProgress +
                         ffmpegProgressFactor * ffmpegProgress +
                         mediaStoreProgressFactor * mediaStoreProgress;
+        if(done || totalProgress > 100) totalProgress = 100;
 
-        ProgressUpdater.publishUpdate(downloadId, new ProgressUpdater.ProgressUpdate(false, (int) totalProgress, downloadId, videoId));
+        ProgressUpdater.publishUpdate(downloadId, new ProgressUpdater.ProgressUpdate(totalProgress >= 100, (int) totalProgress, downloadId, videoId));
     }
 
     private String mergeFiles(List<File> files, File thumbnail) {
