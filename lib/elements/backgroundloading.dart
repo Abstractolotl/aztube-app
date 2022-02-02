@@ -20,7 +20,9 @@ class BackgroundLoading{
         Map<String, dynamic> args = {
           "videoId": data.videoId,
           "quality": data.quality,
-          "downloadId": data.downloadId
+          "downloadId": data.downloadId,
+          "title": data.title,
+          "author": data.author
         };
 
         final dynamic result = await platform.invokeMethod("downloadVideo", args);

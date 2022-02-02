@@ -10,6 +10,9 @@ import androidx.annotation.Nullable;
 import java.util.Objects;
 import java.util.logging.Logger;
 
+import de.aztube.aztube_app.Download.DownloadUtil;
+import de.aztube.aztube_app.Download.ProgressUpdater;
+import de.aztube.aztube_app.Download.VideoDownloader;
 import de.aztube.aztube_app.Services.NotificationUtil;
 import de.aztube.aztube_app.Services.ServiceUtil;
 import io.flutter.embedding.android.FlutterActivity;
@@ -60,45 +63,49 @@ public class MainActivity extends FlutterActivity {
                                 String title = call.argument("title");
                                 String author = call.argument("author");
 
-                                return Downloader.downloadVideo(this, videoId, downloadId, quality, title, author, (download) -> channel.invokeMethod("progress", download.toHashMap()));
+                                if(downloadId == null) return null;
+                                return new VideoDownloader(this, videoId, downloadId, title, author, quality)
+                                        .startDownload((update -> {
+                                            channel.invokeMethod("progress", update.toHashMap());
+                                        }));
                             }, (uri) -> {
                                 if (uri != null) {
                                     result.success(uri);
-                                } else {
-                                    result.success(false);
+                                    return null;
                                 }
 
+                                result.success(false);
                                 return null;
                             });
                             break;
                         case "getThumbnailUrl":
-                            new Async<String>().run(() -> Downloader.getThumbnailUrl(call.argument("videoId")), (String data) -> {
+                            new Async<String>().run(() -> DownloadUtil.getThumbnailUrl(call.argument("videoId")), (String data) -> {
                                 if (data != null) {
                                     result.success(data);
-                                } else {
-                                    result.success(false);
+                                    return null;
                                 }
 
+                                result.success(false);
                                 return null;
                             });
                             break;
                         case "getActiveDownloads":
-                            result.success(Downloader.getActiveDownloads());
+                            result.success(ProgressUpdater.getActiveDownloads());
                             break;
                         case "openDownload":
-                            Downloader.openDownload(this, call.argument("uri"));
+                            DownloadUtil.openFile(this, call.argument("uri"));
                             result.success(true);
                             break;
                         case "deleteDownload":
-                            result.success(Downloader.deleteDownload(this, call.argument("uri")));
+                            result.success(DownloadUtil.deleteFile(this, call.argument("uri")));
                             break;
                         case "downloadExists":
-                            result.success(Downloader.downloadExists(this, call.argument("uri")));
+                            result.success(DownloadUtil.fileExists(this, call.argument("uri")));
                             break;
                         case "registerDownloadProgressUpdate":
                             Integer downloadId = call.argument("downloadId");
-
-                            Downloader.registerProgressUpdate(downloadId, (download) -> channel.invokeMethod("progress", download.toHashMap()));
+                            if(downloadId == null) return;
+                            ProgressUpdater.registerProgressUpdateCallback(downloadId, (download) -> channel.invokeMethod("progress", download.toHashMap()));
                             break;
                     }
                 });
