@@ -21,7 +21,6 @@ jobs:
       with:
             flutter-version: '2.10.4'
     - run: flutter pub get
-    - run: flutter test
     - run: flutter build apk
     - run: flutter build appbundle
     - uses: actions/upload-artifact@v3.1.0
