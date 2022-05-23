@@ -23,6 +23,16 @@ jobs:
     - run: flutter pub get
     - run: flutter build apk
     - run: flutter build appbundle
+    - uses: pozetroninc/github-action-get-latest-release@master
+      with:
+        repository: ${{ github.repository }}
     - uses: actions/upload-artifact@v3.1.0
       with:
         path: 'build/app/outputs/bundle/release/*'
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          build/app/outputs/bundle/release/app-release.abb
+          build/app/outputs/apk/release/app-release.apk
