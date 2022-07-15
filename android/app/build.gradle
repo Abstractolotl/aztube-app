@@ -35,7 +35,7 @@ android {
 
     defaultConfig {
         applicationId "de.aztube.aztube_app"
-        minSdkVersion 32
+        minSdkVersion 24
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
