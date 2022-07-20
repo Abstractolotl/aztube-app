@@ -60,10 +60,11 @@ public class TestWorker extends Worker {
             String fileLocation = new VideoDownloader(getApplicationContext(), req.getVideoId(), req.getDownloadId(), req.getTitle(), req.getAuthor(), req.getQuality())
                     .startDownload(download -> {
                         if(download.progress >= 100) {
-                            if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Download complete", req.getTitle(), notifId);
+                            if(notifId != -1)
+                                NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Download complete", req.getTitle(), notifId);
                         } else if (System.currentTimeMillis() - lastUpdate.get() > 1000) {
                             lastUpdate.set(System.currentTimeMillis());
-                            if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Downloading - " + download.progress + "%", req.getTitle(), notifId);
+                            if(notifId != -1) NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Downloading - Media", req.getTitle(), notifId, download.progress);
                         }
                     });
             url.set(fileLocation);
@@ -102,7 +103,7 @@ public class TestWorker extends Worker {
         }
 
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
-        Request<PollResponse> request = new GsonRequest<>(Request.Method.GET, "http://de2.lucaspape.de:4020/poll/" + settings.getDeviceToken(), PollResponse.class,
+        Request<PollResponse> request = new GsonRequest<>(Request.Method.GET, "http://aztube.lucaspape.de/poll/" + settings.getDeviceToken(), PollResponse.class,
                 response -> {
                     if (response.getDownloads() == null || response.getDownloads().size() <= 0) {
                         return;
@@ -121,7 +122,8 @@ public class TestWorker extends Worker {
                     if (settings.isSettingAutoDownload()) {
                         for(DownloadRequest req : response.getDownloads()) {
                             int notifId = -1;
-                            if(settings.isShowNotifications()) notifId = NotificationUtil.ShowSomething(getApplicationContext(), "Starting Download", req.getTitle());
+                            if(settings.isShowNotifications())
+                                notifId = NotificationUtil.ShowSomething(getApplicationContext(), "Starting Download", req.getTitle());
                             startDownload(req, notifId);
                         }
                     } else {

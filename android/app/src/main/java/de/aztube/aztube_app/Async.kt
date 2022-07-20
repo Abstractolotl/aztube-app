@@ -3,6 +3,7 @@ package de.aztube.aztube_app
 import kotlinx.coroutines.*
 
 class Async<T> {
+
     private val scope = CoroutineScope(Dispatchers.Main)
 
     fun run(background: (() -> T), finished: ((data: T) -> Void)){
