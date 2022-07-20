@@ -66,7 +66,7 @@ public class NotificationUtil {
     public static int ShowDownloadingNotification(Context context, String title, String content, int notifId){
         NotificationCompat.Builder builder = buildNotification(context, title, content);
 
-        builder.setProgress(0, 0, false)
+        builder.setProgress(0, 0, false);
         builder.setOnlyAlertOnce(true);
 
         return pushNotification(context, builder.build(), notifId);
@@ -76,9 +76,9 @@ public class NotificationUtil {
         NotificationCompat.Builder builder = buildNotification(context, title, content);
 
         if(progress == 100){
-            builder.setProgress(0, 0, false)
+            builder.setProgress(0, 0, false);
         }else{
-            builder.setProgress(100, progress, false)
+            builder.setProgress(100, progress, false);
         }
         builder.setOnlyAlertOnce(true);
 

@@ -21,6 +21,7 @@ import io.flutter.plugin.common.MethodChannel;
 import org.jetbrains.annotations.NotNull;
 
 public class MainActivity extends FlutterActivity {
+
     public static final String CHANNEL = "de.aztube.aztube_app/youtube";
     MethodChannel channel;
 
