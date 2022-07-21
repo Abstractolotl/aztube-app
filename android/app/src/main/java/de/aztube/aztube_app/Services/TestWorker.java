@@ -129,7 +129,8 @@ public class TestWorker extends Worker {
                     } else {
                         if(settings.isShowNotifications()) {
                             String text;
-                            if(cache.getQueue().size() > 1) text = "You have " + cache.getQueue().size() + " downloads available";
+                            if(cache.getQueue().size() > 1)
+                                text = "You have " + cache.getQueue().size() + " downloads available";
                             NotificationUtil.ShowSomething(getApplicationContext(), "New Download Requests", cache.getQueue().get(0).getTitle() + " is ready to download!");
                         }
                     }

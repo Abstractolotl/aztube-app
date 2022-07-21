@@ -38,7 +38,6 @@ public class MainActivity extends FlutterActivity {
         super.onCreate(savedInstanceState);
         NotificationUtil.CreateNotificationChannel(this);
 
-
         channel = new MethodChannel(Objects.requireNonNull(getFlutterEngine()).getDartExecutor().getBinaryMessenger(), CHANNEL);
     }
 
@@ -64,18 +63,9 @@ public class MainActivity extends FlutterActivity {
                                 String title = call.argument("title");
                                 String author = call.argument("author");
 
-                                Integer notifId = NotificationUtil.ShowSomething(getApplicationContext(), "Starting Download", title);
-
                                 if(downloadId == null) return null;
                                 return new VideoDownloader(this, videoId, downloadId, title, author, quality)
                                         .startDownload((update -> {
-                                            if(update.done) {
-                                                if(notifId != -1)
-                                                    NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Download complete", title, notifId);
-                                            } else {
-                                                if(notifId != -1)
-                                                    NotificationUtil.ShowDownloadingNotification(getApplicationContext(), "Downloading", title, notifId, update.progress);
-                                            }
                                             channel.invokeMethod("progress", update.toHashMap());
                                         }));
                             }, (uri) -> {
