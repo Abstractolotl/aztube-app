@@ -29,8 +29,9 @@ class AzTube extends StatelessWidget {
   ThemeData _darkTheme(){
     return ThemeData(
         useMaterial3: true,
-        brightness: Brightness.dark,
 
+        brightness: Brightness.dark,
+        primaryColor: Colors.lightBlue[600],
         fontFamily: 'OpenSans',
 
         textTheme: const TextTheme(
@@ -44,9 +45,8 @@ class AzTube extends StatelessWidget {
     return ThemeData(
         useMaterial3: true,
 
-        primarySwatch: Colors.blueGrey,
         brightness: Brightness.light,
-
+        primaryColor: Colors.lightBlue[600],
         fontFamily: 'OpenSans',
 
         textTheme: const TextTheme(
