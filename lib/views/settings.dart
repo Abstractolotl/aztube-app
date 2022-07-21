@@ -69,6 +69,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               color: (widget.settings.deviceHash.length >= 10)
                   ? Colors.red
                   : Colors.blueGrey,
+              disabled: ! (widget.settings.deviceHash.length >= 10),
               onPressed: () {
                 if (widget.settings.deviceHash.length >= 10) {
                   APIHelper.unregisterDevice(widget.settings.deviceHash);
