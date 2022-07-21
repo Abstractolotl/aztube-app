@@ -68,7 +68,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               child: const Text('Unlink'),
               color: (widget.settings.deviceHash.length >= 10)
                   ? Colors.red
-                  : Colors.grey,
+                  : Colors.blueGrey,
               onPressed: () {
                 if (widget.settings.deviceHash.length >= 10) {
                   APIHelper.unregisterDevice(widget.settings.deviceHash);
