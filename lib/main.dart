@@ -37,6 +37,7 @@ class AzTube extends StatelessWidget {
         textTheme: const TextTheme(
           headline1: TextStyle(fontSize: 17, color: Colors.white),
           bodyText1: TextStyle(fontSize: 10.0, color: Colors.white54),
+          button: TextStyle(fontSize: 12.0, color: Colors.white54)
         )
     );
   }
@@ -52,6 +53,7 @@ class AzTube extends StatelessWidget {
         textTheme: const TextTheme(
           headline1: TextStyle(fontSize: 17, color: Colors.black),
           bodyText1: TextStyle(fontSize: 10.0, color: Colors.black38),
+          button: TextStyle(fontSize: 12.0, color: Colors.black38)
         )
     );
   }
