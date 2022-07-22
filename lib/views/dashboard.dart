@@ -12,8 +12,10 @@ import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
 import 'package:aztube/views/linking.dart';
 import 'package:aztube/views/settings.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -22,10 +24,16 @@ class DashboardScreen extends StatefulWidget {
   State<StatefulWidget> createState() => DashboardScreenState();
 }
 
-class DashboardScreenState extends State<DashboardScreen> {
+class DashboardScreenState extends State<DashboardScreen> with TraceableClientMixin {
 
   static const timeout = 2;
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
+
+  @override
+  String get traceName => 'Loading Dashboard';
+
+  @override
+  String get traceTitle => 'Dashboard';
 
   Future<dynamic> nativeMethodCallHandler(MethodCall methodCall) async {
     switch (methodCall.method) {
@@ -212,6 +220,11 @@ class DashboardScreenState extends State<DashboardScreen> {
             if(currentSettings.backgroundLoading){
               BackgroundLoading(downloadCache, context, video, this)
                   .startBackground();
+              MatomoTracker.instance.trackEvent(
+                name: 'backgroundDownload',
+                action: 'download',
+                eventValue: 'background',
+              );
             }
           }
           FileManager().saveDownloads(downloadCache);

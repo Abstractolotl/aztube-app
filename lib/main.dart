@@ -6,6 +6,7 @@ import 'package:aztube/views/linking.dart';
 import 'package:aztube/views/loading.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 
 List<CameraDescription> cameras = [];
 
@@ -15,6 +16,11 @@ Future<void> main() async{
   IFileManager fileManager = FileManager();
 
   Future<Settings> settings = fileManager.getSettings();
+
+  await MatomoTracker.instance.initialize(
+    siteId: 5,
+    url: 'https://analytics.ancozockt.de/matomo.php',
+  );
 
   runApp(AzTube(settings: settings, cameras: cameras));
 }
@@ -58,6 +64,7 @@ class AzTube extends StatelessWidget {
 
         buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary)
     );
+
   }
 
   @override

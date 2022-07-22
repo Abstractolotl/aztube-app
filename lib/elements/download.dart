@@ -3,8 +3,10 @@ import 'package:aztube/files/downloadsmodel.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/views/dashboard.dart';
 import 'package:aztube/views/downloadoption.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 
 class Download extends StatefulWidget {
   const Download(
@@ -139,6 +141,11 @@ class DownloadState extends State<Download> {
 
   void startDownload() {
     if (!downloading && !widget.video.downloaded) {
+      MatomoTracker.instance.trackEvent(
+        name: 'startDownload',
+        action: 'download',
+        eventValue: 'foreground',
+      );
       setState(() {
         downloading = true;
       });

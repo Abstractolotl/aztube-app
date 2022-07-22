@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 
 
 class LinkingScreen extends StatefulWidget {
@@ -24,12 +25,18 @@ class LinkingScreen extends StatefulWidget {
 
 }
 
-class LinkingScreenState extends State<LinkingScreen> {
+class LinkingScreenState extends State<LinkingScreen> with TraceableClientMixin {
 
   bool registering = false;
   IFileManager fileManager = FileManager();
 
   Barcode? result;
+
+  @override
+  String get traceName => 'Started Linking';
+
+  @override
+  String get traceTitle => 'Link Browser';
 
 
   @override
