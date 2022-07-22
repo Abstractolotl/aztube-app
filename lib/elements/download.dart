@@ -146,11 +146,6 @@ class DownloadState extends State<Download> {
         action: 'click',
         eventCategory: 'Download',
       );
-      MatomoTracker.instance.trackEvent(
-        name: 'startDownload',
-        action: 'download',
-        eventValue: 'foreground',
-      );
       setState(() {
         downloading = true;
       });
