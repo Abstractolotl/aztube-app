@@ -120,7 +120,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                               SettingsScreen(settings: currentSettings)))
                   .then(reload);
             },
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.settings, color: Theme.of(context).primaryIconTheme.color),
             tooltip: 'Open Settings')
       ]),
       body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -164,7 +164,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                               SettingsScreen(settings: currentSettings)))
                   .then(reload);
             },
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.settings, color: Theme.of(context).primaryIconTheme.color),
             tooltip: 'Open Settings')
       ]),
       body: dashBody,
