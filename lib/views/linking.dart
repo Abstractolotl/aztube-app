@@ -33,11 +33,11 @@ class LinkingScreenState extends State<LinkingScreen> {
 
   @override
   void reassemble() {
-    super.reassemble();
     if (Platform.isAndroid) {
       controller!.pauseCamera();
     }
     controller!.resumeCamera();
+    super.reassemble();
   }
 
   @override
