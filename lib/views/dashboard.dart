@@ -69,6 +69,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
   @override
   void initState() {
     platform.setMethodCallHandler(nativeMethodCallHandler);
+    MatomoTracker.instance.setOptOut(optout: currentSettings.anonymousTracking);
     super.initState();
     reloadCache();
   }
