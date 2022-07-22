@@ -75,7 +75,7 @@ class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixi
                 fillColor: MaterialStateProperty.resolveWith(getColor),
                 value: widget.settings.backgroundLoading,
                 onChanged: (value) {
-                  widget.settings.anounymousTracking = value!;
+                  widget.settings.anonymousTracking = value!;
                   FileManager().saveSettings(widget.settings);
                   setState(() {});
                 },
