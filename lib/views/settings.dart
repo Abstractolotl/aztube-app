@@ -5,6 +5,7 @@ import 'package:aztube/files/settingsmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key, required this.settings}) : super(key: key);
@@ -15,9 +16,15 @@ class SettingsScreen extends StatefulWidget {
   State<StatefulWidget> createState() => SettingsScreenState();
 }
 
-class SettingsScreenState extends State<SettingsScreen> {
+class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixin {
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
   Key key = UniqueKey();
+
+  @override
+  String get traceName => 'Created HomePage';
+
+  @override
+  String get traceTitle => 'Settings';
 
   Color getColor(Set<MaterialState> states) {
     const Set<MaterialState> interactiveStates = <MaterialState>{
@@ -56,6 +63,19 @@ class SettingsScreenState extends State<SettingsScreen> {
                 value: widget.settings.backgroundLoading,
                 onChanged: (value) {
                   widget.settings.backgroundLoading = value!;
+                  FileManager().saveSettings(widget.settings);
+                  setState(() {});
+                },
+              )),
+          const Divider(),
+          ListTile(
+              title: const Text('Anounymous tracking'),
+              trailing: Checkbox(
+                checkColor: Colors.white,
+                fillColor: MaterialStateProperty.resolveWith(getColor),
+                value: widget.settings.backgroundLoading,
+                onChanged: (value) {
+                  widget.settings.anonymousTracking = value!;
                   FileManager().saveSettings(widget.settings);
                   setState(() {});
                 },

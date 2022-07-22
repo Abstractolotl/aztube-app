@@ -4,6 +4,7 @@ class Settings {
   String fileLocation = '';
   bool notifications = true;
   bool backgroundLoading = false;
+  bool anonymousTracking = true;
 
   Settings();
 
@@ -11,13 +12,15 @@ class Settings {
       : deviceHash = json['device'],
         fileLocation = json['fileLocation'],
         backgroundLoading = json['background'] ?? false,
-        notifications = json['notifications'] ?? true;
+        notifications = json['notifications'] ?? true,
+        anonymousTracking = json['tracking'] ?? true;
 
   Map<String, dynamic> toJson() => {
     'device': deviceHash,
     'fileLocation': fileLocation,
     'background': backgroundLoading,
     'notifications': notifications,
+    'anonymousTracking': anonymousTracking
   };
 
 }

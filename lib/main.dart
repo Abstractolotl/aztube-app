@@ -6,6 +6,7 @@ import 'package:aztube/views/linking.dart';
 import 'package:aztube/views/loading.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 
 List<CameraDescription> cameras = [];
 
@@ -15,6 +16,11 @@ Future<void> main() async{
   IFileManager fileManager = FileManager();
 
   Future<Settings> settings = fileManager.getSettings();
+
+  await MatomoTracker.instance.initialize(
+    siteId: 5,
+    url: 'https://analytics.ancozockt.de/matomo.php',
+  );
 
   runApp(AzTube(settings: settings, cameras: cameras));
 }
@@ -36,9 +42,10 @@ class AzTube extends StatelessWidget {
 
         textTheme: const TextTheme(
           headline1: TextStyle(fontSize: 17, color: Colors.white),
-          bodyText1: TextStyle(fontSize: 10.0, color: Colors.white54),
-          button: TextStyle(fontSize: 12.0, color: Colors.white54)
-        )
+          bodyText1: TextStyle(fontSize: 10.0, color: Colors.white54)
+        ),
+
+        buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary)
     );
   }
 
@@ -52,10 +59,12 @@ class AzTube extends StatelessWidget {
 
         textTheme: const TextTheme(
           headline1: TextStyle(fontSize: 17, color: Colors.black),
-          bodyText1: TextStyle(fontSize: 10.0, color: Colors.black38),
-          button: TextStyle(fontSize: 12.0, color: Colors.black38)
-        )
+          bodyText1: TextStyle(fontSize: 10.0, color: Colors.black38)
+        ),
+
+        buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary)
     );
+
   }
 
   @override
