@@ -50,8 +50,8 @@ class LinkingScreenState extends State<LinkingScreen> {
           )
       );
     }
-    if((result?.code.toString() ?? '0' ).length >= 10) {
-      var browserCode = result?.code.toString() ?? '0';
+    if((result?.rawValue ?? '0').length >= 10) {
+      var browserCode = (result?.rawValue ?? '0');
       registerDevice(browserCode);
       registering = true;
       return Scaffold(
@@ -73,7 +73,7 @@ class LinkingScreenState extends State<LinkingScreen> {
           onDetect: (barcode, args) {
             if (barcode.rawValue != null) {
               setState(() {
-                result = scanData;
+                result = barcode;
               });
             }
           }),
