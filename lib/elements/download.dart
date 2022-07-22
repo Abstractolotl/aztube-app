@@ -142,6 +142,11 @@ class DownloadState extends State<Download> {
   void startDownload() {
     if (!downloading && !widget.video.downloaded) {
       MatomoTracker.instance.trackEvent(
+        eventName: 'startDownload',
+        action: 'click',
+        eventCategory: 'Download',
+      );
+      MatomoTracker.instance.trackEvent(
         name: 'startDownload',
         action: 'download',
         eventValue: 'foreground',

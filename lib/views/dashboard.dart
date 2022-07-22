@@ -218,13 +218,13 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
             video.thumbnail = thumbnail;
             downloadCache.queue.add(video);
             if(currentSettings.backgroundLoading){
+              MatomoTracker.instance.trackEvent(
+                eventName: 'backgroundDownload',
+                action: 'poll',
+                eventCategory: 'Download',
+              );
               BackgroundLoading(downloadCache, context, video, this)
                   .startBackground();
-              MatomoTracker.instance.trackEvent(
-                name: 'backgroundDownload',
-                action: 'download',
-                eventValue: 'background',
-              );
             }
           }
           FileManager().saveDownloads(downloadCache);

@@ -92,6 +92,11 @@ class LinkingScreenState extends State<LinkingScreen> with TraceableClientMixin 
     var response = await APIHelper.registerDevice(browserCode, deviceName);
     if(response.statusCode == 200){
       if(jsonDecode(response.body)['success']){
+          MatomoTracker.instance.trackEvent(
+            eventName: 'deviceLinked',
+            action: 'scan',
+            eventCategory: 'Linking',
+          );
           var deviceToken = jsonDecode(response.body)['deviceToken'];
           if(deviceToken != null){
             widget.settings.deviceHash = deviceToken;
