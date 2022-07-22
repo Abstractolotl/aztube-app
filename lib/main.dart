@@ -76,8 +76,10 @@ class AzTube extends StatelessWidget {
       home: FutureBuilder(future: settings,
         builder: (context, snapshot) {
           if(snapshot.hasData){
+            MatomoTracker.instance.setOptOut(optout: settings.anounymousTracking);
             return const DashboardScreen();
           }else if(snapshot.hasError){
+            MatomoTracker.instance.setOptOut(optout: settings.anounymousTracking);
             return const DashboardScreen();
           }
           return const LoadingScreen();

@@ -68,6 +68,19 @@ class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixi
                 },
               )),
           const Divider(),
+          ListTile(
+              title: const Text('Anounymous tracking'),
+              trailing: Checkbox(
+                checkColor: Colors.white,
+                fillColor: MaterialStateProperty.resolveWith(getColor),
+                value: widget.settings.backgroundLoading,
+                onChanged: (value) {
+                  widget.settings.anounymousTracking = value!;
+                  FileManager().saveSettings(widget.settings);
+                  setState(() {});
+                },
+              )),
+          const Divider(),
           Container(
             padding:
                 const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
