@@ -69,13 +69,14 @@ class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixi
               )),
           const Divider(),
           ListTile(
-              title: const Text('Anounymous tracking'),
+              title: const Text('Anonymous tracking'),
               trailing: Checkbox(
                 checkColor: Colors.white,
                 fillColor: MaterialStateProperty.resolveWith(getColor),
-                value: widget.settings.backgroundLoading,
+                value: widget.settings.anonymousTracking,
                 onChanged: (value) {
                   widget.settings.anonymousTracking = value!;
+                  MatomoTracker.instance.setOptOut(optout: !widget.settings.anonymousTracking);
                   FileManager().saveSettings(widget.settings);
                   setState(() {});
                 },
