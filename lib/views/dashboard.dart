@@ -144,6 +144,13 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
   }
 
   Scaffold dashboardView(BuildContext context) {
+    Widget dashBody;
+
+    if(downloadCache.getAll().length <= 0) {
+        dashBody = const Center(child: Text("Start a Download from your Browser!"));
+    } else {
+        dashBody = downloads;
+    }
 
     return Scaffold(
       appBar: AppBar(title: AzTubeBar.title, actions: <Widget>[
@@ -160,7 +167,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
             icon: const Icon(Icons.settings, color: Colors.white),
             tooltip: 'Open Settings')
       ]),
-      body: downloads,
+      body: dashBody,
     );
   }
 
