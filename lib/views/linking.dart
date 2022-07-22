@@ -73,7 +73,7 @@ class LinkingScreenState extends State<LinkingScreen> {
           onDetect: (barcode, args) {
             if (barcode.rawValue != null) {
               setState(() {
-                result = scanData;
+                result = barcode;
               });
             }
           }),
