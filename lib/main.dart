@@ -2,13 +2,9 @@ import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/files/i_filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
 import 'package:aztube/views/dashboard.dart';
-import 'package:aztube/views/linking.dart';
 import 'package:aztube/views/loading.dart';
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
-
-List<CameraDescription> cameras = [];
 
 Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,15 +18,14 @@ Future<void> main() async{
     url: 'https://analytics.ancozockt.de/matomo.php',
   );
 
-  runApp(AzTube(settings: settings, cameras: cameras));
+  runApp(AzTube(settings: settings));
 }
 
 class AzTube extends StatelessWidget {
 
-  const AzTube({Key? key, required this.settings, required this.cameras}) : super(key: key);
+  const AzTube({Key? key, required this.settings}) : super(key: key);
 
   final Future<Settings> settings;
-  final List<CameraDescription> cameras;
 
   ThemeData _darkTheme(){
     return ThemeData(
@@ -45,7 +40,7 @@ class AzTube extends StatelessWidget {
           bodyText1: TextStyle(fontSize: 10.0, color: Colors.white54)
         ),
 
-        buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary)
+        buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary)
     );
   }
 
@@ -62,7 +57,7 @@ class AzTube extends StatelessWidget {
           bodyText1: TextStyle(fontSize: 10.0, color: Colors.black38)
         ),
 
-        buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary)
+        buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary)
     );
 
   }

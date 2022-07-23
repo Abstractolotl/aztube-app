@@ -148,7 +148,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
     bool lightTheme = Theme.of(context).brightness == Brightness.light;
     Widget dashBody;
 
-    if(downloadCache.getAll().length <= 0) {
+    if(downloadCache.getAll().isEmpty) {
         dashBody = const Center(child: Text("Start a Download from your Browser!"));
     } else {
         dashBody = downloads;
