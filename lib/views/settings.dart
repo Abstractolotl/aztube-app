@@ -76,8 +76,8 @@ class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixi
                 value: widget.settings.anonymousTracking,
                 onChanged: (value) {
                   widget.settings.anonymousTracking = value!;
-                  MatomoTracker.instance.setOptOut(optout: !widget.settings.anonymousTracking);
                   FileManager().saveSettings(widget.settings);
+                  MatomoTracker.instance.setOptOut(optout: widget.settings.anonymousTracking == false);
                   setState(() {});
                 },
               )),
