@@ -109,7 +109,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
   }
 
   Scaffold linkView(BuildContext context) {
-    Color contrastColor = Theme.of(context).primaryIconTheme.color;
+    Color? contrastColor = Theme.of(context).primaryIconTheme.color;
     return Scaffold(
       appBar: AppBar(title: AzTubeBar.title, actions: <Widget>[
         IconButton(

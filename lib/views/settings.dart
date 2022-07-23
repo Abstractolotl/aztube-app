@@ -37,7 +37,7 @@ class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixi
 
   @override
   Widget build(BuildContext context) {
-    Color contrastColor = Theme.of(context).primaryIconTheme.color;
+    Color? contrastColor = Theme.of(context).primaryIconTheme.color;
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Container(
