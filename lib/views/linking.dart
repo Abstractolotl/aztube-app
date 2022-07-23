@@ -68,6 +68,9 @@ class LinkingScreenState extends State<LinkingScreen> with TraceableClientMixin 
               children: const [
                 Center(
                     child: CircularProgressIndicator(color: Colors.green)
+                ),
+                Center(
+                  child: const Text('Validating Code')
                 )
               ]
           )

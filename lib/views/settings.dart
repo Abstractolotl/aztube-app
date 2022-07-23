@@ -37,6 +37,7 @@ class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixi
 
   @override
   Widget build(BuildContext context) {
+    Color contrastColor = Theme.of(context).primaryIconTheme.color;
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Container(
@@ -86,7 +87,7 @@ class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixi
             padding:
                 const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
             child: SimpleButton(
-              child: const Text('Unlink'),
+              child: const Text('Unlink', style: const TextStyle(color: contrastColor)),
               color: (widget.settings.deviceHash.length >= 10)
                   ? Colors.red
                   : Colors.blueGrey,
