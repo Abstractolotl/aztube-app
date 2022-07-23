@@ -3,7 +3,6 @@ import 'package:aztube/elements/simplebutton.dart';
 import 'package:aztube/files/filemanager.dart';
 import 'package:aztube/files/settingsmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
 
@@ -37,6 +36,7 @@ class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixi
 
   @override
   Widget build(BuildContext context) {
+    bool lightTheme = Theme.of(context).brightness == Brightness.light;
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Container(
@@ -86,7 +86,7 @@ class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixi
             padding:
                 const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
             child: SimpleButton(
-              child: const Text('Unlink', style: const TextStyle(color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white)),
+              child: Text('Unlink', style: TextStyle(color: (lightTheme ? Colors.black : Colors.white))),
               color: (widget.settings.deviceHash.length >= 10)
                   ? Colors.red
                   : Colors.blueGrey,

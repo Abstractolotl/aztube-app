@@ -109,6 +109,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
   }
 
   Scaffold linkView(BuildContext context) {
+    bool lightTheme = Theme.of(context).brightness == Brightness.light;
     return Scaffold(
       appBar: AppBar(title: AzTubeBar.title, actions: <Widget>[
         IconButton(
@@ -120,7 +121,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                               SettingsScreen(settings: currentSettings)))
                   .then(reload);
             },
-            icon: const Icon(Icons.settings, color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white),
+            icon: Icon(Icons.settings, color: (lightTheme ? Colors.black : Colors.white)),
             tooltip: 'Open Settings')
       ]),
       body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -131,7 +132,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                 child: Column(
                   children: [
                     SimpleButton(
-                      child: const Text('Link Browser', style: const TextStyle(color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white)),
+                      child: Text('Link Browser', style: TextStyle(color: (lightTheme ? Colors.black : Colors.white))),
                       color: Colors.green,
                       onPressed: () {
                         startLinking();
@@ -144,6 +145,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
   }
 
   Scaffold dashboardView(BuildContext context) {
+    bool lightTheme = Theme.of(context).brightness == Brightness.light;
     Widget dashBody;
 
     if(downloadCache.getAll().length <= 0) {
@@ -164,7 +166,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                               SettingsScreen(settings: currentSettings)))
                   .then(reload);
             },
-            icon: const Icon(Icons.settings, color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white),
+            icon: Icon(Icons.settings, color: (lightTheme ? Colors.black : Colors.white)),
             tooltip: 'Open Settings')
       ]),
       body: dashBody,
