@@ -86,7 +86,7 @@ class SettingsScreenState extends State<SettingsScreen> with TraceableClientMixi
             padding:
                 const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
             child: SimpleButton(
-              child: Text('Unlink', style: TextStyle(color: (lightTheme ? Colors.black : Colors.white))),
+              child: const Text('Unlink', style: TextStyle(color: Colors.white)),
               color: (widget.settings.deviceHash.length >= 10)
                   ? Colors.red
                   : Colors.blueGrey,

@@ -132,7 +132,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                 child: Column(
                   children: [
                     SimpleButton(
-                      child: Text('Link Browser', style: TextStyle(color: (lightTheme ? Colors.black : Colors.white))),
+                      child: const Text('Link Browser', style: TextStyle(color: Colors.white)),
                       color: Colors.green,
                       onPressed: () {
                         startLinking();
