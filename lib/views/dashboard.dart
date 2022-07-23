@@ -109,7 +109,6 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
   }
 
   Scaffold linkView(BuildContext context) {
-    Color? contrastColor = Theme.of(context).primaryIconTheme.color;
     return Scaffold(
       appBar: AppBar(title: AzTubeBar.title, actions: <Widget>[
         IconButton(
@@ -121,7 +120,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                               SettingsScreen(settings: currentSettings)))
                   .then(reload);
             },
-            icon: const Icon(Icons.settings, color: contrastColor),
+            icon: const Icon(Icons.settings, color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white),
             tooltip: 'Open Settings')
       ]),
       body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -132,7 +131,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                 child: Column(
                   children: [
                     SimpleButton(
-                      child: const Text('Link Browser', style: const TextStyle(color: contrastColor)),
+                      child: const Text('Link Browser', style: const TextStyle(color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white)),
                       color: Colors.green,
                       onPressed: () {
                         startLinking();
@@ -165,7 +164,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                               SettingsScreen(settings: currentSettings)))
                   .then(reload);
             },
-            icon: const Icon(Icons.settings, color: Theme.of(context).primaryIconTheme.color),
+            icon: const Icon(Icons.settings, color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white),
             tooltip: 'Open Settings')
       ]),
       body: dashBody,
