@@ -24,6 +24,7 @@ import static de.aztube.aztube_app.Services.ServiceUtil.*;
 public class TestWorker extends Worker {
 
     private boolean canceled;
+    private final String API_URL = "https://aztube.lucaspape.de";
 
     public TestWorker(@NonNull @NotNull Context context, @NonNull @NotNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -103,7 +104,7 @@ public class TestWorker extends Worker {
         }
 
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
-        Request<PollResponse> request = new GsonRequest<>(Request.Method.GET, "http://aztube.lucaspape.de/poll/" + settings.getDeviceToken(), PollResponse.class,
+        Request<PollResponse> request = new GsonRequest<>(Request.Method.GET, API_URL + "/poll/" + settings.getDeviceToken(), PollResponse.class,
                 response -> {
                     if (response.getDownloads() == null || response.getDownloads().size() <= 0) {
                         return;

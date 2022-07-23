@@ -25,7 +25,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class DashboardScreenState extends State<DashboardScreen> with TraceableClientMixin {
-
   static const timeout = 2;
   static const platform = MethodChannel("de.aztube.aztube_app/youtube");
 
@@ -69,7 +68,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
   @override
   void initState() {
     platform.setMethodCallHandler(nativeMethodCallHandler);
-    MatomoTracker.instance.setOptOut(optout: currentSettings.anonymousTracking);
+    MatomoTracker.instance.setOptOut(optout: !currentSettings.anonymousTracking);
     super.initState();
     reloadCache();
   }
@@ -89,54 +88,71 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
 
   @override
   Widget build(BuildContext context) {
-    if (loading) {
-      return Scaffold(
-          appBar: AppBar(
-            title: AzTubeBar.title,
-          ),
-          body: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Center(child: CircularProgressIndicator(color: Colors.green))
-              ]));
-    }
-
-    if (currentSettings.deviceHash.length < 10) {
-      return Scaffold(
-        appBar: AppBar(title: AzTubeBar.title, actions: <Widget>[
-          IconButton(
-              onPressed: () {
-                Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                SettingsScreen(settings: currentSettings)))
-                    .then(reload);
-              },
-              icon: const Icon(Icons.settings, color: Colors.white),
-              tooltip: 'Open Settings')
-        ]),
-        body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Center(
-              child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 5.0, horizontal: 5.0),
-                  child: Column(
-                    children: [
-                      SimpleButton(
-                        child: const Text('Link Browser'),
-                        color: Colors.green,
-                        onPressed: () {
-                          startLinking();
-                        },
-                      )
-                    ],
-                  )))
-        ]),
-      );
-    }
+    if (loading) return loadView();
+    if (currentSettings.deviceHash.length < 10) return linkView(context);
 
     initDownloads();
+
+    return dashboardView(context);
+  }
+  
+  Scaffold loadView() {
+    return Scaffold(
+        appBar: AppBar(
+          title: AzTubeBar.title,
+        ),
+        body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Center(child: CircularProgressIndicator(color: Colors.green))
+            ]));
+  }
+
+  Scaffold linkView(BuildContext context) {
+    bool lightTheme = Theme.of(context).brightness == Brightness.light;
+    return Scaffold(
+      appBar: AppBar(title: AzTubeBar.title, actions: <Widget>[
+        IconButton(
+            onPressed: () {
+              Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              SettingsScreen(settings: currentSettings)))
+                  .then(reload);
+            },
+            icon: Icon(Icons.settings, color: (lightTheme ? Colors.black : Colors.white)),
+            tooltip: 'Open Settings')
+      ]),
+      body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Center(
+            child: Container(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 5.0, horizontal: 5.0),
+                child: Column(
+                  children: [
+                    SimpleButton(
+                      child: Text('Link Browser', style: TextStyle(color: (lightTheme ? Colors.black : Colors.white))),
+                      color: Colors.green,
+                      onPressed: () {
+                        startLinking();
+                      },
+                    )
+                  ],
+                )))
+      ]),
+    );
+  }
+
+  Scaffold dashboardView(BuildContext context) {
+    bool lightTheme = Theme.of(context).brightness == Brightness.light;
+    Widget dashBody;
+
+    if(downloadCache.getAll().isEmpty) {
+        dashBody = const Center(child: Text("Start a Download from your Browser!"));
+    } else {
+        dashBody = downloads;
+    }
 
     return Scaffold(
       appBar: AppBar(title: AzTubeBar.title, actions: <Widget>[
@@ -150,10 +166,10 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                               SettingsScreen(settings: currentSettings)))
                   .then(reload);
             },
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: Icon(Icons.settings, color: (lightTheme ? Colors.black : Colors.white)),
             tooltip: 'Open Settings')
       ]),
-      body: downloads,
+      body: dashBody,
     );
   }
 
@@ -218,7 +234,7 @@ class DashboardScreenState extends State<DashboardScreen> with TraceableClientMi
                 .invokeMethod("getThumbnailUrl", {"videoId": video.videoId});
             video.thumbnail = thumbnail;
             downloadCache.queue.add(video);
-            if(currentSettings.backgroundLoading){
+            if (currentSettings.backgroundLoading) {
               MatomoTracker.instance.trackEvent(
                 eventName: 'backgroundDownload',
                 action: 'poll',
