@@ -20,7 +20,7 @@ public abstract class GenericStageProgressUpdater<T extends Enum<T>> {
     }
 
     public GenericStageProgressUpdater(HashMap<T, Double> weights) {
-        if(weights.size() != 0) throw new RuntimeException("Cannot create " + getClass() + " from empty weights.");
+        if(weights.size() == 0) throw new RuntimeException("Cannot create " + getClass() + " from empty weights.");
 
         Class<T> clazz = (Class<T>) weights.keySet().iterator().next().getClass();
         if(weights.size() != clazz.getEnumConstants().length) throw new RuntimeException("Need a weight for every value");
