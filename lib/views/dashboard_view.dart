@@ -1,7 +1,6 @@
 import 'package:aztube/aztube.dart';
 import 'package:aztube/data/download_info.dart';
 import 'package:aztube/components/download_item.dart';
-import 'package:aztube/main.dart';
 import 'package:aztube/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,17 +8,23 @@ import 'package:provider/provider.dart';
 class DashboardView extends StatelessWidget {
   const DashboardView({super.key});
 
-  void startDeviceLinking() {}
-
   @override
   Widget build(BuildContext context) {
     //ThemeData theme = Theme.of(context);
     return Consumer<AzTubeApp>(
       builder: (context, app, child) => Scaffold(
         appBar: appBar(context),
-        body: downloadList(app.downloads.values),
+        body: dashboardBody(context, app),
       ),
     );
+  }
+
+  Widget dashboardBody(BuildContext context, AzTubeApp app) {
+    if (!app.hasDeviceLinks()) {
+      return noDeviceLink(context);
+    }
+
+    return downloadList(app.downloads.values);
   }
 
   Widget downloadList(Iterable<DownloadInfo> downloads) {
@@ -33,15 +38,36 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  Widget noDeviceLink(ThemeData theme) {
+  Widget noDeviceLink(BuildContext context) {
     return Center(
-      child: Container(
-        padding: const EdgeInsets.all(10.0),
-        constraints: const BoxConstraints.expand(width: double.infinity, height: 75),
-        child: ElevatedButton(
-          onPressed: startDeviceLinking,
-          child: const Text('Link Browser'),
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text("There is currently no Device Link"),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 25),
+            child: Icon(
+              Icons.no_cell,
+              size: 100,
+              color: Colors.black54,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pushNamed('/link'),
+                child: const Text('Link Browser'),
+              ),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 25),
+            child: Text("Please refer to this page for support."),
+          )
+        ],
       ),
     );
   }

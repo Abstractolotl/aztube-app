@@ -25,6 +25,10 @@ class AzTubeApp with ChangeNotifier {
     }
   }
 
+  bool hasDeviceLinks() {
+    return deviceLinks.isNotEmpty;
+  }
+
   void _onProgress(String downloadId, double progress) {
     debugPrint("onProgress");
     var dwn = downloads[downloadId];
