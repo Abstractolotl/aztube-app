@@ -1,11 +1,13 @@
 package de.abstractolotl.aztube.download;
 
+import com.github.kiulian.downloader.downloader.YoutubeProgressCallback;
 import de.abstractolotl.aztube.AzTubePlatform;
 import de.abstractolotl.aztube.GenericStageProgressUpdater;
 
+import java.io.File;
 import java.util.HashMap;
 
-public class AzTubeProgressUpdater extends GenericStageProgressUpdater<AzTubeProgressUpdater.DownloadStages> {
+public class AzTubeProgressUpdater extends GenericStageProgressUpdater<AzTubeProgressUpdater.DownloadStages> implements YoutubeProgressCallback<File> {
 
     public enum DownloadStages {
         META_DATA,
@@ -24,6 +26,7 @@ public class AzTubeProgressUpdater extends GenericStageProgressUpdater<AzTubePro
 
     private final AzTubePlatform platform;
     private final String downloadId;
+    private boolean error;
 
     public AzTubeProgressUpdater(AzTubePlatform platform, String downloadId) {
         super(WEIGHTS);
@@ -31,9 +34,32 @@ public class AzTubeProgressUpdater extends GenericStageProgressUpdater<AzTubePro
         this.downloadId = downloadId;
     }
 
+    public void markError() {
+        error = true;
+        platform.sendProgressUpdate(downloadId, -1);
+    }
+
     @Override
     protected void performUpdate() {
-        platform.sendProgressUpdate(downloadId, calculateWeightedProgress());
+        if(error) return;
+        double progress = calculateWeightedProgress();
+        System.out.println("Sending progress: " + progress);
+        platform.sendProgressUpdate(downloadId, progress);
+    }
+
+    @Override
+    public void onDownloading(int progress) {
+        updateStage(DownloadStages.DOWNLOAD_FILES, progress);
+    }
+
+    @Override
+    public void onFinished(File data) {
+        updateStage(DownloadStages.DOWNLOAD_FILES, 100);
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        markError();
     }
 
 }

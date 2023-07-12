@@ -21,4 +21,9 @@ class DownloadInfo {
   bool isDownloading() {
     return progress > 0 && progress < 100;
   }
+
+  bool isError() {
+    return progress < 0;
+  }
+
 }

@@ -85,6 +85,10 @@ class DownloadItem extends StatelessWidget {
       return CircularProgressIndicator(value: info.progress / 100.0);
     }
 
+    if(info.isError()) {
+      return const Icon(Icons.error, color: Colors.red,);
+    }
+
     return IconButton(
       onPressed: () => startDownload(context),
       icon: const Icon(Icons.download),

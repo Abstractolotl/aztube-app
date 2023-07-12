@@ -26,7 +26,6 @@ class AzTubePlattform {
     };
 
     var result = await _platform.invokeMethod("downloadVideo", args);
-    if (!result) {}
 
     return result;
   }
