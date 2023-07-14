@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 
 class DeviceLinkItem extends StatelessWidget {
   final DeviceLinkInfo info;
+  final Function() onDelete;
 
-  const DeviceLinkItem({super.key, required this.info});
+  const DeviceLinkItem({super.key, required this.info, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,7 @@ class DeviceLinkItem extends StatelessWidget {
       trailing: IconButton(
         icon: const Icon(Icons.delete),
         color: Colors.red,
-        onPressed: () {},
+        onPressed: onDelete,
       ),
     );
   }

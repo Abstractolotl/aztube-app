@@ -29,6 +29,11 @@ class AzTubeApp with ChangeNotifier {
     return deviceLinks.isNotEmpty;
   }
 
+  void removeDeviceLink(DeviceLinkInfo info) {
+    deviceLinks.remove(info.deviceToken);
+    notifyListeners();
+  }
+
   void _onProgress(String downloadId, double progress) {
     debugPrint("onProgress");
     var dwn = downloads[downloadId];
@@ -39,6 +44,11 @@ class AzTubeApp with ChangeNotifier {
 
     dwn.progress = progress;
     debugPrint("Updated progess to $progress");
+    notifyListeners();
+  }
+
+  void addDeviceLinks(DeviceLinkInfo info) {
+    deviceLinks[info.deviceToken] = info;
     notifyListeners();
   }
 }

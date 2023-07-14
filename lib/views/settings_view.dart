@@ -21,7 +21,7 @@ class SettingsView extends StatelessWidget {
           children: [
             ...settingsSegment(theme),
             const Divider(),
-            ...deviceLinksSegment(theme, app.deviceLinks.values),
+            ...deviceLinksSegment(context, theme, app),
           ],
         ),
       ),
@@ -45,7 +45,8 @@ class SettingsView extends StatelessWidget {
     ];
   }
 
-  List<Widget> deviceLinksSegment(TextTheme theme, Iterable<DeviceLinkInfo> links) {
+  List<Widget> deviceLinksSegment(BuildContext context, TextTheme theme, AzTubeApp app) {
+    var it = app.deviceLinks.values.iterator;
     return [
       Padding(
         padding: const EdgeInsets.all(8.0),
@@ -53,19 +54,52 @@ class SettingsView extends StatelessWidget {
       ),
       ListView.builder(
           shrinkWrap: true,
-          itemCount: links.length,
+          itemCount: app.deviceLinks.length,
           itemBuilder: (context, index) {
-            return DeviceLinkItem(info: links.elementAt(index));
+            it.moveNext();
+            return DeviceLinkItem(
+              info: it.current,
+              onDelete: () {
+                unlinkDevice(context, it.current);
+              },
+            );
           }),
       Container(
         padding: const EdgeInsets.all(8),
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: () {},
+          onPressed: () => Navigator.of(context).pushNamed('/link'),
           child: const Text("Link Device"),
         ),
       ),
     ];
+  }
+
+  void unlinkDevice(BuildContext context, DeviceLinkInfo info) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Unlink Device"),
+        content: Text("Do you really want to unlink ${info.deviceName}?"),
+        actions: [
+          TextButton(
+              onPressed: () {
+                AzTubeApp app = Provider.of(context, listen: false);
+                app.removeDeviceLink(info);
+                Navigator.pop(context);
+              },
+              child: const Text("Unlink Device")),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "Cancel",
+                style: TextStyle(color: Colors.red),
+              )),
+        ],
+      ),
+    );
   }
 
   AppBar appBar() {

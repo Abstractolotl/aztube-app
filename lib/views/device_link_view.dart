@@ -35,9 +35,7 @@ class _DeviceLinkViewState extends State<DeviceLinkView> {
     //check is qr format valid: is UUID?
     //contact AzTube api, poll code or whatever
     //add Device Link to shiit
-    app?.deviceLinks[code] = DeviceLinkInfo(code, "Some Device");
-    app?.notifyListeners();
-    debugPrint("Can Pop? ${nav?.canPop()}");
+    app?.addDeviceLinks(DeviceLinkInfo(code, "Some Device"));
     nav?.pop();
   }
 
