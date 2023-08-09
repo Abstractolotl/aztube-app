@@ -1,3 +1,4 @@
+import 'package:aztube/api/aztube_api.dart';
 import 'package:aztube/aztube.dart';
 import 'package:aztube/data/download_info.dart';
 import 'package:aztube/components/download_item.dart';
@@ -19,6 +20,8 @@ class DashboardView extends StatelessWidget {
     );
   }
 
+  Future<void> onRefresh() async {}
+
   Widget dashboardBody(BuildContext context, AzTubeApp app) {
     if (!app.hasDeviceLinks()) {
       return noDeviceLink(context);
@@ -28,13 +31,16 @@ class DashboardView extends StatelessWidget {
   }
 
   Widget downloadList(Iterable<DownloadInfo> downloads) {
-    return ListView.builder(
-      itemCount: downloads.length,
-      itemBuilder: (context, index) {
-        return DownloadItem(
-          info: downloads.elementAt(index),
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView.builder(
+        itemCount: downloads.length,
+        itemBuilder: (context, index) {
+          return DownloadItem(
+            info: downloads.elementAt(index),
+          );
+        },
+      ),
     );
   }
 

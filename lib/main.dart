@@ -43,15 +43,15 @@ class AzTube extends StatelessWidget {
 
   AzTubeApp someTestData() {
     var app = AzTubeApp();
-    //app.deviceLinks["some-token"] = (DeviceLinkInfo("some-token", "The Device"));
-    app.downloads["dwn-id"] = (DownloadInfo(
-        video: VideoInfo(
-          "uA832zpafis",
-          "Let Me Let You Go",
-          "ONE OK ROCK",
-          VideoQuality.audio,
-        ),
-        id: "dwn-id"));
+    // app.deviceLinks["some-token"] = (DeviceLinkInfo("some-token", "The Device"));
+    // app.downloads["dwn-id"] = (DownloadInfo(
+    //     video: VideoInfo(
+    //       "uA832zpafis",
+    //       "Let Me Let You Go",
+    //       "ONE OK ROCK",
+    //       VideoQuality.audio,
+    //     ),
+    //     id: "dwn-id"));
     return app;
   }
 }
