@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:uuid/uuid.dart';
+import 'package:device_info/device_info.dart';
 
 class DeviceLinkView extends StatefulWidget {
   const DeviceLinkView({super.key});
@@ -22,6 +23,8 @@ class _DeviceLinkViewState extends State<DeviceLinkView> {
   ScaffoldMessengerState? messenger;
   NavigatorState? nav;
 
+  bool loading = false;
+
   void initController(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((event) {
@@ -34,15 +37,32 @@ class _DeviceLinkViewState extends State<DeviceLinkView> {
   void onQRScanned(String code) async {
     if (!Uuid.isValidUUID(fromString: code)) {
       messenger?.showSnackBar(const SnackBar(content: Text("Malformed QR Code")));
-
       return;
     }
+
+    setState(() {
+      loading = true;
+    });
+
     try {
-      String deviceToken = await registerDeviceLink(code, "My Device");
+      String deviceName;
+
+      try {
+        DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        deviceName = androidInfo.model;
+      } catch (e) {
+        deviceName = "My Device";
+      }
+
+      String deviceToken = await registerDeviceLink(code, deviceName);
       app?.addDeviceLinks(DeviceLinkInfo(deviceToken, "My Computer", DateTime.now()));
       nav?.pop();
     } catch (e) {
       messenger?.showSnackBar(SnackBar(content: Text(e.toString())));
+      setState(() {
+        loading = false;
+      });
     }
   }
 
@@ -93,6 +113,7 @@ class _DeviceLinkViewState extends State<DeviceLinkView> {
             onQRViewCreated: initController,
           ),
           Image.asset("assets/device_link_qr_overlay.png"),
+          if (loading) const Center(child: CircularProgressIndicator())
         ]),
       ),
     );

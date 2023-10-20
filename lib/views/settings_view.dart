@@ -19,7 +19,7 @@ class SettingsView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ...settingsSegment(theme),
+            ...settingsSegment(theme, app),
             const Divider(),
             ...deviceLinksSegment(context, theme, app),
           ],
@@ -28,11 +28,11 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  List<Widget> settingsSegment(TextTheme theme) {
+  List<Widget> settingsSegment(TextTheme theme, AzTubeApp app) {
     return [
       Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Text("Settings", style: theme.bodyLarge),
+        child: Text("Settings ${app.loadingError}", style: theme.bodyLarge),
       ),
       ListTile(
         title: const Text("Auto Download"),
@@ -41,6 +41,13 @@ class SettingsView extends StatelessWidget {
           onChanged: (value) {},
           value: false,
         ),
+      ),
+      Center(
+        child: ElevatedButton(
+            onPressed: () {
+              app.clearAllData();
+            },
+            child: const Text("Clear All Data")),
       )
     ];
   }
@@ -62,6 +69,9 @@ class SettingsView extends StatelessWidget {
               onDelete: () {
                 unlinkDevice(context, it.current);
               },
+              onEdit: () {
+                editLink(context, it.current);
+              },
             );
           }),
       Container(
@@ -73,6 +83,39 @@ class SettingsView extends StatelessWidget {
         ),
       ),
     ];
+  }
+
+  void editLink(BuildContext context, DeviceLinkInfo info) {
+    final TextEditingController _textFieldController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Rename Connected Device"),
+        content: TextField(
+          onChanged: (value) {},
+          controller: _textFieldController,
+          decoration: InputDecoration(hintText: info.deviceName),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () {
+                AzTubeApp app = Provider.of(context, listen: false);
+                app.renameDeviceLink(info, _textFieldController.text);
+
+                Navigator.pop(context);
+              },
+              child: const Text("Rename")),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "Cancel",
+                style: TextStyle(color: Colors.red),
+              )),
+        ],
+      ),
+    );
   }
 
   void unlinkDevice(BuildContext context, DeviceLinkInfo info) {

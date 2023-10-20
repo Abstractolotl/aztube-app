@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:aztube/api/aztube_api.dart';
 import 'package:aztube/aztube.dart';
 import 'package:aztube/data/download_info.dart';
@@ -11,33 +13,51 @@ class DashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //ThemeData theme = Theme.of(context);
+    var messenger = ScaffoldMessenger.of(context);
     return Consumer<AzTubeApp>(
       builder: (context, app, child) => Scaffold(
         appBar: appBar(context),
-        body: dashboardBody(context, app),
+        body: dashboardBody(context, app, messenger),
       ),
     );
   }
 
-  Future<void> onRefresh() async {}
+  Future<void> onRefresh(AzTubeApp app, ScaffoldMessengerState messenger) async {
+    for (var deviceLink in app.deviceLinks.values) {
+      try {
+        var downloadsVideoInfos = await pollDownloads(deviceLink.deviceToken);
 
-  Widget dashboardBody(BuildContext context, AzTubeApp app) {
+        var downloads = downloadsVideoInfos.map((e) {
+          var downloadId = "${Random().nextInt(0x000000FFFFFF)}";
+          return DownloadInfo(video: e, id: downloadId);
+        }).toList();
+
+        app.addDownloads(downloads);
+      } catch (e) {
+        //remove device
+        messenger.showSnackBar(SnackBar(content: Text("Could not Poll for Device Link ${deviceLink.deviceName} $e")));
+      }
+    }
+  }
+
+  Widget dashboardBody(BuildContext context, AzTubeApp app, ScaffoldMessengerState messenger) {
     if (!app.hasDeviceLinks()) {
       return noDeviceLink(context);
     }
 
-    return downloadList(app.downloads.values);
+    return downloadList(app, messenger);
   }
 
-  Widget downloadList(Iterable<DownloadInfo> downloads) {
+  Widget downloadList(AzTubeApp app, ScaffoldMessengerState messenger) {
     return RefreshIndicator(
-      onRefresh: onRefresh,
+      onRefresh: () => onRefresh(app, messenger),
       child: ListView.builder(
-        itemCount: downloads.length,
+        itemCount: app.downloads.values.length,
         itemBuilder: (context, index) {
+          DownloadInfo info = app.downloads.values.elementAt(index);
           return DownloadItem(
-            info: downloads.elementAt(index),
+            info: info,
+            onOpen: (() => openDownloadItemMenu(context, info)),
           );
         },
       ),
@@ -94,5 +114,23 @@ class DashboardView extends StatelessWidget {
         )
       ],
     );
+  }
+
+  void openDownloadItemMenu(BuildContext context, DownloadInfo info) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              content: const Text("Delete Item?"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    AzTubeApp app = Provider.of(context, listen: false);
+                    app.removeDownload(info);
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Delete"),
+                )
+              ],
+            ));
   }
 }

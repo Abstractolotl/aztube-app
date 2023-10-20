@@ -18,7 +18,7 @@ class AzTubePlattform {
 
   Future<String> downloadVideo(DownloadInfo info) async {
     Map<String, dynamic> args = {
-      "videoId": info.video.id,
+      "videoId": info.video.videoId,
       "downloadId": info.id,
       "quality": info.video.quality.text,
       "title": info.video.title,

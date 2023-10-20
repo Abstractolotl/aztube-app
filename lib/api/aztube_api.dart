@@ -4,10 +4,11 @@ import 'dart:convert';
 
 import 'package:aztube/api/api_exceptions.dart';
 import 'package:aztube/data/download_info.dart';
+import 'package:aztube/data/video_info.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-const API = "http://noucake.ddns.net:9000";
+const API = "http://frieren.abstractolotl.de:9000";
 
 Future<String> registerDeviceLink(String code, String deviceName) async {
   var payload = '{"code": "$code", "deviceName": "$deviceName"}';
@@ -24,17 +25,19 @@ Future<String> registerDeviceLink(String code, String deviceName) async {
   return jsonResp["deviceToken"];
 }
 
-Future<List<DownloadInfo>> pollDownloads(String deviceToken) async {
-  http.Response resp = await http.post(
+Future<List<VideoInfo>> pollDownloads(String deviceToken) async {
+  http.Response resp = await http.get(
     Uri.parse("$API/poll/$deviceToken"),
   );
 
   debugPrint(resp.body);
   var jsonResp = jsonDecode(resp.body);
-  if (resp.statusCode != 200 || jsonResp["success"] != true) {
+  if (resp.statusCode != 200 || jsonResp["success"] != true && jsonResp["error"] != "no entry in database") {
     throw ApiException("Could not poll for Downloads: ${jsonResp["error"]}", resp.statusCode);
   }
 
-  List<DownloadInfo> aa = jsonResp;
-  return aa;
+  final List<dynamic> downloadsJson = jsonResp['downloads'];
+  var bb = downloadsJson.map<VideoInfo>((downloadJson) => VideoInfo.fromJson(downloadJson)).toList();
+
+  return bb;
 }

@@ -6,10 +6,12 @@ import 'package:provider/provider.dart';
 
 class DownloadItem extends StatelessWidget {
   final DownloadInfo info;
+  final Function() onOpen;
 
   const DownloadItem({
     super.key,
     required this.info,
+    required this.onOpen,
   });
 
   void startDownload(BuildContext context) {
@@ -21,7 +23,7 @@ class DownloadItem extends StatelessWidget {
   Widget build(BuildContext context) {
     TextTheme theme = Theme.of(context).textTheme;
     return InkWell(
-      onLongPress: () {},
+      onLongPress: onOpen,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
         decoration: const BoxDecoration(
@@ -46,7 +48,7 @@ class DownloadItem extends StatelessWidget {
     return SizedBox(
       width: 75,
       child: CachedNetworkImage(
-          imageUrl: 'https://img.youtube.com/vi/${info.video.id}/default.jpg',
+          imageUrl: 'https://img.youtube.com/vi/${info.video.videoId}/default.jpg',
           errorWidget: (context, url, error) {
             return const Icon(Icons.image_not_supported);
           },
@@ -85,8 +87,11 @@ class DownloadItem extends StatelessWidget {
       return CircularProgressIndicator(value: info.progress / 100.0);
     }
 
-    if(info.isError()) {
-      return const Icon(Icons.error, color: Colors.red,);
+    if (info.isError()) {
+      return const Icon(
+        Icons.error,
+        color: Colors.red,
+      );
     }
 
     return IconButton(

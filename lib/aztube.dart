@@ -16,9 +16,9 @@ class AzTubeApp with ChangeNotifier {
 
   late final AzTubePlattform plattform = AzTubePlattform(onProgress: _onProgress);
 
-  AzTubeApp() {
-    _load();
-  }
+  String loadingError = "NOT LOADED";
+
+  AzTubeApp() {}
 
   void startDownload(DownloadInfo info) async {
     debugPrint("startDownload");
@@ -30,6 +30,7 @@ class AzTubeApp with ChangeNotifier {
     try {
       String location = await plattform.downloadVideo(info);
       info.downloadLocation = location;
+      _save();
     } catch (error) {
       debugPrint(error.toString());
     }
@@ -45,8 +46,22 @@ class AzTubeApp with ChangeNotifier {
     notifyListeners();
   }
 
+  void renameDeviceLink(DeviceLinkInfo info, String name) {
+    deviceLinks[info.deviceToken] = DeviceLinkInfo(info.deviceToken, name, info.registerDate);
+    _save();
+    notifyListeners();
+  }
+
   void addDeviceLinks(DeviceLinkInfo info) {
     deviceLinks[info.deviceToken] = info;
+    _save();
+    notifyListeners();
+  }
+
+  void addDownloads(List<DownloadInfo> infos) {
+    for (var info in infos) {
+      downloads[info.id] = info;
+    }
     _save();
     notifyListeners();
   }
@@ -73,25 +88,55 @@ class AzTubeApp with ChangeNotifier {
 
     dwn.progress = progress;
     debugPrint("Updated progess to $progress");
+
+    if (progress >= 100) {
+      _save();
+    }
     notifyListeners();
   }
 
-  void _load() async {
+  Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey(PREF_DEVICE_LINKS) || !prefs.containsKey(PREF_DOWNLOADS)) {
+      loadingError = "No data in SharedPref";
       return;
     }
 
-    Map<String, DeviceLinkInfo> loadedLinks = jsonDecode(prefs.getString(PREF_DEVICE_LINKS)!);
-    Map<String, DownloadInfo> loadedDownloads = jsonDecode(prefs.getString(PREF_DOWNLOADS)!);
+    try {
+      Map<String, dynamic> loadedLinksRaw = jsonDecode(prefs.getString(PREF_DEVICE_LINKS)!);
+      Map<String, DeviceLinkInfo> loadedLinks = loadedLinksRaw.map(
+        (key, value) => MapEntry(key, DeviceLinkInfo.fromJson(value)),
+      );
 
-    deviceLinks.addEntries(loadedLinks.entries);
-    downloads.addEntries(loadedDownloads.entries);
+      Map<String, dynamic> loadedDownloadsRaw = jsonDecode(prefs.getString(PREF_DOWNLOADS)!);
+      Map<String, DownloadInfo> loadedDownloads = loadedDownloadsRaw.map(
+        (key, value) => MapEntry(key, DownloadInfo.fromJson(value)),
+      );
+
+      for (var element in loadedDownloads.values) {
+        if (element.progress < 100) element.progress = 0;
+      }
+
+      deviceLinks.addEntries(loadedLinks.entries);
+      downloads.addEntries(loadedDownloads.entries);
+    } catch (e) {
+      loadingError = "Error while parsing $e";
+      return;
+    }
+
+    loadingError = "Success";
   }
 
   void _save() async {
     final prefs = await SharedPreferences.getInstance();
+
     prefs.setString(PREF_DEVICE_LINKS, jsonEncode(deviceLinks));
     prefs.setString(PREF_DOWNLOADS, jsonEncode(downloads));
+  }
+
+  void clearAllData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    prefs.clear();
   }
 }

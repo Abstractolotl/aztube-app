@@ -26,4 +26,21 @@ class DownloadInfo {
     return progress < 0;
   }
 
+  factory DownloadInfo.fromJson(Map<String, dynamic> json) {
+    return DownloadInfo(
+      video: VideoInfo.fromJson(json['video']),
+      id: json['id'] as String,
+      progress: json['progress'] as double,
+      downloadLocation: json['downloadLocation'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'video': video.toJson(),
+      'id': id,
+      'progress': progress,
+      'downloadLocation': downloadLocation,
+    };
+  }
 }
