@@ -45,13 +45,20 @@ class DashboardView extends StatelessWidget {
       return noDeviceLink(context);
     }
 
-    return downloadList(app, messenger);
+    return RefreshIndicator(
+      onRefresh: () => onRefresh(app, messenger),
+      child: downloadList(app, messenger),
+    );
   }
 
   Widget downloadList(AzTubeApp app, ScaffoldMessengerState messenger) {
-    return RefreshIndicator(
-      onRefresh: () => onRefresh(app, messenger),
-      child: ListView.builder(
+    var downlodas = app.downloads.values;
+
+    if (downlodas.isEmpty) {
+      return noDownloads();
+    }
+
+    return ListView.builder(
         itemCount: app.downloads.values.length,
         itemBuilder: (context, index) {
           DownloadInfo info = app.downloads.values.elementAt(index);
@@ -59,9 +66,7 @@ class DashboardView extends StatelessWidget {
             info: info,
             onOpen: (() => openDownloadItemMenu(context, info)),
           );
-        },
-      ),
-    );
+        });
   }
 
   Widget noDeviceLink(BuildContext context) {
@@ -101,6 +106,25 @@ class DashboardView extends StatelessWidget {
   Widget loading(ThemeData theme) {
     return Center(
       child: CircularProgressIndicator(color: theme.primaryColor),
+    );
+  }
+
+  Widget noDownloads() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 25),
+            child: Icon(
+              Icons.download,
+              size: 100,
+              color: Colors.black54,
+            ),
+          ),
+          Text("No Downloads"),
+        ],
+      ),
     );
   }
 
