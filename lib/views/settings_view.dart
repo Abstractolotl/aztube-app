@@ -131,15 +131,15 @@ class SettingsView extends StatelessWidget {
                 app.removeDeviceLink(info);
                 Navigator.pop(context);
               },
-              child: const Text("Unlink Device")),
+              child: const Text(
+                "Unlink Device",
+                style: TextStyle(color: Colors.red),
+              )),
           TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text(
-                "Cancel",
-                style: TextStyle(color: Colors.red),
-              )),
+              child: const Text("Cancel")),
         ],
       ),
     );

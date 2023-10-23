@@ -120,7 +120,8 @@ class DashboardView extends StatelessWidget {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              content: const Text("Delete Item?"),
+              title: const Text("Delete Item"),
+              content: const Text("Downloaded data remains on your device."),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -128,7 +129,16 @@ class DashboardView extends StatelessWidget {
                     app.removeDownload(info);
                     Navigator.pop(context);
                   },
-                  child: const Text("Delete"),
+                  child: const Text(
+                    "Delete",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel"),
                 )
               ],
             ));
