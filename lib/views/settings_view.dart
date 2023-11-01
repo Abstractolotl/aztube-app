@@ -87,7 +87,7 @@ class SettingsView extends StatelessWidget {
   }
 
   void editLink(BuildContext context, DeviceLinkInfo info) {
-    final TextEditingController _textFieldController = TextEditingController();
+    final TextEditingController _textFieldController = TextEditingController(text: info.deviceName);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
