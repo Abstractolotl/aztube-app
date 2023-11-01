@@ -64,13 +64,14 @@ class SettingsView extends StatelessWidget {
           itemCount: app.deviceLinks.length,
           itemBuilder: (context, index) {
             it.moveNext();
+            var current = it.current;
             return DeviceLinkItem(
-              info: it.current,
+              info: current,
               onDelete: () {
-                unlinkDevice(context, it.current);
+                unlinkDevice(context, current);
               },
               onEdit: () {
-                editLink(context, it.current);
+                editLink(context, current);
               },
             );
           }),

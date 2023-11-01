@@ -89,14 +89,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
-  device_name:
-    dependency: "direct main"
-    description:
-      name: device_name
-      sha256: "0caf88efdc45522fd3728caa71c9b7e6d9d4e3816d6123435dfaffcf13583a51"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.3"
   fake_async:
     dependency: transitive
     description:
