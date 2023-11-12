@@ -1,16 +1,12 @@
-import 'package:aztube/aztube.dart';
 import 'package:aztube/api/aztube_api.dart';
 import 'package:aztube/strings.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class DebugView extends StatelessWidget {
   const DebugView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    AzTubeApp app = Provider.of(context);
-    var theme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: appBar(),
       body: Padding(
@@ -24,8 +20,11 @@ class DebugView extends StatelessWidget {
                 try {
                   registerDeviceLink("123", "My Device").catchError((e) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                    return e.toString();
                   });
-                } catch (e) {}
+                } catch (e) {
+                  // ignored
+                }
               },
               child: const Text("Send generate!"),
             )

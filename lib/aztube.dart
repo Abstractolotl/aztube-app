@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AzTubeApp with ChangeNotifier {
-  static String PREF_DEVICE_LINKS = "DEVICE_LINKS";
-  static String PREF_DOWNLOADS = "DOWNLOADS";
+  static String prefDeviceLink = "DEVICE_LINKS";
+  static String prefDownloads = "DOWNLOADS";
 
   final HashMap<String, DeviceLinkInfo> deviceLinks = HashMap();
   final HashMap<String, DownloadInfo> downloads = HashMap();
@@ -18,7 +18,7 @@ class AzTubeApp with ChangeNotifier {
 
   String loadingError = "NOT LOADED";
 
-  AzTubeApp() {}
+  AzTubeApp();
 
   void startDownload(DownloadInfo info) async {
     debugPrint("startDownload");
@@ -97,18 +97,18 @@ class AzTubeApp with ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!prefs.containsKey(PREF_DEVICE_LINKS) || !prefs.containsKey(PREF_DOWNLOADS)) {
+    if (!prefs.containsKey(prefDeviceLink) || !prefs.containsKey(prefDownloads)) {
       loadingError = "No data in SharedPref";
       return;
     }
 
     try {
-      Map<String, dynamic> loadedLinksRaw = jsonDecode(prefs.getString(PREF_DEVICE_LINKS)!);
+      Map<String, dynamic> loadedLinksRaw = jsonDecode(prefs.getString(prefDeviceLink)!);
       Map<String, DeviceLinkInfo> loadedLinks = loadedLinksRaw.map(
         (key, value) => MapEntry(key, DeviceLinkInfo.fromJson(value)),
       );
 
-      Map<String, dynamic> loadedDownloadsRaw = jsonDecode(prefs.getString(PREF_DOWNLOADS)!);
+      Map<String, dynamic> loadedDownloadsRaw = jsonDecode(prefs.getString(prefDownloads)!);
       Map<String, DownloadInfo> loadedDownloads = loadedDownloadsRaw.map(
         (key, value) => MapEntry(key, DownloadInfo.fromJson(value)),
       );
@@ -130,8 +130,8 @@ class AzTubeApp with ChangeNotifier {
   void _save() async {
     final prefs = await SharedPreferences.getInstance();
 
-    prefs.setString(PREF_DEVICE_LINKS, jsonEncode(deviceLinks));
-    prefs.setString(PREF_DOWNLOADS, jsonEncode(downloads));
+    prefs.setString(prefDeviceLink, jsonEncode(deviceLinks));
+    prefs.setString(prefDownloads, jsonEncode(downloads));
   }
 
   void clearAllData() async {

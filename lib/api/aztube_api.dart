@@ -3,7 +3,6 @@
 import 'dart:convert';
 
 import 'package:aztube/api/api_exceptions.dart';
-import 'package:aztube/data/download_info.dart';
 import 'package:aztube/data/video_info.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;

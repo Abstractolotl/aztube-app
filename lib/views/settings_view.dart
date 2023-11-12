@@ -87,21 +87,21 @@ class SettingsView extends StatelessWidget {
   }
 
   void editLink(BuildContext context, DeviceLinkInfo info) {
-    final TextEditingController _textFieldController = TextEditingController(text: info.deviceName);
+    final TextEditingController textFieldController = TextEditingController(text: info.deviceName);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Rename Connected Device"),
         content: TextField(
           onChanged: (value) {},
-          controller: _textFieldController,
+          controller: textFieldController,
           decoration: InputDecoration(hintText: info.deviceName),
         ),
         actions: [
           TextButton(
               onPressed: () {
                 AzTubeApp app = Provider.of(context, listen: false);
-                app.renameDeviceLink(info, _textFieldController.text);
+                app.renameDeviceLink(info, textFieldController.text);
 
                 Navigator.pop(context);
               },
