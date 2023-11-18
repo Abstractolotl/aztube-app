@@ -55,7 +55,10 @@ class DashboardView extends StatelessWidget {
     var downlodas = app.downloads.values;
 
     if (downlodas.isEmpty) {
-      return noDownloads();
+      return ListView.builder(
+        itemCount: 1,
+        itemBuilder: ((context, index) => noDownloads()),
+      );
     }
 
     return ListView.builder(
