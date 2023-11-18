@@ -1,5 +1,6 @@
 import 'package:aztube/aztube.dart';
 import 'package:aztube/views/dashboard_view.dart';
+import 'package:aztube/views/debug_view.dart';
 import 'package:aztube/views/device_link_view.dart';
 import 'package:aztube/views/settings_view.dart';
 import 'package:flutter/material.dart';
@@ -40,8 +41,10 @@ class AzTube extends StatelessWidget {
                   labelLarge: TextStyle(color: Colors.black45),
                 )),
               ),
+              initialRoute: '/',
               routes: {
                 '/': (context) => const DashboardView(),
+                '/debug': (context) => const DebugView(),
                 '/settings': (context) => const SettingsView(),
                 '/link': (context) => const DeviceLinkView(),
               },

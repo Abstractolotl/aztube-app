@@ -19,7 +19,7 @@ class SettingsView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ...settingsSegment(theme, app),
+            ...settingsSegment(context, theme, app),
             const Divider(),
             ...deviceLinksSegment(context, theme, app),
           ],
@@ -28,7 +28,7 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  List<Widget> settingsSegment(TextTheme theme, AzTubeApp app) {
+  List<Widget> settingsSegment(BuildContext context, TextTheme theme, AzTubeApp app) {
     return [
       Padding(
         padding: const EdgeInsets.all(8.0),
@@ -48,6 +48,13 @@ class SettingsView extends StatelessWidget {
               app.clearAllData();
             },
             child: const Text("Clear All Data")),
+      ),
+      Center(
+        child: ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pushNamed('/debug');
+            },
+            child: const Text("Debug View")),
       )
     ];
   }
