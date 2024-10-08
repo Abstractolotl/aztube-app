@@ -42,14 +42,20 @@ class SettingsView extends StatelessWidget {
           value: false,
         ),
       ),
-      Center(
+      const SizedBox(height: 10),
+      SizedBox(
+        width: double.infinity,
+        height: 50.0,
         child: ElevatedButton(
             onPressed: () {
               app.clearAllData();
             },
             child: const Text("Clear All Data")),
       ),
-      Center(
+      const SizedBox(height: 10),
+      SizedBox(
+        width: double.infinity,
+        height: 50.0,
         child: ElevatedButton(
             onPressed: () {
               Navigator.of(context).pushNamed('/debug');
@@ -60,12 +66,24 @@ class SettingsView extends StatelessWidget {
   }
 
   List<Widget> deviceLinksSegment(BuildContext context, TextTheme theme, AzTubeApp app) {
-    var it = app.deviceLinks.values.iterator;
-    return [
+    var widgets = [
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text("Connected Devices", style: theme.bodyLarge),
-      ),
+      )
+    ];
+    if (app.deviceLinks.isEmpty) {
+      return [
+        ...widgets,
+        const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text("No devices connected", style: TextStyle(color: Colors.grey)),
+        )
+      ];
+    }
+    var it = app.deviceLinks.values.iterator;
+    return [
+      ...widgets,
       ListView.builder(
           shrinkWrap: true,
           itemCount: app.deviceLinks.length,
@@ -82,9 +100,9 @@ class SettingsView extends StatelessWidget {
               },
             );
           }),
-      Container(
-        padding: const EdgeInsets.all(8),
+      SizedBox(
         width: double.infinity,
+        height: 50.0,
         child: ElevatedButton(
           onPressed: () => Navigator.of(context).pushNamed('/link'),
           child: const Text("Link Device"),
@@ -107,20 +125,19 @@ class SettingsView extends StatelessWidget {
         actions: [
           TextButton(
               onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "Cancel",
+              )),
+          TextButton(
+              onPressed: () {
                 AzTubeApp app = Provider.of(context, listen: false);
                 app.renameDeviceLink(info, textFieldController.text);
 
                 Navigator.pop(context);
               },
               child: const Text("Rename")),
-          TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text(
-                "Cancel",
-                style: TextStyle(color: Colors.red),
-              )),
         ],
       ),
     );
@@ -135,6 +152,11 @@ class SettingsView extends StatelessWidget {
         actions: [
           TextButton(
               onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Cancel")),
+          TextButton(
+              onPressed: () {
                 AzTubeApp app = Provider.of(context, listen: false);
                 app.removeDeviceLink(info);
                 Navigator.pop(context);
@@ -143,11 +165,6 @@ class SettingsView extends StatelessWidget {
                 "Unlink Device",
                 style: TextStyle(color: Colors.red),
               )),
-          TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("Cancel")),
         ],
       ),
     );

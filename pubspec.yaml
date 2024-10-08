@@ -19,6 +19,8 @@ dependencies:
   intl: ^0.18.1
   shared_preferences: ^2.2.0
   device_info: ^2.0.3
+  file_picker: ^6.1.1
+  just_waveform: ^0.0.5
 
 dev_dependencies:
   flutter_test:

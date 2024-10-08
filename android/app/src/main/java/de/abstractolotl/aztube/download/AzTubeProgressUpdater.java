@@ -1,7 +1,7 @@
 package de.abstractolotl.aztube.download;
 
 import com.github.kiulian.downloader.downloader.YoutubeProgressCallback;
-import de.abstractolotl.aztube.AzTubePlatform;
+import de.abstractolotl.aztube.AzTubeChannel;
 import de.abstractolotl.aztube.GenericStageProgressUpdater;
 
 import java.io.File;
@@ -24,11 +24,11 @@ public class AzTubeProgressUpdater extends GenericStageProgressUpdater<AzTubePro
         WEIGHTS.put(DownloadStages.OUTPUT, 0.1);
     }
 
-    private final AzTubePlatform platform;
+    private final AzTubeChannel platform;
     private final String downloadId;
     private boolean error;
 
-    public AzTubeProgressUpdater(AzTubePlatform platform, String downloadId) {
+    public AzTubeProgressUpdater(AzTubeChannel platform, String downloadId) {
         super(WEIGHTS);
         this.platform = platform;
         this.downloadId = downloadId;

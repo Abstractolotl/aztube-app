@@ -5,6 +5,7 @@ import 'package:aztube/aztube_plattform.dart';
 import 'package:aztube/data/device_link_info.dart';
 import 'package:aztube/data/download_info.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AzTubeApp with ChangeNotifier {
@@ -20,9 +21,9 @@ class AzTubeApp with ChangeNotifier {
 
   AzTubeApp();
 
-  void startDownload(DownloadInfo info) async {
+  Future<void> startDownload(DownloadInfo info) async {
     debugPrint("startDownload");
-    if (info.progress != 0) {
+    if (info.progress > 0) {
       debugPrint("Tried starting download that was already started");
       return;
     }
@@ -33,6 +34,10 @@ class AzTubeApp with ChangeNotifier {
       _save();
     } catch (error) {
       debugPrint(error.toString());
+      if (error is PlatformException) {
+        throw Exception(error.message);
+      }
+      rethrow;
     }
   }
 

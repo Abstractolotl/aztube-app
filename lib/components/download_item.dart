@@ -14,9 +14,15 @@ class DownloadItem extends StatelessWidget {
     required this.onOpen,
   });
 
-  void startDownload(BuildContext context) {
+  void startDownload(BuildContext context) async {
     AzTubeApp app = Provider.of(context, listen: false);
-    app.startDownload(info);
+    try {
+      await app.startDownload(info);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
   }
 
   @override
@@ -88,9 +94,12 @@ class DownloadItem extends StatelessWidget {
     }
 
     if (info.isError()) {
-      return const Icon(
-        Icons.error,
-        color: Colors.red,
+      return IconButton(
+        onPressed: () => startDownload(context),
+        icon: const Icon(
+          Icons.error,
+          color: Colors.red,
+        ),
       );
     }
 

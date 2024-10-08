@@ -25,9 +25,7 @@ class AzTubePlattform {
       "author": info.video.author
     };
 
-    var result = await _platform.invokeMethod("downloadVideo", args);
-
-    return result;
+    return await _platform.invokeMethod("downloadVideo", args);
   }
 
   Future<dynamic> plattformCallHandler(MethodCall call) async {
