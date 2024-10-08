@@ -34,7 +34,6 @@ class DashboardView extends StatelessWidget {
 
         app.addDownloads(downloads);
       } catch (e) {
-        //remove device
         messenger.showSnackBar(SnackBar(content: Text("Could not Poll for Device Link ${deviceLink.deviceName} $e")));
       }
     }

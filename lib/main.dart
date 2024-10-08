@@ -3,9 +3,11 @@ import 'package:aztube/views/dashboard_view.dart';
 import 'package:aztube/views/debug_view.dart';
 import 'package:aztube/views/device_link_view.dart';
 import 'package:aztube/views/settings_view.dart';
+import 'package:aztube/views/share_view.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:receive_intent/receive_intent.dart';
 
 void main() {
   runApp(const AzTube());
@@ -17,7 +19,7 @@ class AzTube extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: someTestData(),
+        future: initAzTube(),
         builder: (BuildContext context, AsyncSnapshot<AzTubeApp> snapshot) {
           if (!snapshot.hasData) {
             return const MaterialApp(home: Text("Loading"));
@@ -41,19 +43,20 @@ class AzTube extends StatelessWidget {
                   labelLarge: TextStyle(color: Colors.black45),
                 )),
               ),
-              initialRoute: '/',
+              initialRoute: snapshot.data?.shareIntent == null ? '/' : '/share',
               routes: {
                 '/': (context) => const DashboardView(),
                 '/debug': (context) => const DebugView(),
                 '/settings': (context) => const SettingsView(),
                 '/link': (context) => const DeviceLinkView(),
+                '/share': (context) => const ShareView(),
               },
             ),
           );
         });
   }
 
-  Future<AzTubeApp> someTestData() async {
+  Future<AzTubeApp> initAzTube() async {
     var app = AzTubeApp();
     await app.init();
     // app.deviceLinks["some-token"] = (DeviceLinkInfo("some-token", "The Device"));

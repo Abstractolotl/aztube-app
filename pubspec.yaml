@@ -21,6 +21,7 @@ dependencies:
   device_info: ^2.0.3
   file_picker: ^6.1.1
   just_waveform: ^0.0.5
+  receive_intent: ^0.2.5
 
 dev_dependencies:
   flutter_test:

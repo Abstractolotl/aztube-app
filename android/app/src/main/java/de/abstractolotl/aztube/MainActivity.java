@@ -1,8 +1,10 @@
 package de.abstractolotl.aztube;
 
+import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import de.abstractolotl.aztube.download.AzTubeDownload;
 import de.abstractolotl.aztube.download.AzTubeProgressUpdater;
 import io.flutter.embedding.android.FlutterActivity;
