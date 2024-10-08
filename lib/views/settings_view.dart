@@ -72,18 +72,15 @@ class SettingsView extends StatelessWidget {
         child: Text("Connected Devices", style: theme.bodyLarge),
       )
     ];
-    if (app.deviceLinks.isEmpty) {
-      return [
-        ...widgets,
-        const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text("No devices connected", style: TextStyle(color: Colors.grey)),
-        )
-      ];
-    }
+
     var it = app.deviceLinks.values.iterator;
     return [
       ...widgets,
+      if (app.deviceLinks.isEmpty)
+        const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text("No devices connected", style: TextStyle(color: Colors.grey)),
+        ),
       ListView.builder(
           shrinkWrap: true,
           itemCount: app.deviceLinks.length,

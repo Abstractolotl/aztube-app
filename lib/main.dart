@@ -1,4 +1,5 @@
 import 'package:aztube/aztube.dart';
+import 'package:aztube/data/video_info.dart';
 import 'package:aztube/views/dashboard_view.dart';
 import 'package:aztube/views/debug_view.dart';
 import 'package:aztube/views/device_link_view.dart';
@@ -43,7 +44,7 @@ class AzTube extends StatelessWidget {
                   labelLarge: TextStyle(color: Colors.black45),
                 )),
               ),
-              initialRoute: snapshot.data?.shareIntent == null ? '/' : '/share',
+              initialRoute: ShareView.info == null ? '/' : '/share',
               routes: {
                 '/': (context) => const DashboardView(),
                 '/debug': (context) => const DebugView(),

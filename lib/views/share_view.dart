@@ -1,11 +1,12 @@
 import 'package:aztube/aztube.dart';
 import 'package:aztube/data/download_info.dart';
-import 'package:aztube/data/share_intent.dart';
 import 'package:aztube/data/video_info.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ShareView extends StatefulWidget {
+  static DownloadInfo? info;
+
   const ShareView({super.key});
 
   @override
@@ -14,7 +15,6 @@ class ShareView extends StatefulWidget {
 
 class _ShareViewState extends State<ShareView> {
   final TextEditingController titleController = TextEditingController();
-
   final TextEditingController authorController = TextEditingController();
 
   String? selectedQuality;
@@ -22,7 +22,10 @@ class _ShareViewState extends State<ShareView> {
   @override
   Widget build(BuildContext context) {
     return Consumer<AzTubeApp>(builder: (context, app, child) {
-      titleController.text = app.shareIntent?.title ?? '';
+      titleController.text = ShareView.info!.video.title;
+      authorController.text = ShareView.info!.video.author;
+      selectedQuality = ShareView.info!.video.quality.toString();
+
       return Scaffold(
           appBar: AppBar(
             title: const Text('Share View'),
@@ -34,7 +37,7 @@ class _ShareViewState extends State<ShareView> {
     });
   }
 
-  List<Widget> inputs(ShareIntent shareIntent) {
+  List<Widget> inputs() {
     return <Widget>[
       TextFormField(
         controller: titleController,
@@ -52,11 +55,11 @@ class _ShareViewState extends State<ShareView> {
         decoration: const InputDecoration(
           labelText: 'Quality',
         ),
-        value: 'Audio', // Preselect the first item
-        items: <String>['Audio'].map((String value) {
+        value: selectedQuality, // Preselect the first item
+        items: VideoQuality.values.map((VideoQuality value) {
           return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
+            value: value.toString(),
+            child: Text(value.toString()),
           );
         }).toList(),
         onChanged: (String? newValue) {
@@ -71,9 +74,12 @@ class _ShareViewState extends State<ShareView> {
   void onDownload(AzTubeApp app) {
     VideoQuality quality = VideoQuality.audio;
 
-    app.addDownload(DownloadInfo(
-        video: VideoInfo(app.shareIntent!.text, titleController.text, authorController.text, quality),
-        id: DateTime.now().millisecondsSinceEpoch.toString()));
+    var info = DownloadInfo(
+        video: VideoInfo(ShareView.info!.video.videoId, titleController.text, authorController.text, quality),
+        id: ShareView.info!.id);
+
+    app.addDownload(info);
+    ShareView.info = null;
     Navigator.of(context).pushReplacementNamed('/');
   }
 
@@ -88,7 +94,7 @@ class _ShareViewState extends State<ShareView> {
             SizedBox(
               height: 150.0,
               child: Image.network(
-                'https://img.youtube.com/vi/${app.shareIntent!.text}/hqdefault.jpg',
+                'https://img.youtube.com/vi/${ShareView.info!.video.videoId}/hqdefault.jpg',
                 fit: BoxFit.cover,
               ),
             ),
@@ -96,7 +102,7 @@ class _ShareViewState extends State<ShareView> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  ...inputs(app.shareIntent!),
+                  ...inputs(),
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,

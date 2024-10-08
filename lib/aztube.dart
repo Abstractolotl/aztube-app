@@ -4,7 +4,8 @@ import 'dart:convert';
 import 'package:aztube/aztube_plattform.dart';
 import 'package:aztube/data/device_link_info.dart';
 import 'package:aztube/data/download_info.dart';
-import 'package:aztube/data/share_intent.dart';
+import 'package:aztube/data/video_info.dart';
+import 'package:aztube/views/share_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:receive_intent/receive_intent.dart';
@@ -16,7 +17,6 @@ class AzTubeApp with ChangeNotifier {
 
   final HashMap<String, DeviceLinkInfo> deviceLinks = HashMap();
   final HashMap<String, DownloadInfo> downloads = HashMap();
-  late final ShareIntent? shareIntent;
 
   late final AzTubePlattform plattform = AzTubePlattform(onProgress: _onProgress);
 
@@ -110,13 +110,10 @@ class AzTubeApp with ChangeNotifier {
       var url = Uri.parse(intent.extra!["android.intent.extra.TEXT"]);
       var id = url.queryParameters["v"];
 
-      if (id == null) {
-        shareIntent = null;
-      } else {
-        shareIntent = ShareIntent(title: title, text: id);
+      if (id != null) {
+        ShareView.info = DownloadInfo(
+            video: VideoInfo(id, title, "", VideoQuality.audio), id: DateTime.now().millisecondsSinceEpoch.toString());
       }
-    } else {
-      shareIntent = null;
     }
 
     final prefs = await SharedPreferences.getInstance();

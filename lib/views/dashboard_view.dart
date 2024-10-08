@@ -5,6 +5,7 @@ import 'package:aztube/aztube.dart';
 import 'package:aztube/data/download_info.dart';
 import 'package:aztube/components/download_item.dart';
 import 'package:aztube/strings.dart';
+import 'package:aztube/views/share_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -40,18 +41,19 @@ class DashboardView extends StatelessWidget {
   }
 
   Widget dashboardBody(BuildContext context, AzTubeApp app, ScaffoldMessengerState messenger) {
-    if (!app.hasDeviceLinks()) {
+    if (!app.hasDeviceLinks() && app.downloads.isEmpty) {
       return noDeviceLink(context);
     }
 
     return RefreshIndicator(
       onRefresh: () => onRefresh(app, messenger),
-      child: downloadList(app, messenger),
+      child: downloadList(context, app, messenger),
     );
   }
 
-  Widget downloadList(AzTubeApp app, ScaffoldMessengerState messenger) {
+  Widget downloadList(BuildContext context, AzTubeApp app, ScaffoldMessengerState messenger) {
     var downlodas = app.downloads.values;
+    var links = app.deviceLinks.values;
 
     if (downlodas.isEmpty) {
       return ListView.builder(
@@ -60,15 +62,33 @@ class DashboardView extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-        itemCount: app.downloads.values.length,
-        itemBuilder: (context, index) {
-          DownloadInfo info = app.downloads.values.elementAt(index);
-          return DownloadItem(
-            info: info,
-            onOpen: (() => openDownloadItemMenu(context, info)),
-          );
-        });
+    Widget noDeviceBanner = MaterialBanner(
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
+        padding: const EdgeInsets.all(20),
+        content: const Text("No Device Linked! \nTry linking a device to start downloads from your Browser."),
+        actions: <Widget>[
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed('/link');
+              },
+              child: const Text("Link Device"))
+        ]);
+
+    return Column(
+      children: [
+        if (app.deviceLinks.isEmpty) noDeviceBanner,
+        ListView.builder(
+            shrinkWrap: true,
+            itemCount: app.downloads.values.length,
+            itemBuilder: (context, index) {
+              DownloadInfo info = app.downloads.values.elementAt(index);
+              return DownloadItem(
+                info: info,
+                onOpen: (() => openDownloadItemMenu(context, info)),
+              );
+            }),
+      ],
+    );
   }
 
   Widget noDeviceLink(BuildContext context) {
@@ -160,12 +180,20 @@ class DashboardView extends StatelessWidget {
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
+                if (info.progress <= 0)
+                  TextButton(
+                    onPressed: () {
+                      ShareView.info = info;
+                      Navigator.of(context).pushNamed("/share");
+                    },
+                    child: const Text("Edit"),
+                  ),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
                   child: const Text("Cancel"),
-                )
+                ),
               ],
             ));
   }
