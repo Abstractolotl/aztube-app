@@ -55,7 +55,7 @@ class _DeviceLinkViewState extends State<DeviceLinkView> {
         deviceName = "My Device";
       }
 
-      String deviceToken = await registerDeviceLink(code, deviceName);
+      String deviceToken = await registerDeviceLink(code, deviceName, app?.firebaseToken);
       app?.addDeviceLinks(DeviceLinkInfo(deviceToken, "My Computer", DateTime.now()));
       nav?.pop();
     } catch (e) {

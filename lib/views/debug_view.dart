@@ -26,7 +26,7 @@ class DebugView extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 try {
-                  registerDeviceLink("123", "My Device").catchError((e) {
+                  registerDeviceLink("123", "My Device", null).catchError((e) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
                     return e.toString();
                   });

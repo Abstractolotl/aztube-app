@@ -1,14 +1,15 @@
 import 'package:aztube/aztube.dart';
-import 'package:aztube/data/video_info.dart';
+import 'package:aztube/firebase_options.dart';
 import 'package:aztube/views/dashboard_view.dart';
 import 'package:aztube/views/debug_view.dart';
 import 'package:aztube/views/device_link_view.dart';
 import 'package:aztube/views/settings_view.dart';
 import 'package:aztube/views/share_view.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:receive_intent/receive_intent.dart';
 
 void main() {
   runApp(const AzTube());
@@ -20,7 +21,7 @@ class AzTube extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: initAzTube(),
+        future: initAzTube(context),
         builder: (BuildContext context, AsyncSnapshot<AzTubeApp> snapshot) {
           if (!snapshot.hasData) {
             return const MaterialApp(home: Text("Loading"));
@@ -44,7 +45,7 @@ class AzTube extends StatelessWidget {
                   labelLarge: TextStyle(color: Colors.black45),
                 )),
               ),
-              initialRoute: ShareView.info == null ? '/' : '/share',
+              initialRoute: '/',
               routes: {
                 '/': (context) => const DashboardView(),
                 '/debug': (context) => const DebugView(),
@@ -57,9 +58,18 @@ class AzTube extends StatelessWidget {
         });
   }
 
-  Future<AzTubeApp> initAzTube() async {
-    var app = AzTubeApp();
-    await app.init();
+  Future<AzTubeApp> initAzTube(BuildContext context) async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await FirebaseMessaging.instance.requestPermission(provisional: true, alert: true);
+    var token = await FirebaseMessaging.instance.getToken();
+
+    var app = AzTubeApp(token ?? "");
+    await app.init(context);
+
+    return app;
+
     // app.deviceLinks["some-token"] = (DeviceLinkInfo("some-token", "The Device"));
     // app.downloads["dwn-id"] = (DownloadInfo(
     //     video: VideoInfo(
@@ -69,6 +79,5 @@ class AzTube extends StatelessWidget {
     //       VideoQuality.audio,
     //     ),
     //     id: "dwn-id"));
-    return app;
   }
 }

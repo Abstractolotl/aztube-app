@@ -20,19 +20,30 @@ class _ShareViewState extends State<ShareView> {
   String? selectedQuality;
 
   @override
+  void initState() {
+    super.initState();
+
+    if (ShareView.info == null) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<AzTubeApp>(builder: (context, app, child) {
       titleController.text = ShareView.info!.video.title;
       authorController.text = ShareView.info!.video.author;
-      selectedQuality = ShareView.info!.video.quality.toString();
+      selectedQuality = ShareView.info!.video.quality.name;
 
       return Scaffold(
           appBar: AppBar(
             title: const Text('Share View'),
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: card(app!),
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: card(app!),
+            ),
           ));
     });
   }
@@ -58,8 +69,8 @@ class _ShareViewState extends State<ShareView> {
         value: selectedQuality, // Preselect the first item
         items: VideoQuality.values.map((VideoQuality value) {
           return DropdownMenuItem<String>(
-            value: value.toString(),
-            child: Text(value.toString()),
+            value: value.name,
+            child: Text(value.name),
           );
         }).toList(),
         onChanged: (String? newValue) {

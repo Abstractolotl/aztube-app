@@ -4,11 +4,8 @@ import 'dart:convert';
 import 'package:aztube/aztube_plattform.dart';
 import 'package:aztube/data/device_link_info.dart';
 import 'package:aztube/data/download_info.dart';
-import 'package:aztube/data/video_info.dart';
-import 'package:aztube/views/share_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:receive_intent/receive_intent.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AzTubeApp with ChangeNotifier {
@@ -20,9 +17,11 @@ class AzTubeApp with ChangeNotifier {
 
   late final AzTubePlattform plattform = AzTubePlattform(onProgress: _onProgress);
 
+  final String firebaseToken;
+
   String loadingError = "NOT LOADED";
 
-  AzTubeApp();
+  AzTubeApp(this.firebaseToken);
 
   Future<void> startDownload(DownloadInfo info) async {
     debugPrint("startDownload");
@@ -103,19 +102,7 @@ class AzTubeApp with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> init() async {
-    var intent = await ReceiveIntent.getInitialIntent();
-    if (intent != null && intent.action == "android.intent.action.SEND") {
-      var title = intent.extra!["android.intent.extra.SUBJECT"];
-      var url = Uri.parse(intent.extra!["android.intent.extra.TEXT"]);
-      var id = url.queryParameters["v"];
-
-      if (id != null) {
-        ShareView.info = DownloadInfo(
-            video: VideoInfo(id, title, "", VideoQuality.audio), id: DateTime.now().millisecondsSinceEpoch.toString());
-      }
-    }
-
+  Future<void> init(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey(prefDeviceLink) || !prefs.containsKey(prefDownloads)) {
       loadingError = "No data in SharedPref";

@@ -9,8 +9,8 @@ import 'package:http/http.dart' as http;
 
 const API = "http://frieren.abstractolotl.de:9000";
 
-Future<String> registerDeviceLink(String code, String deviceName) async {
-  var payload = '{"code": "$code", "deviceName": "$deviceName"}';
+Future<String> registerDeviceLink(String code, String deviceName, String? firebaseToken) async {
+  var payload = '{"code": "$code", "deviceName": "$deviceName", "firebaseToken": "$firebaseToken"}';
   http.Response resp = await http.post(
     Uri.parse("$API/register"),
     body: payload,

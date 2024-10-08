@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "502164795173",
+    "project_id": "aztube-afcd1",
+    "storage_bucket": "aztube-afcd1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:502164795173:android:7f547733798f772cc0f4cc",
+        "android_client_info": {
+          "package_name": "de.abstractolotl.aztube"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANIiYjJ4IgIy_KaymDrxwKWpEGnufHprg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
