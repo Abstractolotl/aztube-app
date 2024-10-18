@@ -20,7 +20,7 @@ class DebugView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => throw Exception("DEBUG VIEW EXCEPTION TEST"),
               child: const Text("Home"),
             ),
             ElevatedButton(

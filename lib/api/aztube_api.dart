@@ -11,17 +11,34 @@ const API = "http://frieren.abstractolotl.de:9000";
 
 Future<String> registerDeviceLink(String code, String deviceName, String? firebaseToken) async {
   var payload = '{"code": "$code", "deviceName": "$deviceName", "firebaseToken": "$firebaseToken"}';
-  http.Response resp = await http.post(
+
+  var resp = await http.post(
     Uri.parse("$API/register"),
     body: payload,
     headers: {"CONTENT-TYPE": "application/json"},
   );
-  debugPrint(resp.body);
+
   var jsonResp = jsonDecode(resp.body);
   if (resp.statusCode != 200 || jsonResp["success"] != true || jsonResp["deviceToken"] == null) {
     throw ApiException("Could not register device: ${jsonResp["error"]}", resp.statusCode);
   }
+
   return jsonResp["deviceToken"];
+}
+
+Future<void> unregister(String deviceToken) async {
+  var payload = '{ "deviceToken": "$deviceToken" }';
+
+  var response = await http.post(
+    Uri.parse("$API/unregister"),
+    body: payload,
+    headers: {"CONTENT-TYPE": "application/json"},
+  );
+
+  var jsonResp = jsonDecode(response.body);
+  if (response.statusCode != 200 || jsonResp["success"] != true) {
+    throw ApiException("Could not unregister device: ${jsonResp["error"]}", response.statusCode);
+  }
 }
 
 Future<List<VideoInfo>> pollDownloads(String deviceToken) async {

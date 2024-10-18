@@ -102,7 +102,7 @@ class AzTubeApp with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> init(BuildContext context) async {
+  Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey(prefDeviceLink) || !prefs.containsKey(prefDownloads)) {
       loadingError = "No data in SharedPref";

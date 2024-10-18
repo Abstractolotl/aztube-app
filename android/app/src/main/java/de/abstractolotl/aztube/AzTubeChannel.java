@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 public class AzTubeChannel {
 
     public interface Calls {
-        void downloadVideo(DownloadRequest request) throws Exception;
+        String downloadVideo(DownloadRequest request) throws Exception;
     }
 
     public static final String CHANNEL = "de.abstractolotl.aztube/youtube";
@@ -59,8 +59,8 @@ public class AzTubeChannel {
 
         executorService.submit(() -> {
             try {
-                calls.downloadVideo(request);
-                result.success("ok");
+                String output = calls.downloadVideo(request);
+                result.success(output);
             } catch (Exception e) {
                 result.error(e.getClass().getName(), e.getMessage(), null);
             }

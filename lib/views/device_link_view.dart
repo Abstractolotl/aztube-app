@@ -1,14 +1,15 @@
 import 'dart:io';
 
+import 'package:aztube/analytics.dart';
 import 'package:aztube/api/aztube_api.dart';
 import 'package:aztube/aztube.dart';
 import 'package:aztube/data/device_link_info.dart';
 import 'package:aztube/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+//import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:uuid/uuid.dart';
-import 'package:device_info/device_info.dart';
+//import 'package:device_info/device_info.dart';
 
 class DeviceLinkView extends StatefulWidget {
   const DeviceLinkView({super.key});
@@ -18,24 +19,27 @@ class DeviceLinkView extends StatefulWidget {
 }
 
 class _DeviceLinkViewState extends State<DeviceLinkView> {
-  QRViewController? controller;
+  //QRViewController? controller;
   AzTubeApp? app;
   ScaffoldMessengerState? messenger;
   NavigatorState? nav;
 
   bool loading = false;
 
-  void initController(QRViewController controller) {
+  void initController(/*QRViewController controller*/) {
+    /*
     this.controller = controller;
     controller.scannedDataStream.listen((event) {
       if (event.code == null) return;
       controller.stopCamera();
       onQRScanned(event.code!);
     });
+     */
   }
 
   void onQRScanned(String code) async {
     if (!Uuid.isValidUUID(fromString: code)) {
+      AzTubeAnalytics.logQRScanned(QrType.invalidQr, DeviceName.unknown);
       messenger?.showSnackBar(const SnackBar(content: Text("Malformed QR Code")));
       return;
     }
@@ -44,21 +48,23 @@ class _DeviceLinkViewState extends State<DeviceLinkView> {
       loading = true;
     });
 
+    String deviceName;
     try {
-      String deviceName;
+      //DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      //AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      deviceName = "androidInfo.model";
+    } catch (e) {
+      deviceName = "My Device";
+    }
 
-      try {
-        DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        deviceName = androidInfo.model;
-      } catch (e) {
-        deviceName = "My Device";
-      }
-
+    try {
       String deviceToken = await registerDeviceLink(code, deviceName, app?.firebaseToken);
+      AzTubeAnalytics.logQRScanned(QrType.success, deviceName == "My Device" ? DeviceName.error : DeviceName.success);
       app?.addDeviceLinks(DeviceLinkInfo(deviceToken, "My Computer", DateTime.now()));
       nav?.pop();
     } catch (e) {
+      AzTubeAnalytics.logQRScanned(
+          QrType.serviceError, deviceName == "My Device" ? DeviceName.error : DeviceName.success);
       messenger?.showSnackBar(SnackBar(content: Text(e.toString())));
       setState(() {
         loading = false;
@@ -70,15 +76,15 @@ class _DeviceLinkViewState extends State<DeviceLinkView> {
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
-      controller!.pauseCamera();
+      //controller!.pauseCamera();
     } else if (Platform.isIOS) {
-      controller!.resumeCamera();
+      //controller!.resumeCamera();
     }
   }
 
   @override
   void dispose() {
-    controller?.dispose();
+    //controller?.dispose();
     super.dispose();
   }
 
@@ -102,16 +108,16 @@ class _DeviceLinkViewState extends State<DeviceLinkView> {
   Widget camPanel() {
     return GestureDetector(
       onTap: () {
-        controller?.resumeCamera();
-        controller?.toggleFlash();
+        //controller?.resumeCamera();
+        //controller?.toggleFlash();
       },
       child: AspectRatio(
         aspectRatio: 1,
         child: Stack(children: [
-          QRView(
-            key: GlobalKey(debugLabel: 'QR'),
-            onQRViewCreated: initController,
-          ),
+          // QRView(
+          //   key: GlobalKey(debugLabel: 'QR'),
+          //   onQRViewCreated: initController,
+          // ),
           Image.asset("assets/device_link_qr_overlay.png"),
           if (loading) const Center(child: CircularProgressIndicator())
         ]),

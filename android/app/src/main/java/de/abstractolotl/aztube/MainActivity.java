@@ -1,5 +1,6 @@
 package de.abstractolotl.aztube;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -32,12 +33,13 @@ public class MainActivity extends FlutterActivity implements AzTubeChannel.Calls
     }
 
     @Override
-    public void downloadVideo(DownloadRequest request) throws Exception {
+    public String downloadVideo(DownloadRequest request) throws Exception {
         var progressUpdater = new AzTubeProgressUpdater(platform, request.getDownloadId());
         File output = null;
         try {
             output = AzTubeDownload.startDownload(request, progressUpdater);
-            MediaStoreUtil.saveAudioToMediaStore(this, output, request.getTitle(), request.getAuthor());
+            Uri location = MediaStoreUtil.saveAudioToMediaStore(this, output, request.getTitle(), request.getAuthor());
+            return location.toString();
         } catch (Exception e) {
             progressUpdater.markError();
             throw e;

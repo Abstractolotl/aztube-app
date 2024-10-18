@@ -1,3 +1,4 @@
+import 'package:aztube/api/aztube_api.dart';
 import 'package:aztube/aztube.dart';
 import 'package:aztube/components/device_link_item.dart';
 import 'package:aztube/data/device_link_info.dart';
@@ -153,10 +154,19 @@ class SettingsView extends StatelessWidget {
               },
               child: const Text("Cancel")),
           TextButton(
-              onPressed: () {
+              onPressed: () async {
                 AzTubeApp app = Provider.of(context, listen: false);
+                try {
+                  await unregister(info.deviceToken);
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Could not unlink device: $e")));
+                  }
+                }
                 app.removeDeviceLink(info);
-                Navigator.pop(context);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
               },
               child: const Text(
                 "Unlink Device",

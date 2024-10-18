@@ -1,18 +1,25 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
-import 'package:aztube/api/aztube_api.dart';
-import 'package:aztube/aztube.dart';
-import 'package:aztube/data/download_info.dart';
-import 'package:aztube/components/download_item.dart';
-import 'package:aztube/data/video_info.dart';
-import 'package:aztube/strings.dart';
-import 'package:aztube/views/share_view.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:just_waveform/just_waveform.dart';
+import 'package:media_store_plus/media_store_plus.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_intent/receive_intent.dart';
+
+import 'package:aztube/api/aztube_api.dart';
+import 'package:aztube/aztube.dart';
+import 'package:aztube/components/download_item.dart';
+import 'package:aztube/data/download_info.dart';
+import 'package:aztube/data/video_info.dart';
+import 'package:aztube/strings.dart';
+import 'package:aztube/views/debug_view.dart';
+import 'package:aztube/views/share_view.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -115,7 +122,6 @@ class _DashboardViewState extends State<DashboardView> with WidgetsBindingObserv
 
   Widget downloadList(BuildContext context, AzTubeApp app, ScaffoldMessengerState messenger) {
     var downlodas = app.downloads.values;
-    var links = app.deviceLinks.values;
 
     if (downlodas.isEmpty) {
       return ListView.builder(
@@ -225,12 +231,58 @@ class _DashboardViewState extends State<DashboardView> with WidgetsBindingObserv
     );
   }
 
+  final mediaStorePlugin = MediaStore();
   void openDownloadItemMenu(BuildContext context, DownloadInfo info) {
+    Future<Waveform> waveformFuture = () async {
+      final completer = Completer<Waveform>();
+
+      String downloadPath = (await mediaStorePlugin.getFilePathFromUri(uriString: info.downloadLocation!))!;
+      File audioFile = File(downloadPath);
+      File waveFile = File(p.join((await getTemporaryDirectory()).path, "waveform.wave"));
+      if (waveFile.existsSync()) {
+        completer.complete(await JustWaveform.parse(waveFile));
+      } else {
+        JustWaveform.extract(audioInFile: audioFile, waveOutFile: waveFile).listen((event) {
+          if (event.progress >= 1.0) {
+            completer.complete(event.waveform);
+          }
+        }, onError: (error) {
+          completer.completeError(error);
+        });
+      }
+      return await completer.future;
+    }();
+
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
               title: const Text("Delete Item"),
-              content: const Text("Downloaded data remains on your device."),
+              content: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const Text("Downloaded data remains on your device."),
+                    Text(info.downloadLocation ?? ""),
+                    FutureBuilder(
+                        future: waveformFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            debugPrint("YEAH");
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: SizedBox(
+                                width: snapshot.data!.duration.inSeconds * 5,
+                                height: 100,
+                                child: AudioWaveformWidget(
+                                    waveform: snapshot.data!, start: Duration.zero, duration: snapshot.data!.duration),
+                              ),
+                            );
+                          }
+                          debugPrint("RIP: " + snapshot.error.toString());
+                          return const CircularProgressIndicator();
+                        }),
+                  ],
+                ),
+              ),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -259,5 +311,48 @@ class _DashboardViewState extends State<DashboardView> with WidgetsBindingObserv
                 ),
               ],
             ));
+  }
+}
+
+class AudioWaveformWidget extends StatefulWidget {
+  final Color waveColor;
+  final double scale;
+  final double strokeWidth;
+  final double pixelsPerStep;
+  final Waveform waveform;
+  final Duration start;
+  final Duration duration;
+
+  const AudioWaveformWidget({
+    Key? key,
+    required this.waveform,
+    required this.start,
+    required this.duration,
+    this.waveColor = Colors.blue,
+    this.scale = 1.0,
+    this.strokeWidth = 5.0,
+    this.pixelsPerStep = 8.0,
+  }) : super(key: key);
+
+  @override
+  _AudioWaveformState createState() => _AudioWaveformState();
+}
+
+class _AudioWaveformState extends State<AudioWaveformWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: CustomPaint(
+        painter: AudioWaveformPainter(
+          waveColor: widget.waveColor,
+          waveform: widget.waveform,
+          start: widget.start,
+          duration: widget.duration,
+          scale: widget.scale,
+          strokeWidth: widget.strokeWidth,
+          pixelsPerStep: widget.pixelsPerStep,
+        ),
+      ),
+    );
   }
 }
