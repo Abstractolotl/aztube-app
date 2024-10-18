@@ -21,7 +21,6 @@ class SettingsView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ...settingsSegment(context, theme, app),
-            const Divider(),
             ...deviceLinksSegment(context, theme, app),
           ],
         ),

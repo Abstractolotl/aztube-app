@@ -50,10 +50,15 @@ class _DashboardViewState extends State<DashboardView> with WidgetsBindingObserv
         var url = Uri.parse(intent.extra!["android.intent.extra.TEXT"]);
         var id = url.queryParameters["v"];
 
+        if (!mounted) {
+          return;
+        }
+
         if (id != null) {
           ShareView.info = DownloadInfo(
               video: VideoInfo(id, title, "", VideoQuality.audio),
               id: DateTime.now().millisecondsSinceEpoch.toString());
+
           Navigator.of(context).pushNamed("/share");
         } else {
           debugPrint("Could not find video id in $url");
@@ -256,30 +261,16 @@ class _DashboardViewState extends State<DashboardView> with WidgetsBindingObserv
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              title: const Text("Delete Item"),
+              title: const Text("Download Info"),
               content: SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Downloaded data remains on your device."),
-                    Text(info.downloadLocation ?? ""),
-                    FutureBuilder(
-                        future: waveformFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            debugPrint("YEAH");
-                            return SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: SizedBox(
-                                width: snapshot.data!.duration.inSeconds * 5,
-                                height: 100,
-                                child: AudioWaveformWidget(
-                                    waveform: snapshot.data!, start: Duration.zero, duration: snapshot.data!.duration),
-                              ),
-                            );
-                          }
-                          debugPrint("RIP: " + snapshot.error.toString());
-                          return const CircularProgressIndicator();
-                        }),
+                    Text("Title: ${info.video.title}"),
+                    Text("Author: ${info.video.author}"),
+                    Text("Quality: ${info.video.quality.name}"),
+                    Text("Download ID: ${info.id}"),
+                    Text("Download Location: ${info.downloadLocation}"),
                   ],
                 ),
               ),
@@ -324,7 +315,7 @@ class AudioWaveformWidget extends StatefulWidget {
   final Duration duration;
 
   const AudioWaveformWidget({
-    Key? key,
+    super.key,
     required this.waveform,
     required this.start,
     required this.duration,
@@ -332,13 +323,13 @@ class AudioWaveformWidget extends StatefulWidget {
     this.scale = 1.0,
     this.strokeWidth = 5.0,
     this.pixelsPerStep = 8.0,
-  }) : super(key: key);
+  });
 
   @override
-  _AudioWaveformState createState() => _AudioWaveformState();
+  AudioWaveformState createState() => AudioWaveformState();
 }
 
-class _AudioWaveformState extends State<AudioWaveformWidget> {
+class AudioWaveformState extends State<AudioWaveformWidget> {
   @override
   Widget build(BuildContext context) {
     return ClipRect(

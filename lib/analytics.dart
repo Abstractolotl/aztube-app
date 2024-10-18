@@ -8,7 +8,6 @@ enum QrType {
 
 enum DeviceName {
   success,
-  error,
   unknown,
 }
 

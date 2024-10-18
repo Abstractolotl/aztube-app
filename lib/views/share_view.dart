@@ -42,7 +42,7 @@ class _ShareViewState extends State<ShareView> {
           body: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: card(app!),
+              child: card(app),
             ),
           ));
     });

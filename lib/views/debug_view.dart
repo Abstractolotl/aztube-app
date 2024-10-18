@@ -1,9 +1,6 @@
-import 'dart:io';
 import 'dart:math';
 
-import 'package:aztube/api/aztube_api.dart';
 import 'package:aztube/strings.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
 
@@ -24,67 +21,9 @@ class DebugView extends StatelessWidget {
               child: const Text("Home"),
             ),
             ElevatedButton(
-              onPressed: () {
-                try {
-                  registerDeviceLink("123", "My Device", null).catchError((e) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-                    return e.toString();
-                  });
-                } catch (e) {
-                  // ignored
-                }
-              },
+              onPressed: () {},
               child: const Text("Send generate!"),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                FilePickerResult? result = await FilePicker.platform.pickFiles(
-                  type: FileType.audio,
-                  allowCompression: false,
-                );
-
-                File file = File(result!.files.single.path!);
-                final waveFile = File("${file.path}.wave");
-                var wavProgStream = JustWaveform.extract(audioInFile: file, waveOutFile: waveFile);
-
-                if (context.mounted) {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return StreamBuilder(
-                            stream: wavProgStream,
-                            builder: ((context, snapshot) {
-                              final progress = snapshot.data?.progress ?? 0.0;
-                              final waveform = snapshot.data?.waveform;
-
-                              if (waveform == null) {
-                                return Center(
-                                  child: Text(
-                                    'Fuck ${(100 * progress).toInt()}%',
-                                    style: Theme.of(context).textTheme.titleLarge,
-                                  ),
-                                );
-                              }
-
-                              return Container(
-                                height: 100,
-                                width: double.maxFinite,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade200,
-                                  borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-                                ),
-                                child: _AudioWaveformWidget(
-                                  waveform: waveform,
-                                  start: Duration.zero,
-                                  duration: waveform.duration,
-                                ),
-                              );
-                            }));
-                      });
-                }
-              },
-              child: const Text("Show Trimmer"),
-            )
           ],
         ),
       ),
@@ -113,24 +52,15 @@ class _SomeWidgetState extends State<SomeWidget> {
 }
 
 class _AudioWaveformWidget extends StatefulWidget {
-  final Color waveColor;
-  final double scale;
-  final double strokeWidth;
-  final double pixelsPerStep;
   final Waveform waveform;
   final Duration start;
   final Duration duration;
 
   const _AudioWaveformWidget({
-    Key? key,
     required this.waveform,
     required this.start,
     required this.duration,
-    this.waveColor = Colors.blue,
-    this.scale = 1.0,
-    this.strokeWidth = 5.0,
-    this.pixelsPerStep = 8.0,
-  }) : super(key: key);
+  });
 
   @override
   _AudioWaveformState createState() => _AudioWaveformState();
@@ -142,13 +72,13 @@ class _AudioWaveformState extends State<_AudioWaveformWidget> {
     return ClipRect(
       child: CustomPaint(
         painter: AudioWaveformPainter(
-          waveColor: widget.waveColor,
+          waveColor: Colors.blue,
           waveform: widget.waveform,
           start: widget.start,
           duration: widget.duration,
-          scale: widget.scale,
-          strokeWidth: widget.strokeWidth,
-          pixelsPerStep: widget.pixelsPerStep,
+          scale: 1,
+          strokeWidth: 5.0,
+          pixelsPerStep: 8.0,
         ),
       ),
     );

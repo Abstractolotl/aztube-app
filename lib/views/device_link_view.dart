@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:aztube/analytics.dart';
@@ -5,11 +6,11 @@ import 'package:aztube/api/aztube_api.dart';
 import 'package:aztube/aztube.dart';
 import 'package:aztube/data/device_link_info.dart';
 import 'package:aztube/strings.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
-//import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:uuid/uuid.dart';
-//import 'package:device_info/device_info.dart';
 
 class DeviceLinkView extends StatefulWidget {
   const DeviceLinkView({super.key});
@@ -18,29 +19,73 @@ class DeviceLinkView extends StatefulWidget {
   State<DeviceLinkView> createState() => _DeviceLinkViewState();
 }
 
-class _DeviceLinkViewState extends State<DeviceLinkView> {
-  //QRViewController? controller;
-  AzTubeApp? app;
-  ScaffoldMessengerState? messenger;
-  NavigatorState? nav;
+class _DeviceLinkViewState extends State<DeviceLinkView> with WidgetsBindingObserver {
+  final MobileScannerController controller = MobileScannerController();
 
+  StreamSubscription<BarcodeCapture>? subscription;
   bool loading = false;
 
-  void initController(/*QRViewController controller*/) {
-    /*
-    this.controller = controller;
-    controller.scannedDataStream.listen((event) {
-      if (event.code == null) return;
-      controller.stopCamera();
-      onQRScanned(event.code!);
-    });
-     */
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
+    subscription = controller.barcodes.listen(handleBarcodeScan);
+    controller.start();
   }
 
-  void onQRScanned(String code) async {
-    if (!Uuid.isValidUUID(fromString: code)) {
+  @override
+  void dispose() async {
+    WidgetsBinding.instance.removeObserver(this);
+    subscription?.cancel();
+    subscription = null;
+    super.dispose();
+    await controller.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!controller.value.hasCameraPermission) {
+      return;
+    }
+
+    switch (state) {
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        return;
+
+      case AppLifecycleState.resumed:
+        subscription = controller.barcodes.listen(handleBarcodeScan);
+
+        controller.start();
+      case AppLifecycleState.inactive:
+        subscription?.cancel();
+        subscription = null;
+        controller.stop();
+    }
+  }
+
+  void handleBarcodeScan(BarcodeCapture barcodes) async {
+    var code = barcodes.barcodes.firstOrNull;
+    if (code == null || code.displayValue == null) {
+      return;
+    }
+
+    subscription?.cancel();
+    subscription = null;
+
+    await handleBarcode(code);
+
+    subscription = controller.barcodes.listen(handleBarcodeScan);
+  }
+
+  Future<void> handleBarcode(Barcode code) async {
+    var scannedString = code.displayValue!;
+
+    if (!Uuid.isValidUUID(fromString: scannedString)) {
       AzTubeAnalytics.logQRScanned(QrType.invalidQr, DeviceName.unknown);
-      messenger?.showSnackBar(const SnackBar(content: Text("Malformed QR Code")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Malformed QR Code")));
       return;
     }
 
@@ -48,52 +93,39 @@ class _DeviceLinkViewState extends State<DeviceLinkView> {
       loading = true;
     });
 
+    AzTubeApp app = Provider.of(context, listen: false);
     String deviceName;
-    try {
-      //DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      //AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      deviceName = "androidInfo.model";
-    } catch (e) {
-      deviceName = "My Device";
-    }
-
-    try {
-      String deviceToken = await registerDeviceLink(code, deviceName, app?.firebaseToken);
-      AzTubeAnalytics.logQRScanned(QrType.success, deviceName == "My Device" ? DeviceName.error : DeviceName.success);
-      app?.addDeviceLinks(DeviceLinkInfo(deviceToken, "My Computer", DateTime.now()));
-      nav?.pop();
-    } catch (e) {
-      AzTubeAnalytics.logQRScanned(
-          QrType.serviceError, deviceName == "My Device" ? DeviceName.error : DeviceName.success);
-      messenger?.showSnackBar(SnackBar(content: Text(e.toString())));
-      setState(() {
-        loading = false;
-      });
-    }
-  }
-
-  @override
-  void reassemble() {
-    super.reassemble();
+    DeviceName device;
     if (Platform.isAndroid) {
-      //controller!.pauseCamera();
-    } else if (Platform.isIOS) {
-      //controller!.resumeCamera();
+      var info = await DeviceInfoPlugin().androidInfo;
+      deviceName = info.model;
+      device = DeviceName.success;
+    } else {
+      deviceName = "Mysterious Device ôo";
+      device = DeviceName.unknown;
     }
-  }
 
-  @override
-  void dispose() {
-    //controller?.dispose();
-    super.dispose();
+    try {
+      String deviceToken = await registerDeviceLink(scannedString, deviceName, app.firebaseToken);
+      AzTubeAnalytics.logQRScanned(QrType.success, device);
+      app.addDeviceLinks(DeviceLinkInfo(deviceToken, "My Computer", DateTime.now()));
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      AzTubeAnalytics.logQRScanned(QrType.serviceError, device);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+
+    setState(() {
+      loading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    app = Provider.of(context);
-    nav = Navigator.of(context);
-    messenger = ScaffoldMessenger.of(context);
-
     return Scaffold(
       appBar: appBar(),
       body: Column(
@@ -107,17 +139,12 @@ class _DeviceLinkViewState extends State<DeviceLinkView> {
 
   Widget camPanel() {
     return GestureDetector(
-      onTap: () {
-        //controller?.resumeCamera();
-        //controller?.toggleFlash();
-      },
+      onTap: () => {controller.toggleTorch()},
+      onDoubleTap: () => {controller.switchCamera()},
       child: AspectRatio(
         aspectRatio: 1,
         child: Stack(children: [
-          // QRView(
-          //   key: GlobalKey(debugLabel: 'QR'),
-          //   onQRViewCreated: initController,
-          // ),
+          MobileScanner(controller: controller),
           Image.asset("assets/device_link_qr_overlay.png"),
           if (loading) const Center(child: CircularProgressIndicator())
         ]),
